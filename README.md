@@ -23,3 +23,10 @@
 **sobang1531@gmail.com**
 
 </aside>
+
+> 백엔드 개발 환경 설정법법
+```
+1. 데이터베이스 컨테이너 설정(docker.md 참조)
+2. application(prefix) 설정 파일(yml) 추가(설정 내용 참조)
+3. 실행 명령(혹은 IDE 설정) 활성 profile 설정 : dev
+```
