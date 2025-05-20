@@ -1,0 +1,61 @@
+package com.booktalk_be.domain.reply.controller;
+
+import com.booktalk_be.common.utils.ResponseDto;
+import com.booktalk_be.domain.reply.command.CreateReplyCommand;
+import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
+import com.booktalk_be.common.command.RestrictCommand;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/reply")
+@Tag(name = "Reply API", description = "게시판 댓글 API 입니다.")
+public class ReplyController {
+    @GetMapping("/list/{postCode}")
+    @Tag(name = "Reply API")
+    @Operation(summary = "게시판 댓글 목록 조회", description = "특정 게시글의 댓글 목록 정보를 조회합니다.")
+    public ResponseEntity<ResponseDto> getList(@PathVariable String postCode) {
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
+    @PostMapping("/create")
+    @Tag(name = "Reply API")
+    @Operation(summary = "게시판 댓글 등록", description = "새로운 댓글을 등록합니다.")
+    public ResponseEntity<ResponseDto> create(@RequestBody CreateReplyCommand cmd) {
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
+    @PatchMapping("/modify")
+    @Tag(name = "Reply API")
+    @Operation(summary = "게시판 댓글 수정", description = "댓글 상세 정보를 수정합니다.")
+    public ResponseEntity<ResponseDto> modify(@RequestBody UpdateReplyCommand cmd) {
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
+    @PatchMapping("/restriction")
+    @Tag(name = "Reply API")
+    @Operation(summary = "게시판 댓글 제재", description = "관리자가 특정 댓글을 제재합니다.")
+    public ResponseEntity<ResponseDto> restriction(@RequestBody RestrictCommand cmd) {
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
+    @DeleteMapping("/delete/{replyCode}")
+    @Tag(name = "Reply API")
+    @Operation(summary = "게시판 댓글 삭제", description = "댓글을 삭제합니다.")
+    public ResponseEntity<ResponseDto> delete(@PathVariable String replyCode) {
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
+}
