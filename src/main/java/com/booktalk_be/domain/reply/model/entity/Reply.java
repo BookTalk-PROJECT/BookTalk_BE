@@ -1,6 +1,6 @@
 package com.booktalk_be.domain.reply.model.entity;
 
-import com.booktalk_be.domain.auth.model.entity.Member;
+import com.booktalk_be.domain.member.auth.model.entity.Member;
 import com.booktalk_be.common.baseEntity.CommonEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -18,8 +18,12 @@ public class Reply extends CommonEntity {
     //PK: REP_(prefix) + number
     @PrePersist
     public void generateId() {
-        this.replyCode = "REP_" + System.currentTimeMillis();
-        this.delYn = false;
+        if(this.replyCode == null) {
+            this.replyCode = "REP_" + System.currentTimeMillis();
+        }
+        if(this.delYn == null) {
+            this.delYn = false;
+        }
     }
 
     @Id

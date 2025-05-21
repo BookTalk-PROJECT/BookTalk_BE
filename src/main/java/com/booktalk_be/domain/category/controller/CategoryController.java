@@ -5,6 +5,7 @@ import com.booktalk_be.domain.category.command.CreateCategoryCommand;
 import com.booktalk_be.domain.category.command.UpdateCategoryCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +26,7 @@ public class CategoryController {
     @PostMapping("/create")
     @Tag(name = "Community Category API")
     @Operation(summary = "커뮤니티 카테고리 등록", description = "새로운 카테고리를 등록합니다.")
-    public ResponseEntity<ResponseDto> create(@RequestBody CreateCategoryCommand cmd) {
+    public ResponseEntity<ResponseDto> create(@RequestBody @Valid CreateCategoryCommand cmd) {
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -34,7 +35,7 @@ public class CategoryController {
     @PutMapping("/modify")
     @Tag(name = "Community Category API")
     @Operation(summary = "커뮤니티 카테고리 수정", description = "카테고리 상세 정보를 수정합니다.")
-    public ResponseEntity<ResponseDto> modify(@RequestBody UpdateCategoryCommand cmd) {
+    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateCategoryCommand cmd) {
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());

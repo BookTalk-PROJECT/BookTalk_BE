@@ -1,4 +1,4 @@
-package com.booktalk_be.domain.auth.model.entity;
+package com.booktalk_be.domain.member.auth.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

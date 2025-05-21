@@ -1,6 +1,6 @@
 package com.booktalk_be.common.baseEntity;
 
-import com.booktalk_be.domain.auth.model.entity.Member;
+import com.booktalk_be.domain.member.auth.model.entity.Member;
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Formula;
