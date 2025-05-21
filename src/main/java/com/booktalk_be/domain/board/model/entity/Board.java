@@ -25,10 +25,10 @@ public class Board extends Post {
     }
 
     @Column(name = "category_id", nullable = false)
-    private Long categoryId;
+    private Integer categoryId;
 
     @Builder
-    public Board(Member member, Long categoryId, String title, String content, Boolean delYn, Boolean notificationYn) {
+    public Board(Member member, Integer categoryId, String title, String content, Boolean delYn, Boolean notificationYn) {
         this.member = member;
         this.categoryId = categoryId;
         this.title = title;

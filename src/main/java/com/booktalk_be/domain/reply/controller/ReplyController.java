@@ -14,14 +14,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/reply")
 @Tag(name = "Reply API", description = "게시판 댓글 API 입니다.")
 public class ReplyController {
-    @GetMapping("/list/{postCode}")
-    @Tag(name = "Reply API")
-    @Operation(summary = "게시판 댓글 목록 조회", description = "특정 게시글의 댓글 목록 정보를 조회합니다.")
-    public ResponseEntity<ResponseDto> getList(@PathVariable String postCode) {
-        return ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .build());
-    }
+
+//    @GetMapping("/list/{postCode}")
+//    @Tag(name = "Reply API")
+//    @Operation(summary = "게시판 댓글 목록 조회", description = "특정 게시글의 댓글 목록 정보를 조회합니다.")
+//    public ResponseEntity<ResponseDto> getList(@PathVariable String postCode) {
+//        return ResponseEntity.ok(ResponseDto.builder()
+//                .code(200)
+//                .build());
+//    }
 
     @PostMapping("/create")
     @Tag(name = "Reply API")
