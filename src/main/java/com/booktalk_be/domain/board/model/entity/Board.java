@@ -1,6 +1,6 @@
 package com.booktalk_be.domain.board.model.entity;
 
-import com.booktalk_be.domain.auth.model.entity.Member;
+import com.booktalk_be.domain.member.auth.model.entity.Member;
 import com.booktalk_be.common.baseEntity.Post;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
@@ -16,8 +16,12 @@ public class Board extends Post {
     //PK: BO_(prefix) + number
     @PrePersist
     public void generateId() {
-        this.code = "BO_" + System.currentTimeMillis();
-        this.delYn = false;
+        if(this.code == null) {
+            this.code = "BO_" + System.currentTimeMillis();
+        }
+        if(this.delYn == null) {
+            this.delYn = false;
+        }
     }
 
     @Column(name = "category_id", nullable = false)
