@@ -15,9 +15,9 @@ public class PostSearchCondCommand {
     private KeywordType keywordType = KeywordType.TITLE;
     private String keyword = "";
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-    private LocalDate startDate = LocalDate.now();
+    private LocalDate startDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-    private LocalDate endDate = LocalDate.now();
+    private LocalDate endDate;
 
 }
 

@@ -9,7 +9,7 @@ import lombok.Getter;
 public class Refresh_Token {
 
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "member_id")
     private Member member;
 
