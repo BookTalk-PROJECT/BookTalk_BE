@@ -1,10 +1,8 @@
-package com.booktalk_be.domain.member.join.controller;
+package com.booktalk_be.domain.member.auth.controller;
 
 import com.booktalk_be.common.utils.ResponseDto;
-import com.booktalk_be.domain.board.command.CreateBoardCommand;
-import com.booktalk_be.domain.category.command.CreateCategoryCommand;
-import com.booktalk_be.domain.member.join.command.CreateMemberCommand;
-import com.booktalk_be.domain.member.join.command.ModifyMemberCommand;
+import com.booktalk_be.domain.member.auth.command.CreateMemberCommand;
+import com.booktalk_be.domain.member.auth.command.ModifyMemberCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -15,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/join")
+@RequestMapping("/member")
 @Tag(name = "Member Join API", description = "회원 가입 관련 API 입니다.")
-public class JoinController {
+public class MemberController {
 
     @PostMapping("/create")
     @Tag(name = "Member Create API")

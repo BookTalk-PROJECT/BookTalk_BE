@@ -72,4 +72,15 @@ public class BoardController {
                 .build());
     }
 
+    @GetMapping("/mypage/boardlist")
+    @Tag(name = "MyPage API")
+    @Operation(summary = "마이 페이지 커뮤니티 게시글 관리", description = "마이 페이지의 커뮤니티 게시글을 조회합니다.")
+    public ResponseEntity<ResponseDto> getCommunityBoardList(@RequestParam(value = "categoryId", required = true) String categoryId,
+                                                             @RequestParam(value = "pageNum", required = true) Integer pageNum,
+                                                             @RequestBody @Valid PostSearchCondCommand cmd) {
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
 }
