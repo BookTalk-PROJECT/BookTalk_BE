@@ -2,6 +2,7 @@ package com.booktalk_be.domain.gathering.controller;
 
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
+import com.booktalk_be.domain.gathering.command.CreateRecruitRequest;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringService;
@@ -78,6 +79,16 @@ public class GatheringController {
     @Tag(name = "Gathering API")
     @Operation(summary = "모임 신청 질문 리스트 조회", description = "모임 신청 질문 리스트를 조회합니다.")
     public ResponseEntity<ResponseDto> getRecruitQuestionList(@RequestBody @Valid String gatheringId){
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
+    @PostMapping("/createRecruitRequest")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "모임 신청 답변 등록", description = "모임 신청 질문 리스트를 작성하고 등록합니다.")
+    public ResponseEntity<ResponseDto> createRecruitRequest(@RequestBody @Valid CreateRecruitRequest requestList) {
+
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());

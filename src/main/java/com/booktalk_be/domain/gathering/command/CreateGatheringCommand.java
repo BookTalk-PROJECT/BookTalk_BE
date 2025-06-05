@@ -1,8 +1,6 @@
 package com.booktalk_be.domain.gathering.command;
 
 
-import com.booktalk_be.domain.gathering.model.entity.Gathering;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
