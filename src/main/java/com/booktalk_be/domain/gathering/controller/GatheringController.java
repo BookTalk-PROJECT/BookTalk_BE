@@ -66,7 +66,7 @@ public class GatheringController {
     @PatchMapping("/delete")
     @Tag(name = "Gathering API")
     @Operation(summary = "모임 삭제(비활성화)", description = "모임을 삭제(비활성화)합니다.")
-    public ResponseEntity<ResponseDto> delete(@RequestBody @Valid Integer gatheringId) {
+    public ResponseEntity<ResponseDto> delete(@RequestBody @Valid String gatheringId) {
         //gatheringService.create(requestData, member);
 
         return ResponseEntity.ok(ResponseDto.builder()
@@ -74,5 +74,13 @@ public class GatheringController {
                 .build());
     }
 
+    @GetMapping("/recruitQuestionList")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "모임 신청 질문 리스트 조회", description = "모임 신청 질문 리스트를 조회합니다.")
+    public ResponseEntity<ResponseDto> getRecruitQuestionList(@RequestBody @Valid String gatheringId){
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
 
 }

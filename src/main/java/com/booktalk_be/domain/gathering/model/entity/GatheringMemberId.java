@@ -15,7 +15,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class GatheringMemberId implements Serializable {
 
-    private Gathering gathering;
+    private Gathering code;
 
     private Member member;
 }

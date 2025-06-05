@@ -1,16 +1,13 @@
 package com.booktalk_be.domain.gathering.model.entity;
 
 
-import com.booktalk_be.domain.likes.model.entity.LikesId;
 import com.booktalk_be.domain.member.auth.model.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.DynamicInsert;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@DynamicInsert
 @IdClass(RecruitRequestId.class)
 @Table(name = "recruit_request") // 참여신청답변 테이블
 public class RecruitRequest {
