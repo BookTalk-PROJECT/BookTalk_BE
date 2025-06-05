@@ -12,7 +12,7 @@ import org.hibernate.annotations.DynamicInsert;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
-@Table(name = "gathering")
+@Table(name = "gathering") //모임 엔티티
 public class Gathering{
 
     @Id

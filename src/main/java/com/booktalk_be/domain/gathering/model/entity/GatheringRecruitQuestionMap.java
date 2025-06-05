@@ -10,8 +10,7 @@ import org.hibernate.annotations.DynamicInsert;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 @IdClass(GatheringRecruitQuestionId.class)
-//GatheringRecruitQuestionId에 있는 복합키 클래스를 불러와서 사용?
-@Table(name = "gathering_recruit_question_map")
+@Table(name = "gathering_recruit_question_map") // 모임_참여신청질문 매핑 엔티티
 public class GatheringRecruitQuestionMap {
 
     @Id

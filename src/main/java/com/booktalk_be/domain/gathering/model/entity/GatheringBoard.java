@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "gathering_board")
+@Table(name = "gathering_board") // 모임 게시글 엔티티
 public class GatheringBoard extends Post {
     //PK: GAB_(prefix) + number
     @PrePersist

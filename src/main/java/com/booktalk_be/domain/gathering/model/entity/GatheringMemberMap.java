@@ -10,7 +10,7 @@ import org.hibernate.annotations.DynamicInsert;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 @IdClass(GatheringMemberMap.class)
-@Table(name = "gathering_member_map")
+@Table(name = "gathering_member_map") //모임_멤버 매핑 엔티티
 public class GatheringMemberMap {
 
     @Id
