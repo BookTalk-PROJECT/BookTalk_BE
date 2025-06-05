@@ -26,6 +26,6 @@ public class BoardDetailResponse {
     private final Boolean isLike;
     private final Boolean notificationYn;
 
-    private final List<ReplyResponse> replies;
+//    private final List<ReplyResponse> replies;
 
 }
