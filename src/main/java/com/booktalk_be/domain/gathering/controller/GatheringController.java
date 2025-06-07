@@ -3,6 +3,7 @@ package com.booktalk_be.domain.gathering.controller;
 import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
+import com.booktalk_be.domain.gathering.command.CreateRecruitRequest;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringService;
@@ -53,6 +54,12 @@ public class GatheringController {
                 .build());
     }
 
+    @PatchMapping("/modify")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "모임 수정", description = "모임을 수정합니다.")
+    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid CreateGatheringCommand requestData) {
+        //gatheringService.create(requestData, member);
+
     @GetMapping("/mypage/gatheringlist")
     @Tag(name = "MyPage API")
     @Operation(summary = "마이 페이지 내 모임", description = "마이 페이지의 내 모임들을 조회합니다.")
@@ -62,6 +69,12 @@ public class GatheringController {
                 .code(200)
                 .build());
     }
+
+    @PatchMapping("/delete")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "모임 삭제(비활성화)", description = "모임을 삭제(비활성화)합니다.")
+    public ResponseEntity<ResponseDto> delete(@RequestBody @Valid String gatheringId) {
+        //gatheringService.create(requestData, member);
 
     @GetMapping("/mypage/boardlist")
     @Tag(name = "MyPage API")
@@ -73,6 +86,10 @@ public class GatheringController {
                 .build());
     }
 
+    @GetMapping("/recruitQuestionList")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "모임 신청 질문 리스트 조회", description = "모임 신청 질문 리스트를 조회합니다.")
+    public ResponseEntity<ResponseDto> getRecruitQuestionList(@RequestBody @Valid String gatheringId){
     @GetMapping("/mypage/manage/request")
     @Tag(name = "MyPage API")
     @Operation(summary = "마이 페이지 내 모임 신청 관리", description = "마이 페이지의 모임 신청 관리 목록을 조회합니다.")
@@ -83,6 +100,11 @@ public class GatheringController {
                 .build());
     }
 
+    @PostMapping("/createRecruitRequest")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "모임 신청 답변 등록", description = "모임 신청 질문 리스트를 작성하고 등록합니다.")
+    public ResponseEntity<ResponseDto> createRecruitRequest(@RequestBody @Valid CreateRecruitRequest requestList) {
+  
     @GetMapping("/mypage/manage/approval")
     @Tag(name = "MyPage API")
     @Operation(summary = "마이 페이지 내 모임 승인 관리", description = "마이 페이지의 내 모임 승인 목록을 조회합니다.")
