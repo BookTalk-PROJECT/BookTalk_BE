@@ -17,6 +17,4 @@ public class RecruitQuestion {
 
     @Column(name = "value", nullable = false)
     private String value;
-
-
 }
