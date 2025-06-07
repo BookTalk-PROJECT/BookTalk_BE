@@ -39,5 +39,4 @@ public abstract class Post extends CommonEntity {
 
     @Column(name = "del_reason", nullable = true)
     protected String delReason;
-
 }

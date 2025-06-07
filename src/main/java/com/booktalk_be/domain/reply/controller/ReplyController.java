@@ -1,5 +1,6 @@
 package com.booktalk_be.domain.reply.controller;
 
+import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
@@ -60,4 +61,36 @@ public class ReplyController {
                 .build());
     }
 
+    @GetMapping("/mypage/list")
+    @Tag(name = "Reply API")
+    @Operation(summary = "마이 페이지 댓글 관리", description = "마이 페이지의 댓글을 조회합니다.")
+    public ResponseEntity<ResponseDto> getCommunityCommentList(@PathVariable String category,
+                                                               @RequestParam(value = "pageNum", required = true) Integer pageNum,
+                                                               @RequestBody @Valid PostSearchCondCommand cmd) {
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
+    @GetMapping("/admin/list")
+    @Tag(name = "AdminPage API")
+    @Operation(summary = "관리자 페이지 댓글 관리", description = "관리자 페이지의 댓글을 조회합니다.")
+    public ResponseEntity<ResponseDto> getCommentList(@RequestParam(value = "categoryId", required = true) String categoryId,
+                                                      @RequestParam(value = "pageNum", required = true) Integer pageNum,
+                                                      @RequestBody @Valid PostSearchCondCommand cmd) {
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
+    @PostMapping("/admin/restoration/{replyCode}")
+    @Tag(name = "Reply API")
+    @Operation(summary = "관리자 페이지 댓글 복구", description = "관리자 페이지의 댓글을 복구합니다.")
+    public ResponseEntity<ResponseDto> restoreReply(@RequestParam(value = "category", required = true) String category,
+                                                    @PathVariable String replyCode)
+    {
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
 }
