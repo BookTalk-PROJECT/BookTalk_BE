@@ -1,6 +1,6 @@
 package com.booktalk_be.domain.board.model.entity;
 
-import com.booktalk_be.domain.member.auth.model.entity.Member;
+import com.booktalk_be.domain.member.mypage.model.entity.Member;
 import com.booktalk_be.common.baseEntity.Post;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;

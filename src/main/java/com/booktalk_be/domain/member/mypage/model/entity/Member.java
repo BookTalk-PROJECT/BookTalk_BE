@@ -1,5 +1,7 @@
-package com.booktalk_be.domain.member.auth.model.entity;
+package com.booktalk_be.domain.member.mypage.model.entity;
 
+import com.booktalk_be.domain.auth.model.entity.AuthenticateType;
+import com.booktalk_be.domain.auth.model.entity.AuthorityType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;

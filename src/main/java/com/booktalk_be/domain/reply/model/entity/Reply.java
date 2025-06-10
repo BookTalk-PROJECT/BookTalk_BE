@@ -1,6 +1,6 @@
 package com.booktalk_be.domain.reply.model.entity;
 
-import com.booktalk_be.domain.member.auth.model.entity.Member;
+import com.booktalk_be.domain.member.mypage.model.entity.Member;
 import com.booktalk_be.common.baseEntity.CommonEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

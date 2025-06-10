@@ -53,9 +53,10 @@ public class GatheringController {
                 .build());
     }
 
-    @GetMapping("/mypage/gatheringlist")
-    @Tag(name = "MyPage API")
-    @Operation(summary = "마이 페이지 내 모임", description = "마이 페이지의 내 모임들을 조회합니다.")
+    //마이 페이지 내 모임 조회 API
+    @GetMapping("/mylist")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "내 모임 목록 조회", description = "내 모임 목록을 조회 합니다.")
     public ResponseEntity<ResponseDto> getMyGatheringList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
                                                           @RequestBody @Valid PostSearchCondCommand cmd) {
         return ResponseEntity.ok(ResponseDto.builder()
@@ -63,9 +64,10 @@ public class GatheringController {
                 .build());
     }
 
-    @GetMapping("/mypage/boardlist")
-    @Tag(name = "MyPage API")
-    @Operation(summary = "마이 페이지 내 모임 게시물 관리", description = "마이 페이지의 내 모임 게시글을 조회합니다.")
+    //마이 페이지 모임 게시판 게시물 조회 API
+    @GetMapping("/board/mylist")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "내 모임 게시판 내 글 목록 조회", description = "내 모임 게시판 내 글 목록들을 조회 합니다.")
     public ResponseEntity<ResponseDto> getMyGatheringBoardList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
                                                                @RequestBody @Valid PostSearchCondCommand cmd) {
         return ResponseEntity.ok(ResponseDto.builder()
@@ -73,9 +75,10 @@ public class GatheringController {
                 .build());
     }
 
-    @GetMapping("/mypage/manage/request")
-    @Tag(name = "MyPage API")
-    @Operation(summary = "마이 페이지 내 모임 신청 관리", description = "마이 페이지의 모임 신청 관리 목록을 조회합니다.")
+    //마이 페이지 내 모임 신청 신청 목록 조회 API
+    @GetMapping("/manage/request")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "내 신청 모임 목록 조회", description = "내 신청 모임 목록들을 조회 합니다.")
     public ResponseEntity<ResponseDto> getMyGatheringRequestList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
                                                                  @RequestBody @Valid PostSearchCondCommand cmd) {
         return ResponseEntity.ok(ResponseDto.builder()
@@ -83,9 +86,10 @@ public class GatheringController {
                 .build());
     }
 
-    @GetMapping("/mypage/manage/approval")
-    @Tag(name = "MyPage API")
-    @Operation(summary = "마이 페이지 내 모임 승인 관리", description = "마이 페이지의 내 모임 승인 목록을 조회합니다.")
+    //마이 페이지 모임 신청 목록 조회 API
+    @GetMapping("/manage/approval")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "내 모임 승인 목록 조회", description = "내 모임에 신청한 신청 목록들을 조회 합니다.")
     public ResponseEntity<ResponseDto> getMyGatheringApprovalList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
                                                                   @RequestBody @Valid PostSearchCondCommand cmd) {
         return ResponseEntity.ok(ResponseDto.builder()
@@ -93,9 +97,10 @@ public class GatheringController {
                 .build());
     }
 
+    //관리자 페이지 모임 게시글 조회 API
     @GetMapping("/admin/boardlist")
-    @Tag(name = "AdminPage API")
-    @Operation(summary = "관리자 페이지 게시글 조회", description = "관리자 페이지의 게시글을 조회합니다.")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "관리자 게시글 조회", description = "관리자 권한으로 모든 게시글을 조회 합니다.")
     public ResponseEntity<ResponseDto> getBoardList(@RequestParam(value = "category", required = true) String category,
                                                     @RequestParam(value = "pageNum", required = true) Integer pageNum,
                                                     @RequestBody @Valid PostSearchCondCommand cmd) {
@@ -104,9 +109,10 @@ public class GatheringController {
                 .build());
     }
 
+    //관리자 페이지 모임 게시글 복구 API
     @PostMapping("/admin/restoration/{boardCode}")
-    @Tag(name = "AdminPage API")
-    @Operation(summary = "관리자 페이지 게시글 복구", description = "관리자 페이지의 게시글을 복구합니다.")
+    @Tag(name = "Gathering API")
+    @Operation(summary = "관리자 게시글 복구", description = "관리자 권한으로 게시글을 복구합니다.")
     public ResponseEntity<ResponseDto> restoreBoard(@RequestParam(value = "categoryId", required = true) String categoryId,
                                                     @PathVariable String boardCode)
     {

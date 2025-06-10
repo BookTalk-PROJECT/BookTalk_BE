@@ -1,8 +1,8 @@
-package com.booktalk_be.domain.member.auth.command;
+package com.booktalk_be.domain.member.mypage.command;
 
-import com.booktalk_be.domain.member.auth.model.entity.AuthenticateType;
-import com.booktalk_be.domain.member.auth.model.entity.AuthorityType;
-import com.booktalk_be.domain.member.auth.model.entity.Member;
+import com.booktalk_be.domain.auth.model.entity.AuthenticateType;
+import com.booktalk_be.domain.auth.model.entity.AuthorityType;
+import com.booktalk_be.domain.member.mypage.model.entity.Member;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
