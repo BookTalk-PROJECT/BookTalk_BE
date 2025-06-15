@@ -1,5 +1,7 @@
 package com.booktalk_be.springconfig.auth.jwt;
 
+import com.booktalk_be.domain.member.mypage.model.entity.Member;
+import com.booktalk_be.domain.member.mypage.service.MemberService;
 import io.jsonwebtoken.Jwt;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,7 +23,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
 
-    //private final UserGetService userGetService;
+    private final MemberService memberService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -36,17 +38,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         if(username != null && !username.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
-            //SecurityContextHolder.getContext().setAuthentication(getUserAuth(username));
+            SecurityContextHolder.getContext().setAuthentication(getUserAuth(username));
         }
 
         filterChain.doFilter(request, response);
     }
 
-    //private UsernamePasswordAuthenticationToken getUserAuth(String username) {
-        //var userInfo = userGetService.getUserById(Long.parseLong(username));
+    private UsernamePasswordAuthenticationToken getUserAuth(String username) {
+        Member memberInfo = memberService.getMemberById(Integer.parseInt(username));
 
-        //return new UsernamePasswordAuthenticationToken(userInfo.id(),
-         //       userInfo.password(),
-         //       Collections.singleton(new SimpleGrantedAuthority(userInfo.roleName().name)));
-    //}
+        return new UsernamePasswordAuthenticationToken(memberInfo.getMemberId(),
+                memberInfo.getPassword(),
+                Collections.singleton(new SimpleGrantedAuthority(memberInfo.getAuthority().toString())));
+    }
 }
