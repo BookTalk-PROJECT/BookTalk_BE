@@ -16,7 +16,8 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class SecurityConfig  {
+
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -28,9 +29,8 @@ public class SecurityConfig {
         return new MvcRequestMatcher.Builder(introspector);
     }
 
-
     @Bean
-    public SecurityFilterChain springSecurityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
         MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
 
         // white list (Spring Security 체크 제외 목록)
