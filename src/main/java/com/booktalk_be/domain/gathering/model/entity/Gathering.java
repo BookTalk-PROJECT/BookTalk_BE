@@ -16,7 +16,7 @@ import org.hibernate.annotations.DynamicInsert;
 public class Gathering{
 
     @Id
-    @Column(name = "code", nullable = false)
+    @Column(name = "gathering_code", nullable = false)
     protected String code;
 
     //PK: GA_(prefix) + number
