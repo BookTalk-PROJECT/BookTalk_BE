@@ -1,12 +1,16 @@
 package com.booktalk_be.domain.gathering.controller;
 
 import com.booktalk_be.common.command.PostSearchCondCommand;
+import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.command.CreateRecruitRequest;
+import com.booktalk_be.domain.gathering.command.QuestionCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/gathering")
@@ -48,9 +53,10 @@ public class GatheringController {
     @Operation(summary = "모임 개설", description = "모임을 개설합니다.")
     public ResponseEntity<ResponseDto> create(@RequestBody @Valid CreateGatheringCommand requestData) {
         //gatheringService.create(requestData, member);
+        JsonPrinter.print(requestData);
 
         return ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
+                .code(400)
                 .build());
     }
 

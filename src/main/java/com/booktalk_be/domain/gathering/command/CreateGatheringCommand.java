@@ -17,7 +17,7 @@ public class CreateGatheringCommand{
     private String activityPeriod;
 
     private List<BookDto> books;
-    private List<String> questions;
+    private List<QuestionCommand> questions;
     private List<String> hashtags;
 
 }
