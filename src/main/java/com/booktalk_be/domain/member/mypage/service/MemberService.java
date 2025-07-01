@@ -17,4 +17,9 @@ public class MemberService {
         return memberRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("회원 없음"));
     }
+    
+    //일단 테스트로 해보고 중복체크도 할 예정
+    public Member createMember(Member member) {
+        return memberRepository.save(member);
+    }
 }
