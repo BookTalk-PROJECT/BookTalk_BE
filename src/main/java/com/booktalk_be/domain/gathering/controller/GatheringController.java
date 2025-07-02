@@ -9,6 +9,7 @@ import com.booktalk_be.domain.gathering.command.QuestionCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringService;
+import com.booktalk_be.domain.member.auth.model.entity.Member;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +29,7 @@ import java.util.List;
 @Tag(name = "Gathering API", description = "모임 관련 API 입니다.")
 public class GatheringController {
 
-    //private final GatheringService gatheringService;
+    private final GatheringService gatheringService;
 
     @GetMapping("/list")
     @Tag(name = "Gathering API")
@@ -52,11 +53,13 @@ public class GatheringController {
     @Tag(name = "Gathering API")
     @Operation(summary = "모임 개설", description = "모임을 개설합니다.")
     public ResponseEntity<ResponseDto> create(@RequestBody @Valid CreateGatheringCommand requestData) {
-        //gatheringService.create(requestData, member);
+        gatheringService.create(requestData);
+        System.out.println("==================컨트롤러 도달==================");
         JsonPrinter.print(requestData);
+        System.out.println("===============================================");
 
         return ResponseEntity.ok(ResponseDto.builder()
-                .code(400)
+                .code(200)
                 .build());
     }
 
