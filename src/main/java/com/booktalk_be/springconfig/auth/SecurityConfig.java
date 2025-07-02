@@ -35,8 +35,8 @@ public class SecurityConfig  {
 
         // white list (Spring Security 체크 제외 목록)
         MvcRequestMatcher[] permitAllList = {
-                mvc.pattern("/login"),
-                mvc.pattern("/register"),
+                mvc.pattern("/member/create"),
+                mvc.pattern("/dashboard/hello"),
                 mvc.pattern("/token-refresh"),
                 mvc.pattern("/favicon.ico"),
                 mvc.pattern("/error")

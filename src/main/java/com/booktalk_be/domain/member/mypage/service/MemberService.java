@@ -1,6 +1,7 @@
 package com.booktalk_be.domain.member.mypage.service;
 
 
+import com.booktalk_be.domain.member.mypage.command.CreateMemberCommand;
 import com.booktalk_be.domain.member.mypage.model.entity.Member;
 import com.booktalk_be.domain.member.mypage.model.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,7 +20,8 @@ public class MemberService {
     }
     
     //일단 테스트로 해보고 중복체크도 할 예정
-    public Member createMember(Member member) {
+    public Member createMember(CreateMemberCommand memberDTO) {
+        Member member = memberDTO.toEntity();
         return memberRepository.save(member);
     }
 }

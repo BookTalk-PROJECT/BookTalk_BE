@@ -19,7 +19,7 @@ public class CreateMemberCommand {
     @NotNull
     private String name;
 
-    @NotNull
+
     private AuthenticateType authType;
 
     @NotNull
