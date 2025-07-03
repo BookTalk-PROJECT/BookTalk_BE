@@ -43,12 +43,16 @@ public class GatheringController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "9") int size
     ) {
-
-        return ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .msg("모임 목록 조회 성공")
-                //.data(result) // 혹은 전체 Page 객체
-                .build());
+        System.out.println("모임 조회로 오긴 왔니? "+ status);
+        Page<GatheringResponse> result = gatheringService.getList(status, search, page, size);
+        //JsonPrinter.print(result);
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .code(200)
+                        .msg("모임 목록 조회 성공")
+                        .data(result)
+                        .build()
+        );
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

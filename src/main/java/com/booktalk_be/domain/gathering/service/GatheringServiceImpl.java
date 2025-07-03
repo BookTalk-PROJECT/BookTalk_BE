@@ -3,11 +3,12 @@ package com.booktalk_be.domain.gathering.service;
 import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.model.entity.*;
-import com.booktalk_be.domain.gathering.model.repository.GatheringBookMapRepository;
-import com.booktalk_be.domain.gathering.model.repository.GatheringRecruitQuestionMapRepository;
-import com.booktalk_be.domain.gathering.model.repository.GatheringRepository;
-import com.booktalk_be.domain.gathering.model.repository.RecruitQuestionRepository;
+import com.booktalk_be.domain.gathering.model.repository.*;
+import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +25,7 @@ public class GatheringServiceImpl implements GatheringService {
     private final RecruitQuestionRepository recruitQuestionRepository;
     private final GatheringRecruitQuestionMapRepository gatheringRecruitQuestionMapRepository;
 
+    // 모임개설 비즈니스 로직
     @Transactional
     @Override
     public void create(CreateGatheringCommand command, MultipartFile imageFile) {
@@ -92,5 +94,12 @@ public class GatheringServiceImpl implements GatheringService {
                     .toList();
             gatheringRecruitQuestionMapRepository.saveAll(questionMaps);
         }
+    }
+
+    //모임 리스트 전체조회 비즈니스 로직
+    @Override
+    public Page<GatheringResponse> getList(GatheringStatus status, String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return gatheringRepository.findGatheringList(status, search, pageable);
     }
 }
