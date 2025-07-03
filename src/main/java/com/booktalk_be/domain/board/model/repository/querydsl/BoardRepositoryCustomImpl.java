@@ -1,8 +1,28 @@
 package com.booktalk_be.domain.board.model.repository.querydsl;
 
+import com.booktalk_be.common.command.KeywordType;
+import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.domain.board.model.repository.BoardRepositoryCustom;
 import com.booktalk_be.common.utils.Querydsl4RepositorySupport;
+import com.booktalk_be.domain.board.responseDto.BoardResponse;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.Wildcard;
+import com.querydsl.jpa.JPAQueryBase;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Optional;
+
+import static com.booktalk_be.domain.board.model.entity.QBoard.board;
 
 public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implements BoardRepositoryCustom {
 
@@ -10,4 +30,86 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         super(queryFactory);
     }
 
+    @Override
+    public Page<BoardResponse> findBoardsForPaging(String categoryId, Pageable pageable) {
+        List<BoardResponse> content = select(Projections.fields(BoardResponse.class,
+                board.code.as("boardCode"),
+                board.title,
+                board.member.name.as("author"),
+                Expressions.dateTemplate(
+                        LocalDate.class,
+                        "DATE({0})", board.updateTime
+                ).as("date"),
+                board.views))
+                .from(board).innerJoin(board.member)
+                .orderBy(board.code.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+        Long total = Optional.ofNullable(
+                select(Wildcard.count)
+                .from(board).innerJoin(board.member)
+                .fetchOne())
+                .orElse(0L);
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<BoardResponse> searchBoardsForPaging(String categoryId, Pageable pageable, PostSearchCondCommand cmd) {
+        JPAQueryBase<BoardResponse, JPAQuery<BoardResponse>> baseQuery =
+                select(Projections.fields(BoardResponse.class,
+                board.code.as("boardCode"),
+                board.title,
+                board.member.name.as("author"),
+                Expressions.dateTemplate(
+                        LocalDate.class,
+                        "DATE({0})", board.updateTime
+                ).as("date"),
+                board.views))
+                .from(board).innerJoin(board.member);
+        JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
+                select(Wildcard.count)
+                .from(board).innerJoin(board.member);
+
+        BooleanBuilder searchCondition = new BooleanBuilder();
+        if (cmd.getKeyword() != null && !cmd.getKeyword().isEmpty()) {
+            searchCondition.and(keywordFilter(cmd.getKeywordType(), cmd.getKeyword()));
+        }
+        if (cmd.getStartDate() != null || cmd.getEndDate() != null) {
+            searchCondition.and(dateFilter(cmd.getStartDate(), cmd.getEndDate()));
+        }
+        baseQuery.where(searchCondition);
+        pageQuery.where(searchCondition);
+
+        List<BoardResponse> content = baseQuery
+                .orderBy(board.code.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+        Long total = Optional.ofNullable(
+                pageQuery.fetchOne())
+                .orElse(0L);
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    private BooleanExpression keywordFilter(KeywordType type, String keyword) {
+        return switch (type) {
+            case TITLE -> board.title.containsIgnoreCase(keyword);
+            case WRITER -> board.member.name.containsIgnoreCase(keyword);
+            default -> null;
+        };
+    }
+
+    private BooleanExpression dateFilter(LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null) {
+            return board.regTime.between(
+                    startDate.atStartOfDay(),
+                    endDate.atTime(LocalTime.MAX)
+            );
+        }
+        if (startDate != null) {
+            return board.regTime.goe(startDate.atStartOfDay());
+        }
+        return board.regTime.loe(endDate.atTime(LocalTime.MAX));
+    }
 }

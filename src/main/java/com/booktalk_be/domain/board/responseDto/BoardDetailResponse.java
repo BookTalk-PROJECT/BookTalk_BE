@@ -16,14 +16,15 @@ import java.util.List;
 public class BoardDetailResponse {
 
     private final String boardCode;
-    private final String memberId;
+    private final int memberId;
     private final String title;
     private final String content;
+    private final String author;
     private final Integer views;
     private final Integer likesCnt;
     private final LocalDate regDate;
     private final LocalDateTime updateDate;
-    private final Boolean isLike;
+    private final Boolean isLiked;
     private final Boolean notificationYn;
 
 //    private final List<ReplyResponse> replies;
