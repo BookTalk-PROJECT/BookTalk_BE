@@ -17,8 +17,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -40,7 +43,6 @@ public class GatheringController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "9") int size
     ) {
-        //Page<GatheringResponse> result = gatheringService.findGatherings(status, search, page, size);
 
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
@@ -49,18 +51,32 @@ public class GatheringController {
                 .build());
     }
 
-    @PostMapping("/create")
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Tag(name = "Gathering API")
-    @Operation(summary = "모임 개설", description = "모임을 개설합니다.")
-    public ResponseEntity<ResponseDto> create(@RequestBody @Valid CreateGatheringCommand requestData) {
-        gatheringService.create(requestData);
-        System.out.println("==================컨트롤러 도달==================");
-        JsonPrinter.print(requestData);
-        System.out.println("===============================================");
+    @Operation(
+            summary = "모임 개설",
+            description = "모임 정보를 포함한 이미지 파일을 업로드하여 모임을 개설합니다."
+    )
+    public ResponseEntity<ResponseDto> create(
+            @RequestPart("data") @Valid CreateGatheringCommand requestData,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
-        return ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .build());
+        try {
+            JsonPrinter.print(requestData);
+            gatheringService.create(requestData, imageFile);
+
+            return ResponseEntity.ok(
+                    ResponseDto.builder()
+                            .code(200)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseDto.builder()
+                            .code(500)
+                            .build()
+            );
+        }
     }
 
     @PatchMapping("/modify")

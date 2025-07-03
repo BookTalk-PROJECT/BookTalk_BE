@@ -1,15 +1,18 @@
 package com.booktalk_be.domain.gathering.service;
 
+import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
-import com.booktalk_be.domain.gathering.model.entity.Gathering;
-import com.booktalk_be.domain.gathering.model.entity.GatheringBookMap;
-import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
+import com.booktalk_be.domain.gathering.model.entity.*;
 import com.booktalk_be.domain.gathering.model.repository.GatheringBookMapRepository;
+import com.booktalk_be.domain.gathering.model.repository.GatheringRecruitQuestionMapRepository;
 import com.booktalk_be.domain.gathering.model.repository.GatheringRepository;
+import com.booktalk_be.domain.gathering.model.repository.RecruitQuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -18,10 +21,12 @@ public class GatheringServiceImpl implements GatheringService {
 
     private final GatheringRepository gatheringRepository;
     private final GatheringBookMapRepository gatheringBookMapRepository;
+    private final RecruitQuestionRepository recruitQuestionRepository;
+    private final GatheringRecruitQuestionMapRepository gatheringRecruitQuestionMapRepository;
 
     @Transactional
     @Override
-    public void create(CreateGatheringCommand command) {
+    public void create(CreateGatheringCommand command, MultipartFile imageFile) {
         // 모집 정보 문자열 조합
         String recruitInfo = String.join("_",
                 command.getLocation(),
@@ -30,22 +35,34 @@ public class GatheringServiceImpl implements GatheringService {
                 command.getActivityPeriod()
         );
 
+        byte[] imageBytes = null;
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                imageBytes = imageFile.getBytes();
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 파일 처리 실패", e);
+            }
+        }
+
+        // Gathering 데이터 저장
         Gathering gathering = Gathering.builder()
                 .name(command.getGroupName())
                 .recruitInfo(recruitInfo)
                 .summary(command.getMeetingDetails())
                 .emdCd("팔용동") // 임시
                 .sigCd("창원시") // 임시
+                .imageData(imageBytes)
                 .status(GatheringStatus.INTENDED)
                 .build();
 
-        Gathering saved = gatheringRepository.save(gathering);
+        Gathering gatheringSaved = gatheringRepository.save(gathering);
 
         // Book 데이터 저장
         if (command.getBooks() != null) {
             List<GatheringBookMap> bookMaps = command.getBooks().stream()
                     .map(book -> GatheringBookMap.builder()
-                            .code(saved)
+                            .code(gatheringSaved)
                             .isbn(book.getIsbn())
                             .name(book.getName())
                             .order((int) book.getOrder())
@@ -54,6 +71,26 @@ public class GatheringServiceImpl implements GatheringService {
                     .toList();
             gatheringBookMapRepository.saveAll(bookMaps);
         }
-    }
+        System.out.println("여까진 오나?");
+        //참여신청 질문 저장
+        if (command.getQuestions() != null) {
+            JsonPrinter.print(command.getQuestions());
+            List<RecruitQuestion> questions = command.getQuestions().stream()
+                    .map(question -> RecruitQuestion.builder()
+                            .order(question.getId())
+                            .question(question.getQuestion())
+                            .build())
+                    .toList();
+            List<RecruitQuestion> questionsSaved = recruitQuestionRepository.saveAll(questions);
 
+            // 2. 매핑 테이블에 저장
+            List<GatheringRecruitQuestionMap> questionMaps = questionsSaved.stream()
+                    .map(q -> GatheringRecruitQuestionMap.builder()
+                            .code(gatheringSaved)               // FK: Gathering
+                            .recruitQuestion(q)                 // FK: RecruitQuestion
+                            .build())
+                    .toList();
+            gatheringRecruitQuestionMapRepository.saveAll(questionMaps);
+        }
+    }
 }

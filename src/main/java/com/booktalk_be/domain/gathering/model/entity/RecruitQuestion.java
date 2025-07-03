@@ -3,6 +3,7 @@ package com.booktalk_be.domain.gathering.model.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,8 +16,15 @@ public class RecruitQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long recruit_question;
 
-    @Column(name = "value", nullable = false)
-    private String value;
+    @Column(name = "question_order", nullable = false)
+    private Integer order;
 
+    @Column(name = "question", nullable = false)
+    private String question;
 
+    @Builder
+    public RecruitQuestion(Integer order, String question) {
+        this.order = order;
+        this.question = question;
+    }
 }
