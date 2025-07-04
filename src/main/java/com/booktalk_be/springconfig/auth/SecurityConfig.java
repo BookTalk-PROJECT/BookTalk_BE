@@ -1,9 +1,13 @@
 package com.booktalk_be.springconfig.auth;
 
+import com.booktalk_be.springconfig.auth.user.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -30,40 +34,23 @@ public class SecurityConfig  {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
-        MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
-
-        // white list (Spring Security 체크 제외 목록)
-        MvcRequestMatcher[] permitAllList = {
-                mvc.pattern("/member/create"),
-                mvc.pattern("/dashboard/hello"),
-                mvc.pattern("/token-refresh"),
-                mvc.pattern("/favicon.ico"),
-                mvc.pattern("/error")
-        };
-
-        http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(permitAllList).permitAll()
-//                        .requestMatchers(HttpMethod.DELETE, "/user").hasRole(RoleName.ROLE_ADMIN.getRole())
-//                        // 그 외 요청 체크
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/login", "/member/**", "/dashboard/**", "/token-refresh", "/error").permitAll()
                         .anyRequest().authenticated()
-        );
-
-        // form login disable
-        http.formLogin(AbstractHttpConfigurer::disable);
-
-        // logout disable
-        http.logout(AbstractHttpConfigurer::disable);
-
-        // csrf disable
-        http.csrf(AbstractHttpConfigurer::disable);
-
-        // session management
-        http.sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 미사용
-        );
+                )
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
 }

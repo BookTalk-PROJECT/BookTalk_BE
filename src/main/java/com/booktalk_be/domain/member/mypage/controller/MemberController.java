@@ -4,6 +4,7 @@ import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.member.mypage.command.CreateMemberCommand;
 import com.booktalk_be.domain.member.mypage.command.ModifyMemberCommand;
+import com.booktalk_be.domain.member.mypage.model.entity.Member;
 import com.booktalk_be.domain.member.mypage.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,7 +25,8 @@ public class MemberController {
     @Tag(name = "Member Create API")
     @Operation(summary = "신규 회원 등록", description = "새로운 멤버를 등록합니다.")
     public ResponseEntity<ResponseDto> create(@RequestBody @Valid CreateMemberCommand cmd) {
-        memberService.createMember(cmd);
+        Member member = memberService.createMember(cmd);
+        System.out.println("created new Member :" + member.getName());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());

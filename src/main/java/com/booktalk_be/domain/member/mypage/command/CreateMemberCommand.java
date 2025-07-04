@@ -6,6 +6,8 @@ import com.booktalk_be.domain.member.mypage.model.entity.Member;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
 
@@ -38,12 +40,12 @@ public class CreateMemberCommand {
     @NotNull
     private Boolean delYn = false;
 
-    public Member toEntity() {
+    public Member toEntity(String password) {
         return Member.builder()
                 .email(this.email)
                 .name(this.name)
                 .authType(this.authType)
-                .password(this.password)
+                .password(password)
                 .phoneNumber(this.phoneNumber)
                 .address(this.address)
                 .gender(this.gender)
