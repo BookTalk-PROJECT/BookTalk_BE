@@ -1,6 +1,6 @@
 package com.booktalk_be.domain.likes.model.entity;
 
-import com.booktalk_be.domain.member.auth.model.entity.Member;
+import com.booktalk_be.domain.member.mypage.model.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
