@@ -145,8 +145,9 @@ public class GatheringController {
     @GetMapping("/mypage/manage/request")
     @Tag(name = "MyPage API")
     @Operation(summary = "마이 페이지 내 모임 신청 관리", description = "마이 페이지의 모임 신청 관리 목록을 조회합니다.")
-    public ResponseEntity<ResponseDto> getMyGatheringRequestList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
-                                                                 @RequestBody @Valid PostSearchCondCommand cmd) {
+    public ResponseEntity<ResponseDto> getMyGatheringRequestList
+            (@RequestParam(value = "pageNum", required = true) Integer pageNum,
+             @RequestBody @Valid PostSearchCondCommand cmd) {
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -166,7 +167,8 @@ public class GatheringController {
     @PostMapping("/admin/restoration/{boardCode}")
     @Tag(name = "AdminPage API")
     @Operation(summary = "관리자 페이지 게시글 복구", description = "관리자 페이지의 게시글을 복구합니다.")
-    public ResponseEntity<ResponseDto> restoreBoard(@RequestParam(value = "categoryId", required = true) String categoryId,
+    public ResponseEntity<ResponseDto> restoreBoard(@RequestParam(value = "categoryId", required = true) 
+                                                    String categoryId,
                                                     @PathVariable String boardCode){
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)

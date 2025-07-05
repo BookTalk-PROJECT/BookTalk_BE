@@ -26,8 +26,8 @@ public class RecruitRequest {
     private String requestQuestionAnswer;
 
     @Column(name = "status")
-    private RecruitRequestStatus status;
 
+    private RecruitRequestStatus status;
     @Column(name = "reject_reason")
     private String rejectReason;
 }
