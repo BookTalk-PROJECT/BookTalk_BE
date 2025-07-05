@@ -1,8 +1,6 @@
 package com.booktalk_be.domain.gathering.command;
 
 
-import com.booktalk_be.domain.gathering.model.entity.Gathering;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,7 +17,7 @@ public class CreateGatheringCommand{
     private String activityPeriod;
 
     private List<BookDto> books;
-    private List<String> questions;
+    private List<QuestionCommand> questions;
     private List<String> hashtags;
 
 }
