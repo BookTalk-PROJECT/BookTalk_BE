@@ -1,6 +1,7 @@
 package com.booktalk_be.domain.gathering.responseDto;
 
 import com.booktalk_be.domain.gathering.command.BookDto;
+import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,14 +13,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class GatheringResponse {
-    private String groupName;
-    private String location;
-    private String meetingDetails;
-    private String recruitmentPersonnel;
-    private String recruitmentPeriod;
-    private String activityPeriod;
-
-    private List<BookDto> books;
-    private List<String> questions;
-    private List<String> hashtags;
+    private String code;
+    private String title;
+    private int views;               // 임시 랜덤값
+    private int currentMembers;      // 임시 랜덤값
+    private int maxMembers;
+    private GatheringStatus status;
+    private String imageUrl;
+    private List<String> hashtags;   // 임시 더미 데이터
 }
