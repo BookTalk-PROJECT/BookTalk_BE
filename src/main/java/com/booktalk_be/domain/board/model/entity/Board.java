@@ -1,6 +1,7 @@
 package com.booktalk_be.domain.board.model.entity;
 
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
+import com.booktalk_be.domain.board.command.UpdateBoardCommand;
+import com.booktalk_be.domain.member.auth.model.entity.Member;
 import com.booktalk_be.common.baseEntity.Post;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
@@ -34,5 +35,20 @@ public class Board extends Post {
         this.title = title;
         this.content = content;
         this.notificationYn = notificationYn;
+    }
+
+    public void modify(UpdateBoardCommand cmd) {
+        this.title = cmd.getTitle();
+        this.content = cmd.getContent();
+        this.notificationYn = cmd.getNotification_yn();
+    }
+
+    public void delete() {
+        this.delYn = true;
+    }
+
+    public void delete(String reason) {
+        this.delYn = true;
+        this.delReason = reason;
     }
 }

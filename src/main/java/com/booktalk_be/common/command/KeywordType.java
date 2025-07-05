@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-enum KeywordType implements EntityEnumerable {
+public enum KeywordType implements EntityEnumerable {
     TITLE("title", "제목"),
     WRITER("writer", "작성자");
 

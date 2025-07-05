@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Formula;
 
+@Getter
 @MappedSuperclass
 public abstract class Post extends CommonEntity {
     @Id
