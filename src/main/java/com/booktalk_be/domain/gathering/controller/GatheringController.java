@@ -9,7 +9,7 @@ import com.booktalk_be.domain.gathering.command.QuestionCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringService;
-import com.booktalk_be.domain.member.auth.model.entity.Member;
+import com.booktalk_be.domain.member.mypage.model.entity.Member;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.v3.oas.annotations.Operation;
