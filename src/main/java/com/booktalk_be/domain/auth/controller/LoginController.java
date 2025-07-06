@@ -1,7 +1,6 @@
 package com.booktalk_be.domain.auth.controller;
 
 import com.booktalk_be.domain.auth.command.LoginDTO;
-import com.booktalk_be.domain.auth.model.properties.JwtProperties;
 import com.booktalk_be.domain.auth.service.LoginService;
 import com.booktalk_be.springconfig.auth.jwt.JwtProvider;
 import com.booktalk_be.springconfig.auth.user.CustomUserDetails;
@@ -26,16 +25,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class LoginController {
 
-    private final JwtProvider jwtProvider;
     private final LoginService loginService;
-    private final JwtProperties properties;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginData) {
         try {
-
-            System.out.println(properties.getSecretAccessKey()+"얏홍");
-
             Map<String, String> tokens = loginService.login(loginData);
             return ResponseEntity.ok(tokens);
         } catch (BadCredentialsException e) {

@@ -1,6 +1,7 @@
 package com.booktalk_be.springconfig.auth.jwt;
 
 
+import com.booktalk_be.domain.auth.model.properties.JwtProperties;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -24,14 +25,13 @@ public class JwtProvider {
 
     private static final long JWT_EXPIRATION_TIME = 1000 * 60 * 30;
 
-    @Value("${jwt.secret-access-key}")
-    private String secretKey;
+    private final JwtProperties jwtProperties;
 
     private SecretKey key;
 
     @PostConstruct
     public void init() {
-        key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        key = Keys.hmacShaKeyFor(jwtProperties.getSecretAccessKey().getBytes());
     }
 
     public String getUsernameFromToken(final String token) {
