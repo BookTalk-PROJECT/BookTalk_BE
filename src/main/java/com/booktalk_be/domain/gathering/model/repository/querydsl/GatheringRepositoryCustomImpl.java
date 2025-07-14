@@ -68,7 +68,7 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
                             .currentMembers((int) (Math.random() * 8) + 2) // 임시
                             .maxMembers(maxMembers)
                             .status(entity.getStatus())
-                            .imageUrl(entity.getImageUrl()) // byte[] → base64 아님! URL 그대로
+                            .imageUrl(entity.getImageUrl())
                             .hashtags(List.of("#독서", "#문학", "#심리학")) // 임시
                             .build();
                 })
