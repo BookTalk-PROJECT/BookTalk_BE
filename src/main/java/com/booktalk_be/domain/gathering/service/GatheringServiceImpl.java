@@ -26,9 +26,9 @@ import java.util.UUID;
 public class GatheringServiceImpl implements GatheringService {
 
     private final GatheringRepository gatheringRepository;
-    private final GatheringBookMapRepository gatheringBookMapRepository;
     private final RecruitQuestionRepository recruitQuestionRepository;
-    private final GatheringRecruitQuestionMapRepository gatheringRecruitQuestionMapRepository;
+    private final GatheringBookMapService gatheringBookMapService;
+    private final GatheringRecruitQuestionService  gatheringRecruitQuestionService;
 
     // 모임개설 비즈니스 로직
     @Transactional
@@ -71,39 +71,13 @@ public class GatheringServiceImpl implements GatheringService {
 
         Gathering gatheringSaved = gatheringRepository.save(gathering);
 
-        // Book 데이터 저장
-        if (command.getBooks() != null) {
-            List<GatheringBookMap> bookMaps = command.getBooks().stream()
-                    .map(book -> GatheringBookMap.builder()
-                            .code(gatheringSaved)
-                            .isbn(book.getIsbn())
-                            .name(book.getName())
-                            .order((int) book.getOrder())
-                            .completeYn("complete".equals(book.getComplete_yn()))
-                            .build())
-                    .toList();
-            gatheringBookMapRepository.saveAll(bookMaps);
+        //책 리스트 매핑 테이블에 저장
+        if(command.getBooks() != null){
+            gatheringBookMapService.createGatheringBookMap(gatheringSaved, command.getBooks());
         }
-//        System.out.println("여까진 오나?");
-        //참여신청 질문 저장
-        if (command.getQuestions() != null) {
-            JsonPrinter.print(command.getQuestions());
-            List<RecruitQuestion> questions = command.getQuestions().stream()
-                    .map(question -> RecruitQuestion.builder()
-                            .order(question.getId())
-                            .question(question.getQuestion())
-                            .build())
-                    .toList();
-            List<RecruitQuestion> questionsSaved = recruitQuestionRepository.saveAll(questions);
-
-            // 2. 매핑 테이블에 저장
-            List<GatheringRecruitQuestionMap> questionMaps = questionsSaved.stream()
-                    .map(q -> GatheringRecruitQuestionMap.builder()
-                            .code(gatheringSaved)               // FK: Gathering
-                            .recruitQuestion(q)                 // FK: RecruitQuestion
-                            .build())
-                    .toList();
-            gatheringRecruitQuestionMapRepository.saveAll(questionMaps);
+        //참여신청 질문 리스트 저장
+        if(command.getQuestions() != null){
+            gatheringRecruitQuestionService.createRecruitQuestionMap(gatheringSaved, command.getQuestions());
         }
     }
 
