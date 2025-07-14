@@ -48,9 +48,12 @@ public class Gathering{
     @Column(name = "sig_cd") // 행정구역 코드
     private String sigCd;
 
-    @Lob
-    @Column(name = "image_data", columnDefinition = "LONGBLOB")
-    private byte[] imageData;
+//    @Lob
+//    @Column(name = "image_data", columnDefinition = "LONGBLOB")
+//    private byte[] imageData;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @Column(name = "del_yn", nullable = false) //삭제여부
     private Boolean delYn;
@@ -62,12 +65,12 @@ public class Gathering{
     private String delReason;
 
     @Builder
-    public Gathering(String name, String recruitInfo, String emdCd, String sigCd,byte[] imageData, String summary, GatheringStatus status) {
+    public Gathering(String name, String recruitInfo, String emdCd, String sigCd,String imageData, String summary, GatheringStatus status) {
         this.name = name;
         this.recruitInfo = recruitInfo;
         this.emdCd = emdCd;
         this.sigCd = sigCd;
-        this.imageData = imageData;
+        this.imageUrl = imageData;
         this.summary = summary;
         this.status = status;
     }

@@ -1,8 +1,7 @@
 package com.booktalk_be.springconfig.auth.jwt;
 
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
-import com.booktalk_be.domain.member.mypage.service.MemberService;
-import io.jsonwebtoken.Jwt;
+import com.booktalk_be.domain.member.model.entity.Member;
+import com.booktalk_be.domain.member.service.MemberService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -14,7 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -37,15 +42,26 @@ public class GatheringServiceImpl implements GatheringService {
                 command.getActivityPeriod()
         );
 
-        byte[] imageBytes = null;
+        String imageUrl = null;
 
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                imageBytes = imageFile.getBytes();
+                // 파일 저장 경로 지정
+                String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+                Path uploadPath = Paths.get("uploads/images");
+
+                // 디렉토리가 없으면 생성
+                Files.createDirectories(uploadPath);
+
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                imageUrl = "/uploads/images/" + fileName; // 또는 외부 URL
             } catch (IOException e) {
-                throw new RuntimeException("이미지 파일 처리 실패", e);
+                throw new RuntimeException("이미지 저장 실패", e);
             }
         }
+
 
         // Gathering 데이터 저장
         Gathering gathering = Gathering.builder()
@@ -54,7 +70,7 @@ public class GatheringServiceImpl implements GatheringService {
                 .summary(command.getMeetingDetails())
                 .emdCd("팔용동") // 임시
                 .sigCd("창원시") // 임시
-                .imageData(imageBytes)
+                .imageData(imageUrl)
                 .status(GatheringStatus.INTENDED)
                 .build();
 
@@ -73,7 +89,7 @@ public class GatheringServiceImpl implements GatheringService {
                     .toList();
             gatheringBookMapRepository.saveAll(bookMaps);
         }
-        System.out.println("여까진 오나?");
+//        System.out.println("여까진 오나?");
         //참여신청 질문 저장
         if (command.getQuestions() != null) {
             JsonPrinter.print(command.getQuestions());

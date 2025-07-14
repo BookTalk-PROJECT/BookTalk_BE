@@ -1,4 +1,4 @@
-package com.booktalk_be.domain.member.mypage.model.entity;
+package com.booktalk_be.domain.member.model.entity;
 
 import com.booktalk_be.domain.auth.model.entity.AuthenticateType;
 import com.booktalk_be.domain.auth.model.entity.AuthorityType;

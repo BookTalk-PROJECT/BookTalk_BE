@@ -66,9 +66,9 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
                     }
 
                     // 이미지 byte[] → Base64 인코딩
-                    String base64Image = entity.getImageData() != null
-                            ? "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(entity.getImageData())
-                            : null;
+//                    String base64Image = entity.getImageData() != null
+//                            ? "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(entity.getImageData())
+//                            : null;
 
                     return GatheringResponse.builder()
                             .code(entity.getCode())
@@ -77,7 +77,7 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
                             .currentMembers((int) (Math.random() * 8) + 2) // 임시
                             .maxMembers(maxMembers)
                             .status(entity.getStatus())
-                            .imageUrl(base64Image)
+//                            .imageUrl(base64Image)
                             .hashtags(List.of("#독서", "#문학", "#심리학")) // 임시
                             .build();
                 })

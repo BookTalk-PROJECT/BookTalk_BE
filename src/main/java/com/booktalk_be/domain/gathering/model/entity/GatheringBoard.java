@@ -1,7 +1,7 @@
 package com.booktalk_be.domain.gathering.model.entity;
 
 import com.booktalk_be.common.baseEntity.Post;
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
+import com.booktalk_be.domain.member.model.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
