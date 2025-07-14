@@ -74,7 +74,7 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
                     .title(entity.getName())
                     .views((int) (Math.random() * 1000)) // 임시
                     .currentMembers((int) memberCount)
-                    .maxMembers(parseIntOrZero(entity.getRecruitmentPersonnel()))
+                    .maxMembers(entity.getRecruitmentPersonnel())
                     .status(entity.getStatus())
                     .imageUrl(entity.getImageUrl())
                     .hashtags(List.of("#독서", "#문학", "#심리학")) // 임시
@@ -82,15 +82,6 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
         }).toList();
 
         return new PageImpl<>(content, pageable, total);
-    }
-
-    // 숫자 파싱 유틸
-    private int parseIntOrZero(String value) {
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
     }
 
 }

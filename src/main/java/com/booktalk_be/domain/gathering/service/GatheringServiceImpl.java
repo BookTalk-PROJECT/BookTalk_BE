@@ -55,11 +55,12 @@ public class GatheringServiceImpl implements GatheringService {
                 throw new RuntimeException("이미지 저장 실패", e);
             }
         }
-        
+
+
         // Gathering 데이터 저장
         Gathering gathering = Gathering.builder()
                 .name(command.getGroupName())
-                .recruitmentPersonnel(command.getRecruitmentPersonnel())
+                .recruitmentPersonnel(Long.parseLong(command.getRecruitmentPersonnel()))
                 .recruitmentPeriod(command.getRecruitmentPeriod())
                 .activityPeriod(command.getActivityPeriod())
                 .summary(command.getMeetingDetails())

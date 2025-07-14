@@ -40,7 +40,7 @@ public class Gathering{
     private String name;
 
     @Column(name = "recruitment_personnel", nullable = false) //모집 인원수
-    private String recruitmentPersonnel;
+    private Long recruitmentPersonnel;
 
     @Column(name = "recruitment_period", nullable = false) //모집 기간
     private String recruitmentPeriod;
@@ -68,7 +68,7 @@ public class Gathering{
 
     @Builder
     public Gathering(String name,
-                     String recruitmentPersonnel,
+                     Long recruitmentPersonnel,
                      String recruitmentPeriod,
                      String activityPeriod,
                      String emdCd,

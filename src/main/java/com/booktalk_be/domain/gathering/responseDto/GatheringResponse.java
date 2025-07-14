@@ -17,7 +17,7 @@ public class GatheringResponse {
     private String title;
     private int views;               // 임시 랜덤값
     private int currentMembers;      // 임시 랜덤값
-    private int maxMembers;
+    private Long maxMembers;
     private GatheringStatus status;
     private String imageUrl;
     private List<String> hashtags;   // 임시 더미 데이터
