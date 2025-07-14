@@ -37,7 +37,6 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
         QGathering gathering = QGathering.gathering;
 
         BooleanBuilder builder = new BooleanBuilder();
-        System.out.println("이걸 봐야한다"+ status);
         if (status != null) {
             builder.and(gathering.status.eq(status));
         }
@@ -54,30 +53,22 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
 
         List<GatheringResponse> results = gatherings.stream()
                 .map(entity -> {
-                    // recruitInfo에서 최대 인원 추출
-                    String[] parts = entity.getRecruitInfo().split("_");
+                    // maxMembers → 이제 recruitInfo 없으므로 recruitmentPersonnel에서 추출
                     int maxMembers = 0;
-                    if (parts.length > 1) {
-                        try {
-                            maxMembers = Integer.parseInt(parts[1]);
-                        } catch (NumberFormatException e) {
-                            maxMembers = 0;
-                        }
+                    try {
+                        maxMembers = Integer.parseInt(entity.getRecruitmentPersonnel());
+                    } catch (NumberFormatException e) {
+                        maxMembers = 0;
                     }
-
-                    // 이미지 byte[] → Base64 인코딩
-//                    String base64Image = entity.getImageData() != null
-//                            ? "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(entity.getImageData())
-//                            : null;
 
                     return GatheringResponse.builder()
                             .code(entity.getCode())
                             .title(entity.getName())
-                            .views((int) (Math.random() * 1000)) //임시
+                            .views((int) (Math.random() * 1000)) // 임시
                             .currentMembers((int) (Math.random() * 8) + 2) // 임시
                             .maxMembers(maxMembers)
                             .status(entity.getStatus())
-//                            .imageUrl(base64Image)
+                            .imageUrl(entity.getImageUrl()) // byte[] → base64 아님! URL 그대로
                             .hashtags(List.of("#독서", "#문학", "#심리학")) // 임시
                             .build();
                 })
@@ -91,4 +82,5 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
 
         return new PageImpl<>(results, pageable, total);
     }
+
 }

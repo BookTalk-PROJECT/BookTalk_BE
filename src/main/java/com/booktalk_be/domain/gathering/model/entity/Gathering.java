@@ -39,8 +39,14 @@ public class Gathering{
     @Column(name = "name") //모임 이름
     private String name;
 
-    @Column(name = "recruit_info", nullable = false) //모임 정보 (여기 기타 정보들 다 들어감)
-    private String recruitInfo;
+    @Column(name = "recruitment_personnel", nullable = false) //모집 인원수
+    private String recruitmentPersonnel;
+
+    @Column(name = "recruitment_period", nullable = false) //모집 기간
+    private String recruitmentPeriod;
+
+    @Column(name = "activity_period", nullable = false) //활동 기간
+    private String activityPeriod;
 
     @Column(name = "emd_cd") //읍면동 코드
     private String emdCd;
@@ -48,11 +54,7 @@ public class Gathering{
     @Column(name = "sig_cd") // 행정구역 코드
     private String sigCd;
 
-//    @Lob
-//    @Column(name = "image_data", columnDefinition = "LONGBLOB")
-//    private byte[] imageData;
-
-    @Column(name = "image_url")
+    @Column(name = "image_url") // 이미지 경로 Url 방식
     private String imageUrl;
 
     @Column(name = "del_yn", nullable = false) //삭제여부
@@ -65,9 +67,19 @@ public class Gathering{
     private String delReason;
 
     @Builder
-    public Gathering(String name, String recruitInfo, String emdCd, String sigCd,String imageData, String summary, GatheringStatus status) {
+    public Gathering(String name,
+                     String recruitmentPersonnel,
+                     String recruitmentPeriod,
+                     String activityPeriod,
+                     String emdCd,
+                     String sigCd,
+                     String imageData,
+                     String summary,
+                     GatheringStatus status) {
         this.name = name;
-        this.recruitInfo = recruitInfo;
+        this.recruitmentPersonnel = recruitmentPersonnel;
+        this.recruitmentPeriod = recruitmentPeriod;
+        this.activityPeriod = activityPeriod;
         this.emdCd = emdCd;
         this.sigCd = sigCd;
         this.imageUrl = imageData;

@@ -35,12 +35,6 @@ public class GatheringServiceImpl implements GatheringService {
     @Override
     public void create(CreateGatheringCommand command, MultipartFile imageFile) {
         // 모집 정보 문자열 조합
-        String recruitInfo = String.join("_",
-                command.getLocation(),
-                command.getRecruitmentPersonnel(),
-                command.getRecruitmentPeriod(),
-                command.getActivityPeriod()
-        );
 
         String imageUrl = null;
 
@@ -61,15 +55,16 @@ public class GatheringServiceImpl implements GatheringService {
                 throw new RuntimeException("이미지 저장 실패", e);
             }
         }
-
-
+        
         // Gathering 데이터 저장
         Gathering gathering = Gathering.builder()
                 .name(command.getGroupName())
-                .recruitInfo(recruitInfo)
+                .recruitmentPersonnel(command.getRecruitmentPersonnel())
+                .recruitmentPeriod(command.getRecruitmentPeriod())
+                .activityPeriod(command.getActivityPeriod())
                 .summary(command.getMeetingDetails())
-                .emdCd("팔용동") // 임시
-                .sigCd("창원시") // 임시
+                .emdCd(command.getLocation()+"_읍면동 코드") // 임시로 Location과 임시 문자열 추가
+                .sigCd("행정구역코드") // 임시
                 .imageData(imageUrl)
                 .status(GatheringStatus.INTENDED)
                 .build();
