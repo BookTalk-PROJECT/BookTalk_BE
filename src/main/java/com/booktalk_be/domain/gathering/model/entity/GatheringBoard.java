@@ -25,7 +25,7 @@ public class GatheringBoard extends Post {
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "gathering_board_code")
+    @JoinColumn(name = "gathering_code")
     private Gathering gathering;
 
     @ManyToOne(fetch = FetchType.EAGER)

@@ -2,6 +2,7 @@ package com.booktalk_be.common.baseEntity;
 
 import com.booktalk_be.domain.member.mypage.model.entity.Member;
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Formula;
 

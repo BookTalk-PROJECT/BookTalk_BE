@@ -1,6 +1,6 @@
 package com.booktalk_be.domain.gathering.model.entity;
 
-import com.booktalk_be.domain.member.auth.model.entity.Member;
+import com.booktalk_be.domain.member.mypage.model.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 

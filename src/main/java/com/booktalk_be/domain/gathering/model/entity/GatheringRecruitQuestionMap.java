@@ -14,7 +14,7 @@ public class GatheringRecruitQuestionMap {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gathering_id")
+    @JoinColumn(name = "gathering_code")
     private Gathering code;
 
     @Id
