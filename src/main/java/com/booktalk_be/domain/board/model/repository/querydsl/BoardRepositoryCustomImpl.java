@@ -31,17 +31,16 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
     }
 
     @Override
-    public Page<BoardResponse> findBoardsForPaging(String categoryId, Pageable pageable) {
+    public Page<BoardResponse> findBoardsForPaging(Integer categoryId, Pageable pageable) {
         List<BoardResponse> content = select(Projections.fields(BoardResponse.class,
                 board.code.as("boardCode"),
                 board.title,
-                board.member.name.as("author"),
-                Expressions.dateTemplate(
-                        LocalDate.class,
-                        "DATE({0})", board.updateTime
-                ).as("date"),
+//                board.member.name.as("author"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.updateTime).as("date"),
                 board.views))
-                .from(board).innerJoin(board.member)
+//                .from(board).innerJoin(board.member)
+                .from(board)
+                .where(board.categoryId.eq(categoryId))
                 .orderBy(board.code.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

@@ -1,7 +1,9 @@
 package com.booktalk_be.domain.board.service;
 
+import com.booktalk_be.common.baseEntity.Post;
 import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.common.command.RestrictCommand;
+import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.domain.board.command.CreateBoardCommand;
 import com.booktalk_be.domain.board.command.UpdateBoardCommand;
 import com.booktalk_be.domain.board.model.entity.Board;
@@ -12,9 +14,14 @@ import com.booktalk_be.domain.likes.model.repository.LikesRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
 
@@ -55,10 +62,14 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public Page<BoardResponse> getBoardsForPaging(
-            String categoryId, Integer pageNum, Integer pageSize) {
-        Pageable pageable = PageRequest.of(pageNum, pageSize);
-        return boardRepository.findBoardsForPaging(categoryId, pageable);
+    public PageResponseDto<BoardResponse> getBoardsForPaging(
+            Integer categoryId, Integer pageNum, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        Page<BoardResponse> page = boardRepository.findBoardsForPaging(categoryId, pageable);
+        return PageResponseDto.<BoardResponse>builder()
+                .content(page.getContent())
+                .totalPages(page.getTotalPages())
+                .build();
     }
 
     @Override
