@@ -2,6 +2,7 @@ package com.booktalk_be.domain.auth.service;
 
 import com.booktalk_be.domain.auth.command.LoginDTO;
 import com.booktalk_be.domain.auth.model.entity.Refresh_Token;
+import com.booktalk_be.domain.auth.model.repository.RefreshTokenRepository;
 import com.booktalk_be.springconfig.auth.jwt.JwtProvider;
 import com.booktalk_be.springconfig.auth.user.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class LoginServiceImpl implements LoginService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
-   // private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     public Map<String, String> login(LoginDTO loginData) {
@@ -37,9 +38,9 @@ public class LoginServiceImpl implements LoginService {
         String refreshToken = jwtProvider.generateRefreshToken(userId);
 
         // RefreshToken 저장
-        //refreshTokenRepository.save(Refresh_Token.builder()
-         //       .user(userDetails.getMember())
-           //     .refreshToken(refreshToken).build());
+        refreshTokenRepository.save(Refresh_Token.builder()
+                .user(userDetails.getMember())
+                .refreshToken(refreshToken).build());
 
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("accessToken", accessToken);
