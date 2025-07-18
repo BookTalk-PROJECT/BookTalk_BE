@@ -1,6 +1,5 @@
 package com.booktalk_be.domain.gathering.responseDto;
 
-import com.booktalk_be.domain.gathering.command.BookDto;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

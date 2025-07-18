@@ -50,14 +50,10 @@ public class GatheringController {
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Tag(name = "Gathering API")
-    @Operation(
-            summary = "모임 개설",
-            description = "모임 정보를 포함한 이미지 파일을 업로드하여 모임을 개설합니다."
-    )
+    @Operation(summary = "모임 개설", description = "모임 정보를 포함한 이미지 파일을 업로드하여 모임을 개설합니다.")
     public ResponseEntity<ResponseDto> create(
             @RequestPart("data") @Valid CreateGatheringCommand requestData,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
-
         try {
             JsonPrinter.print(requestData);
             gatheringService.create(requestData, imageFile);

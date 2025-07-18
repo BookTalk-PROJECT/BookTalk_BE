@@ -25,6 +25,7 @@ public class GatheringBookMapServiceImpl implements GatheringBookMapService {
                             .name(book.getName())
                             .order((int) book.getOrder())
                             .completeYn("complete".equals(book.getComplete_yn()))
+                            .startDate(book.getStartDate())
                             .build())
                     .toList();
             gatheringBookMapRepository.saveAll(bookMaps);
