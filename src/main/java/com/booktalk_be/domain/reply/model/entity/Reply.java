@@ -7,7 +7,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.Formula;
 
 @Entity
 @Getter
@@ -43,6 +45,11 @@ public class Reply extends CommonEntity {
 
     @Column(name = "content", nullable = false)
     private String content;
+
+    @ColumnDefault("0")
+    @Column(name = "like_cnt", nullable = false)
+    @Formula("(SELECT count(1) FROM likes l WHERE l.code = reply_code)")
+    protected Integer likesCnt;
 
     @Column(name = "del_yn", nullable = false)
     private Boolean delYn;

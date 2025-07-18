@@ -1,0 +1,37 @@
+package com.booktalk_be.common.responseDto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+public class PostDetailResponse {
+    @JsonProperty("board_code")
+    private String boardCode;
+    private int memberId;
+    private String title;
+    private String content;
+    private String author;
+    private Integer views;
+    @JsonProperty("likes_cnt")
+    private Integer likesCnt;
+    @JsonProperty("reg_date")
+    private String regDate;
+    @JsonProperty("update_date")
+    private String updateDate;
+    @JsonProperty("is_liked")
+    private Boolean isLiked;
+    @JsonProperty("notification_yn")
+    private Boolean notificationYn;
+    @JsonProperty("del_reason")
+    private String delReason;
+}

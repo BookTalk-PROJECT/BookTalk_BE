@@ -4,7 +4,9 @@ import com.booktalk_be.common.command.KeywordType;
 import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.domain.board.model.repository.BoardRepositoryCustom;
 import com.booktalk_be.common.utils.Querydsl4RepositorySupport;
+import com.booktalk_be.domain.board.responseDto.BoardDetailResponse;
 import com.booktalk_be.domain.board.responseDto.BoardResponse;
+import com.booktalk_be.domain.board.responseDto.CommuDetailResponse;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -40,7 +42,7 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 board.views))
 //                .from(board).innerJoin(board.member)
                 .from(board)
-                .where(board.categoryId.eq(categoryId))
+                .where(board.categoryId.eq(categoryId).and(board.delYn.eq(false)))
                 .orderBy(board.code.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -89,6 +91,27 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 pageQuery.fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public CommuDetailResponse getBoardDetailBy(String boardCode) {
+        return select(Projections.fields(CommuDetailResponse.class,
+                board.code.as("boardCode"),
+//                board.member.memberId.as("memberId"),
+                board.title.as("title"),
+                board.content.as("content"),
+//                board.member.name.as("author"),
+                board.views.as("views"),
+                board.likesCnt.as("likesCnt"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.regTime).as("regDate"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.updateTime).as("regDate"),
+//                Expressions.constant(false).as("isLiked"),
+                board.notificationYn.as("notificationYn"),
+                board.delReason.as("delReason")))
+//                .from(board).innerJoin(board.member)
+                .from(board)
+                .where(board.code.eq(boardCode))
+                .fetchOne();
     }
 
     private BooleanExpression keywordFilter(KeywordType type, String keyword) {
