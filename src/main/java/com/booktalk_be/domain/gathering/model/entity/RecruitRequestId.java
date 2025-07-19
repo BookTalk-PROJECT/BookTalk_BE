@@ -1,5 +1,4 @@
 package com.booktalk_be.domain.gathering.model.entity;
-
 import com.booktalk_be.domain.member.model.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
