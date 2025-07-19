@@ -5,13 +5,9 @@ import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.command.CreateRecruitRequest;
-import com.booktalk_be.domain.gathering.command.QuestionCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringService;
-import com.booktalk_be.domain.member.auth.model.entity.Member;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,8 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -43,9 +37,8 @@ public class GatheringController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "9") int size
     ) {
-        System.out.println("모임 조회로 오긴 왔니? "+ status);
+        System.out.println("상태 : "+ status + " 검색어 : "+search +" 페이지번호 : "+ page + " 사이즈 : "+size);
         Page<GatheringResponse> result = gatheringService.getList(status, search, page, size);
-        //JsonPrinter.print(result);
         return ResponseEntity.ok(
                 ResponseDto.builder()
                         .code(200)
@@ -57,14 +50,10 @@ public class GatheringController {
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Tag(name = "Gathering API")
-    @Operation(
-            summary = "모임 개설",
-            description = "모임 정보를 포함한 이미지 파일을 업로드하여 모임을 개설합니다."
-    )
+    @Operation(summary = "모임 개설", description = "모임 정보를 포함한 이미지 파일을 업로드하여 모임을 개설합니다.")
     public ResponseEntity<ResponseDto> create(
             @RequestPart("data") @Valid CreateGatheringCommand requestData,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
-
         try {
             JsonPrinter.print(requestData);
             gatheringService.create(requestData, imageFile);
@@ -143,7 +132,6 @@ public class GatheringController {
                 .code(200)
                 .build());
     }
-
 
     //마이 페이지 내 모임 신청 신청 목록 조회 API
     @GetMapping("/manage/request")

@@ -1,6 +1,6 @@
-package com.booktalk_be.domain.member.mypage.command;
+package com.booktalk_be.domain.member.command;
 
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
+import com.booktalk_be.domain.member.model.entity.Member;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

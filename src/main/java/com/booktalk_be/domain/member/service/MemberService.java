@@ -1,9 +1,9 @@
-package com.booktalk_be.domain.member.mypage.service;
+package com.booktalk_be.domain.member.service;
 
 
-import com.booktalk_be.domain.member.mypage.command.CreateMemberCommand;
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
-import com.booktalk_be.domain.member.mypage.model.repository.MemberRepository;
+import com.booktalk_be.domain.member.command.CreateMemberCommand;
+import com.booktalk_be.domain.member.model.entity.Member;
+import com.booktalk_be.domain.member.model.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

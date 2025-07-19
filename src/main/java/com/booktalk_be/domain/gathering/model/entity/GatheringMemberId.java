@@ -1,9 +1,6 @@
 package com.booktalk_be.domain.gathering.model.entity;
 
-import com.booktalk_be.domain.member.auth.model.entity.Member;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.booktalk_be.domain.member.model.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
