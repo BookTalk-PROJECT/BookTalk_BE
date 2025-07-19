@@ -1,6 +1,7 @@
 package com.booktalk_be.domain.board.controller;
 
 import com.booktalk_be.common.command.PostSearchCondCommand;
+import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.board.command.CreateBoardCommand;
 import com.booktalk_be.common.command.RestrictCommand;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,15 +24,15 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Community Board API", description = "커뮤니티 게시판 API 입니다.")
 public class BoardController {
 
-    BoardService boardService;
+    private final BoardService boardService;
 
     @GetMapping("/list")
     @Tag(name = "Community Board API")
     @Operation(summary = "커뮤니티 게시글 목록 조회", description = "카테고리에 맞는 게시글 목록을 조회합니다.")
-    public ResponseEntity<ResponseDto> getList(@RequestParam(value = "categoryId", required = true) String categoryId,
+    public ResponseEntity<ResponseDto> getList(@RequestParam(value = "categoryId", required = true) Integer categoryId,
                                                @RequestParam(value = "pageNum", required = true) Integer pageNum,
                                                @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
-        Page<BoardResponse> page =  boardService.getBoardsForPaging(categoryId, pageNum, pageSize);
+        PageResponseDto<BoardResponse> page =  boardService.getBoardsForPaging(categoryId, pageNum, pageSize);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)

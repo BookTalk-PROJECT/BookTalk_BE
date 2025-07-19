@@ -1,13 +1,16 @@
 package com.booktalk_be.domain.gathering.model.entity;
+
 import com.booktalk_be.domain.member.model.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode
 public class RecruitRequestId implements Serializable {
 

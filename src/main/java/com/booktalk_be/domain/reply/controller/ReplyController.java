@@ -5,16 +5,20 @@ import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
 import com.booktalk_be.common.command.RestrictCommand;
+import com.booktalk_be.domain.reply.service.ReplyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/reply")
+@RequiredArgsConstructor
 @Tag(name = "Reply API", description = "게시판 댓글 API 입니다.")
 public class ReplyController {
+    private final ReplyService replyService;
 
     @GetMapping("/list/{postCode}")
     @Tag(name = "Reply API")
@@ -29,6 +33,7 @@ public class ReplyController {
     @Tag(name = "Reply API")
     @Operation(summary = "게시판 댓글 등록", description = "새로운 댓글을 등록합니다.")
     public ResponseEntity<ResponseDto> create(@RequestBody @Valid CreateReplyCommand cmd) {
+        replyService.createReply(cmd);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());

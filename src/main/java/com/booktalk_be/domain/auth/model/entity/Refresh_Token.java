@@ -2,16 +2,14 @@ package com.booktalk_be.domain.auth.model.entity;
 
 import com.booktalk_be.domain.member.model.entity.Member;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "refresh_token")
 @Getter
 @IdClass(Refresh_Token_id.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode
 public class Refresh_Token {
 
     @Id

@@ -31,7 +31,7 @@ public abstract class Post extends CommonEntity {
     @ColumnDefault("0")
     @Column(name = "like_cnt", nullable = false)
     @Formula("(SELECT count(1) FROM likes l WHERE l.code = code)")
-    protected Integer likeCnt;
+    protected Integer likesCnt;
 
     @Column(name = "del_yn", nullable = false)
     protected Boolean delYn;
