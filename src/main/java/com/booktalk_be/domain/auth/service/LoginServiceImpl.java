@@ -5,6 +5,7 @@ import com.booktalk_be.domain.auth.model.entity.Refresh_Token;
 import com.booktalk_be.domain.auth.model.repository.RefreshTokenRepository;
 import com.booktalk_be.springconfig.auth.jwt.JwtProvider;
 import com.booktalk_be.springconfig.auth.user.CustomUserDetails;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,7 @@ public class LoginServiceImpl implements LoginService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
+    @Transactional
     public Map<String, String> login(LoginDTO loginData) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

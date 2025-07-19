@@ -37,6 +37,7 @@ public class LoginController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Collections.singletonMap("error", "아이디 또는 비밀번호가 틀렸습니다."));
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("인증 중 알 수 없는 오류 발생" + e);
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Collections.singletonMap("error", "인증 실패: " + e.getMessage()));
