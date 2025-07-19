@@ -1,7 +1,7 @@
 package com.booktalk_be.springconfig.auth.user;
 
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
-import com.booktalk_be.domain.member.mypage.model.repository.MemberRepository;
+import com.booktalk_be.domain.member.model.entity.Member;
+import com.booktalk_be.domain.member.model.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

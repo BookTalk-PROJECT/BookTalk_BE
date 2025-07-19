@@ -1,6 +1,6 @@
 package com.booktalk_be.springconfig.auth.user;
 
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
+import com.booktalk_be.domain.member.model.entity.Member;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

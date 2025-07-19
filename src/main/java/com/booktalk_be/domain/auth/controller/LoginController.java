@@ -25,7 +25,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class LoginController {
 
-    private final JwtProvider jwtProvider;
     private final LoginService loginService;
 
     @PostMapping("/login")

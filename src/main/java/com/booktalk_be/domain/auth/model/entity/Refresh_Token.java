@@ -1,14 +1,13 @@
 package com.booktalk_be.domain.auth.model.entity;
 
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
+import com.booktalk_be.domain.member.model.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "refresh_token")
 @Getter
+@IdClass(Refresh_Token_id.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
 public class Refresh_Token {
@@ -18,6 +17,7 @@ public class Refresh_Token {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Id
     @Column(name = "refresh_token", nullable = false)
     private String token;
 

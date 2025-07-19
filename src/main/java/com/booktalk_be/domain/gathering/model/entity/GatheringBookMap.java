@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.*;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Builder
 @Entity
 @Getter
@@ -31,4 +33,10 @@ public class GatheringBookMap {
 
     @Column(name = "complete_yn", nullable = false)
     private Boolean completeYn;
+
+    @Column(name = "start_date", nullable = false)
+    private String startDate;
+
+    @Column(name = "end_date")
+    private String end_date;
 }

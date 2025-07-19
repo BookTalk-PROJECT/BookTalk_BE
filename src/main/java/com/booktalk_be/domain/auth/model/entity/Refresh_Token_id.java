@@ -1,20 +1,20 @@
-package com.booktalk_be.domain.gathering.model.entity;
+package com.booktalk_be.domain.auth.model.entity;
 
 import com.booktalk_be.domain.member.model.entity.Member;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
 @EqualsAndHashCode
-public class GatheringMemberId implements Serializable {
-
-    private Gathering code;
+@Data
+public class Refresh_Token_id implements Serializable {
 
     private Member member;
+
+    private String token;
 }
