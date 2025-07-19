@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "refresh_token")
 @Getter
+@IdClass(Refresh_Token_id.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Refresh_Token {
 
@@ -18,6 +19,7 @@ public class Refresh_Token {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Id
     @Column(name = "refresh_token", nullable = false)
     private String token;
 

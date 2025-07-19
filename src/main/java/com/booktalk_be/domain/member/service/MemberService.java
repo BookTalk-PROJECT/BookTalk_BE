@@ -16,8 +16,8 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public Member getMemberById (int id) {
-        return memberRepository.findById(id)
+    public Member getMemberById (String email) {
+        return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("회원 없음"));
     }
     
