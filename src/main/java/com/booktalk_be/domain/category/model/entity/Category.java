@@ -15,8 +15,8 @@ public class Category {
 
     @PrePersist
     public void init() {
-        if(this.active == null) {
-            this.active = true;
+        if(this.isActive == null) {
+            this.isActive = true;
         }
         if(this.delYn == null) {
             this.delYn = false;
@@ -31,8 +31,8 @@ public class Category {
     @Column(name = "value", nullable = false)
     private String value;
 
-    @Column(name = "active", nullable = false)
-    private Boolean active;
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
 
     @Column(name = "p_category_id", nullable = true)
     private Integer pCategoryId;
@@ -40,9 +40,8 @@ public class Category {
     @Column(name = "del_yn", nullable = false)
     private Boolean delYn;
 
-    public Category(String value, Integer pCategoryId, Boolean active) {
+    public Category(String value, Integer pCategoryId) {
         this.value = value;
         this.pCategoryId = pCategoryId;
-        this.active = active;
     }
 }
