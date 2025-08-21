@@ -26,4 +26,16 @@ public class MemberService {
         Member member = memberDTO.toEntity(bCryptPasswordEncoder.encode(memberDTO.getPassword()));
         return memberRepository.save(member);
     }
+
+    public Boolean validationEmail (String email) {
+
+        if(memberRepository.existsMembersByEmail(email)){
+            System.out.println("이미 존재함 !");
+        }
+        else {
+            System.out.printf("그런거 없노...");
+        }
+
+        return memberRepository.existsMembersByEmail(email);
+    }
 }
