@@ -33,7 +33,7 @@ public class MemberService {
             System.out.println("이미 존재함 !");
         }
         else {
-            System.out.printf("그런거 없노...");
+            System.out.println("그런거 없노...");
         }
 
         return memberRepository.existsMembersByEmail(email);

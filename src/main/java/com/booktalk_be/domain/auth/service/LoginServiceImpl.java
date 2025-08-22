@@ -2,7 +2,9 @@ package com.booktalk_be.domain.auth.service;
 
 import com.booktalk_be.domain.auth.command.LoginDTO;
 import com.booktalk_be.domain.auth.model.entity.Refresh_Token;
+import com.booktalk_be.domain.auth.model.entity.Refresh_Token_id;
 import com.booktalk_be.domain.auth.model.repository.RefreshTokenRepository;
+import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.springconfig.auth.jwt.JwtProvider;
 import com.booktalk_be.springconfig.auth.user.CustomUserDetails;
 import jakarta.transaction.Transactional;
@@ -32,17 +34,24 @@ public class LoginServiceImpl implements LoginService {
                         loginData.getUsername(), loginData.getPassword()
                 )
         );
-
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String userId = userDetails.getUsername();
-
         String accessToken = jwtProvider.generateAccessToken(userId);
-        String refreshToken = jwtProvider.generateRefreshToken(userId);
+        String refreshToken = "";
 
-        // RefreshToken 저장
-        refreshTokenRepository.save(Refresh_Token.builder()
-                .user(userDetails.getMember())
-                .refreshToken(refreshToken).build());
+        Member member = userDetails.getMember();
+
+        if(!refreshTokenRepository.existsByMember(member)) {
+            refreshToken = jwtProvider.generateRefreshToken(userId);
+            Refresh_Token token_entity = Refresh_Token.builder()
+                    .user(member)
+                    .refreshToken(refreshToken).build();
+
+            refreshTokenRepository.save(token_entity);
+        }else{
+            Refresh_Token refresh_token= refreshTokenRepository.findByMember(member);
+            refreshToken = refresh_token.getToken();
+        }
 
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("accessToken", accessToken);
