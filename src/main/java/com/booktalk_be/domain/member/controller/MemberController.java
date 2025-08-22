@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+
 @RestController
 @RequestMapping("/member")
 @RequiredArgsConstructor
@@ -66,10 +68,11 @@ public class MemberController {
     @Operation(summary = "회원 중복 검증", description = "동일한 회원 아이디의 존재 여부를 조회합니다.")
     public ResponseEntity<ResponseDto> validationUserName(@RequestBody @Valid ValidationMemberCommand username)  {
 
-        memberService.validationEmail(username.getEmail());
+        boolean isExistMember = memberService.validationEmail(username.getEmail());
 
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
+                .data(Collections.singletonMap("isExistMember", isExistMember))
                 .build());
     }
 }

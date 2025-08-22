@@ -29,13 +29,6 @@ public class MemberService {
 
     public Boolean validationEmail (String email) {
 
-        if(memberRepository.existsMembersByEmail(email)){
-            System.out.println("이미 존재함 !");
-        }
-        else {
-            System.out.println("그런거 없노...");
-        }
-
         return memberRepository.existsMembersByEmail(email);
     }
 }
