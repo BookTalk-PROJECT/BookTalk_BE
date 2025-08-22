@@ -4,14 +4,17 @@ import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.model.entity.*;
 import com.booktalk_be.domain.gathering.model.repository.*;
+import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -87,5 +90,12 @@ public class GatheringServiceImpl implements GatheringService {
     public Page<GatheringResponse> getList(GatheringStatus status, String search, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         return gatheringRepository.findGatheringList(status, search, pageable);
+    }
+
+    @Override
+    public GatheringDetailResponse getDetailByCode(String code) {
+        Gathering g = gatheringRepository.findByCodeAndDelYnFalse(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "모임을 찾을 수 없습니다."));
+        return GatheringDetailResponse.from(g);
     }
 }
