@@ -50,7 +50,7 @@ public class GatheringController {
     }
 
     @GetMapping("/detail/{code}")
-    @Operation(summary = "모임 상세 조회", description = "code로 특정 모임의 상세 정보를 조회합니다.")
+    @Operation(summary = "모임 상세 조회",  description = "code로 특정 모임의 상세 정보를 조회합니다.")
     public ResponseEntity<ResponseDto> getDetail(@PathVariable String code) {
         GatheringDetailResponse result = gatheringService.getDetailByCode(code);
         return ResponseEntity.ok(
@@ -78,6 +78,7 @@ public class GatheringController {
                             .build()
             );
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseDto.builder()
                             .code(500)
