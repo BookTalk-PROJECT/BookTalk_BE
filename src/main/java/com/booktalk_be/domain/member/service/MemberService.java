@@ -26,4 +26,9 @@ public class MemberService {
         Member member = memberDTO.toEntity(bCryptPasswordEncoder.encode(memberDTO.getPassword()));
         return memberRepository.save(member);
     }
+
+    public Boolean validationEmail (String email) {
+
+        return memberRepository.existsMembersByEmail(email);
+    }
 }
