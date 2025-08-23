@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @Builder
+//모임 리스트 조회 응답 데이터
 public class GatheringResponse {
     private String code;
     private String title;

@@ -6,6 +6,7 @@ import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.command.CreateRecruitRequest;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
+import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/gathering")
+@CrossOrigin("http://localhost:5173")
 @Tag(name = "Gathering API", description = "모임 관련 API 입니다.")
 public class GatheringController {
 
@@ -42,6 +44,19 @@ public class GatheringController {
                 ResponseDto.builder()
                         .code(200)
                         .msg("모임 목록 조회 성공")
+                        .data(result)
+                        .build()
+        );
+    }
+
+    @GetMapping("/detail/{code}")
+    @Operation(summary = "모임 상세 조회", description = "code로 특정 모임의 상세 정보를 조회합니다.")
+    public ResponseEntity<ResponseDto> getDetail(@PathVariable String code) {
+        GatheringDetailResponse result = gatheringService.getDetailByCode(code);
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .code(200)
+                        .msg("모임 상세 조회 성공")
                         .data(result)
                         .build()
         );
