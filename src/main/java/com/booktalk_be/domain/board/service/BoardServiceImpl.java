@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
 
@@ -65,7 +66,6 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    @Transactional
     public void deleteBoard(String boardCode) {
         Board board = boardRepository.findById(boardCode)
                 .orElseThrow(EntityNotFoundException::new);

@@ -1,9 +1,11 @@
 package com.booktalk_be.domain.category.responseDto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -13,17 +15,12 @@ public class CategoryResponse {
 
      private final Integer categoryId;
      private final String value;
-     private final List<CategoryResponse> subCategories;
+     @JsonProperty("isActive")
+     private final boolean isActive;
+     private final List<CategoryResponse> subCategories =  new ArrayList<>();
 
-     /*
-     CategoryResponse subCategory1 = new CategoryResponse(2, "Java", Collections.emptyList());
-     CategoryResponse subCategory2 = new CategoryResponse(3, "Python", Collections.emptyList());
-
-     CategoryResponse parentCategory = new CategoryResponse(
-         1,
-         "Programming",
-         Arrays.asList(subCategory1, subCategory2)
-     );
-     */
+     public void addSubCategory(CategoryResponse categoryResponse) {
+          subCategories.add(categoryResponse);
+     }
 
 }
