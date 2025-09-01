@@ -29,14 +29,14 @@ import java.util.UUID;
 public class GatheringServiceImpl implements GatheringService {
 
     private final GatheringRepository gatheringRepository;
-    private final RecruitQuestionRepository recruitQuestionRepository;
+    private final GatheringMemberMapService gatheringMemberMapService;
     private final GatheringBookMapService gatheringBookMapService;
     private final GatheringRecruitQuestionService  gatheringRecruitQuestionService;
 
     // 모임개설 비즈니스 로직
     @Transactional
     @Override
-    public void create(CreateGatheringCommand command, MultipartFile imageFile) {
+    public void create(CreateGatheringCommand command, MultipartFile imageFile, String memberId) {
         // 모집 정보 문자열 조합
 
         String imageUrl = null;
@@ -74,13 +74,16 @@ public class GatheringServiceImpl implements GatheringService {
                 .build();
 
         Gathering gatheringSaved = gatheringRepository.save(gathering);
-
+        //유저 모임 매핑 테이블에 저장
+        if(memberId != null) {
+            gatheringMemberMapService.createGatheringMemberMap(gatheringSaved, memberId);
+        }
         //책 리스트 매핑 테이블에 저장
         if(command.getBooks() != null){
             gatheringBookMapService.createGatheringBookMap(gatheringSaved, command.getBooks());
         }
         //참여신청 질문 리스트 저장
-        if(command.getQuestions() != null){
+        if(command.getQuestions() != null) {
             gatheringRecruitQuestionService.createRecruitQuestionMap(gatheringSaved, command.getQuestions());
         }
     }
