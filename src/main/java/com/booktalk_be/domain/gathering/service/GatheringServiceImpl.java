@@ -92,6 +92,10 @@ public class GatheringServiceImpl implements GatheringService {
         gatheringBookMapService.createGatheringBookMap(gatheringSaved, command.getBooks());
         //참여신청 질문 리스트 저장
         gatheringRecruitQuestionService.createRecruitQuestionMap(gatheringSaved, command.getQuestions());
+
+        if(command.getHashtags() != null && !command.getHashtags().isEmpty()) {
+
+        }
     }
 
     //모임 리스트 전체조회 비즈니스 로직

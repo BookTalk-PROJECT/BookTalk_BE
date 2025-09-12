@@ -72,8 +72,7 @@ public class GatheringController {
             @RequestPart(value = "image", required = false) MultipartFile imageFile,
             Principal principal) {
         try {
-            String memberId = principal.getName(); // <<-- 이새끼
-//            System.out.println("memberId = " + memberId);
+            String memberId = principal.getName();
             JsonPrinter.print(requestData);
             gatheringService.create(requestData, imageFile, memberId);
 
