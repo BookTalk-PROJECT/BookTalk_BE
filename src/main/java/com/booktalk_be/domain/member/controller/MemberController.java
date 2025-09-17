@@ -1,17 +1,20 @@
-package com.booktalk_be.domain.member.mypage.controller;
+package com.booktalk_be.domain.member.controller;
 
 import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.common.utils.ResponseDto;
-import com.booktalk_be.domain.member.mypage.command.CreateMemberCommand;
-import com.booktalk_be.domain.member.mypage.command.ModifyMemberCommand;
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
-import com.booktalk_be.domain.member.mypage.service.MemberService;
+import com.booktalk_be.domain.member.command.CreateMemberCommand;
+import com.booktalk_be.domain.member.command.ModifyMemberCommand;
+import com.booktalk_be.domain.member.command.ValidationMemberCommand;
+import com.booktalk_be.domain.member.model.entity.Member;
+import com.booktalk_be.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/member")
@@ -57,6 +60,19 @@ public class MemberController {
                                                              @RequestBody @Valid PostSearchCondCommand cmd)  {
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
+                .build());
+    }
+
+    @PostMapping("/validation")
+    @Tag(name = "Member validation API")
+    @Operation(summary = "회원 중복 검증", description = "동일한 회원 아이디의 존재 여부를 조회합니다.")
+    public ResponseEntity<ResponseDto> validationUserName(@RequestBody @Valid ValidationMemberCommand username)  {
+
+        boolean isExistMember = memberService.validationEmail(username.getEmail());
+
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(Collections.singletonMap("isExistMember", isExistMember))
                 .build());
     }
 }

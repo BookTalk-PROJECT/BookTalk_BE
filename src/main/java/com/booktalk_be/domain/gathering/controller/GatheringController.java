@@ -6,6 +6,7 @@ import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.command.CreateRecruitRequest;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
+import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,12 +20,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/gathering")
+@CrossOrigin("http://localhost:5173")
 @Tag(name = "Gathering API", description = "모임 관련 API 입니다.")
 public class GatheringController {
 
@@ -39,9 +38,8 @@ public class GatheringController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "9") int size
     ) {
-        System.out.println("모임 조회로 오긴 왔니? "+ status);
+        System.out.println("상태 : "+ status + " 검색어 : "+search +" 페이지번호 : "+ page + " 사이즈 : "+size);
         Page<GatheringResponse> result = gatheringService.getList(status, search, page, size);
-        //JsonPrinter.print(result);
         return ResponseEntity.ok(
                 ResponseDto.builder()
                         .code(200)
@@ -51,16 +49,25 @@ public class GatheringController {
         );
     }
 
+    @GetMapping("/detail/{code}")
+    @Operation(summary = "모임 상세 조회",  description = "code로 특정 모임의 상세 정보를 조회합니다.")
+    public ResponseEntity<ResponseDto> getDetail(@PathVariable String code) {
+        GatheringDetailResponse result = gatheringService.getDetailByCode(code);
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .code(200)
+                        .msg("모임 상세 조회 성공")
+                        .data(result)
+                        .build()
+        );
+    }
+
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Tag(name = "Gathering API")
-    @Operation(
-            summary = "모임 개설",
-            description = "모임 정보를 포함한 이미지 파일을 업로드하여 모임을 개설합니다."
-    )
+    @Operation(summary = "모임 개설", description = "모임 정보를 포함한 이미지 파일을 업로드하여 모임을 개설합니다.")
     public ResponseEntity<ResponseDto> create(
             @RequestPart("data") @Valid CreateGatheringCommand requestData,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
-
         try {
             JsonPrinter.print(requestData);
             gatheringService.create(requestData, imageFile);
@@ -71,6 +78,7 @@ public class GatheringController {
                             .build()
             );
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseDto.builder()
                             .code(500)
@@ -139,7 +147,6 @@ public class GatheringController {
                 .code(200)
                 .build());
     }
-
 
     //마이 페이지 내 모임 신청 신청 목록 조회 API
     @GetMapping("/manage/request")

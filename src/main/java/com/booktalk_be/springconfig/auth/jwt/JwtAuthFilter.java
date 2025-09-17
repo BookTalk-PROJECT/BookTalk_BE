@@ -1,8 +1,7 @@
 package com.booktalk_be.springconfig.auth.jwt;
 
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
-import com.booktalk_be.domain.member.mypage.service.MemberService;
-import io.jsonwebtoken.Jwt;
+import com.booktalk_be.domain.member.model.entity.Member;
+import com.booktalk_be.domain.member.service.MemberService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,12 +27,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String token = request.getHeader("Authorization");
+        System.out.println(token+"x토토");
 
         String username = null;
 
         if(token != null && !token.isEmpty()) {
             String jwtToken = token.substring(7);
-
             username = jwtProvider.getUsernameFromToken(jwtToken);
         }
 
@@ -45,7 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private UsernamePasswordAuthenticationToken getUserAuth(String username) {
-        Member memberInfo = memberService.getMemberById(Integer.parseInt(username));
+        Member memberInfo = memberService.getMemberById(username);
 
         return new UsernamePasswordAuthenticationToken(memberInfo.getMemberId(),
                 memberInfo.getPassword(),

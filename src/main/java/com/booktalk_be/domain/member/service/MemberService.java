@@ -1,9 +1,9 @@
-package com.booktalk_be.domain.member.mypage.service;
+package com.booktalk_be.domain.member.service;
 
 
-import com.booktalk_be.domain.member.mypage.command.CreateMemberCommand;
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
-import com.booktalk_be.domain.member.mypage.model.repository.MemberRepository;
+import com.booktalk_be.domain.member.command.CreateMemberCommand;
+import com.booktalk_be.domain.member.model.entity.Member;
+import com.booktalk_be.domain.member.model.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,8 +16,8 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public Member getMemberById (int id) {
-        return memberRepository.findById(id)
+    public Member getMemberById (String email) {
+        return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("회원 없음"));
     }
     
@@ -25,5 +25,10 @@ public class MemberService {
     public Member createMember(CreateMemberCommand memberDTO) {
         Member member = memberDTO.toEntity(bCryptPasswordEncoder.encode(memberDTO.getPassword()));
         return memberRepository.save(member);
+    }
+
+    public Boolean validationEmail (String email) {
+
+        return memberRepository.existsMembersByEmail(email);
     }
 }

@@ -1,13 +1,11 @@
-package com.booktalk_be.domain.member.mypage.command;
+package com.booktalk_be.domain.member.command;
 
 import com.booktalk_be.domain.auth.model.entity.AuthenticateType;
 import com.booktalk_be.domain.auth.model.entity.AuthorityType;
-import com.booktalk_be.domain.member.mypage.model.entity.Member;
+import com.booktalk_be.domain.member.model.entity.Member;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
 
