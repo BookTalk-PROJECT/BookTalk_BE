@@ -15,7 +15,7 @@ public class CreateBoardCommand {
     private String title;
     @NotNull
     private String content;
-    @NotNull
+
     private Boolean notification_yn = false;
 
     public Board toEntity() {

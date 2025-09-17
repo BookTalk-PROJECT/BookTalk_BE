@@ -12,6 +12,6 @@ public class UpdateBoardCommand {
     private String boardCode;
     private String title;
     private String content;
-    private Boolean notification_yn;
+    private Boolean notification_yn = false;
 
 }

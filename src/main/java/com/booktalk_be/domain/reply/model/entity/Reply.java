@@ -1,7 +1,9 @@
 package com.booktalk_be.domain.reply.model.entity;
 
+import com.booktalk_be.domain.board.command.UpdateBoardCommand;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.common.baseEntity.CommonEntity;
+import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -63,5 +65,18 @@ public class Reply extends CommonEntity {
         this.postCode = postCode;
         this.parentReplyCode = parentReplyCode;
         this.content = content;
+    }
+
+    public void modify(UpdateReplyCommand cmd) {
+        this.content = cmd.getContent();
+    }
+
+    public void delete() {
+        this.delYn = true;
+    }
+
+    public void delete(String reason) {
+        this.delYn = true;
+        this.delReason = reason;
     }
 }

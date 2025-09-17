@@ -43,6 +43,7 @@ public class ReplyController {
     @Tag(name = "Reply API")
     @Operation(summary = "게시판 댓글 수정", description = "댓글 상세 정보를 수정합니다.")
     public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateReplyCommand cmd) {
+        replyService.modifyReply(cmd);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -61,6 +62,7 @@ public class ReplyController {
     @Tag(name = "Reply API")
     @Operation(summary = "게시판 댓글 삭제", description = "댓글을 삭제합니다.")
     public ResponseEntity<ResponseDto> delete(@PathVariable String replyCode) {
+        replyService.deleteReply(replyCode);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());

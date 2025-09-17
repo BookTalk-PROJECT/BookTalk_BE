@@ -22,7 +22,10 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
     @Override
     public List<Reply> getRepliesByPostCode(String postCode) {
 
-        return selectFrom(reply).where(reply.postCode.eq(postCode)).fetch();
+        return selectFrom(reply)
+                .where(reply.postCode.eq(postCode))
+                .where(reply.delYn.eq(false))
+                .fetch();
 
     }
 }
