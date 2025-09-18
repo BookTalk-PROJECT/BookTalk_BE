@@ -38,6 +38,10 @@ public class JwtProvider {
         return getClaimFromToken(token, Claims::getId);
     }
 
+    public Integer getUserIdFromToken(final String token) {
+        return getClaimFromToken(token, claims -> claims.get("userKey", Integer.class));
+    }
+
     public <T> T getClaimFromToken(final String token, final Function<Claims, T> claimsResolver) {
 
         if(Boolean.FALSE.equals(validateToken(token)))
@@ -60,21 +64,22 @@ public class JwtProvider {
         return getClaimFromToken(token, Claims::getExpiration);
     }
 
-    public String generateAccessToken(final String id){
-        return generateAccessToken(id, new HashMap<>());
+    public String generateAccessToken(final String id, final int userKey){
+        return generateAccessToken(id,userKey,new HashMap<>());
     }
 
-    public String generateAccessToken(final long id) {
-        return generateAccessToken(String.valueOf(id), new HashMap<>());
+//    public String generateAccessToken(final long id) {
+//        return generateAccessToken(String.valueOf(id), new HashMap<>());
+//    }
+
+    public String generateAccessToken(final String id, final int userKey, final Map<String, Object> claims) {
+        return doGenerateAccessToken(id, userKey, claims);
     }
 
-    public String generateAccessToken(final String id, final Map<String, Object> claims) {
-        return doGenerateAccessToken(id, claims);
-    }
-
-    private String doGenerateAccessToken(final String id, final Map<String, Object> claims) {
+    private String doGenerateAccessToken(final String id, final int userKey, final Map<String, Object> claims) {
         return Jwts.builder()
                 .setClaims(claims)
+                .claim("userKey", userKey)
                 .setId(id)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION_TIME)) // 30분

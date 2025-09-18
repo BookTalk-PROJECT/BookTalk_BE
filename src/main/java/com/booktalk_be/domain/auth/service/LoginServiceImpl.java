@@ -37,7 +37,8 @@ public class LoginServiceImpl implements LoginService {
         );
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String userId = userDetails.getUsername();
-        String accessToken = jwtProvider.generateAccessToken(userId);
+        int userKey = userDetails.getMember().getMemberId();
+        String accessToken = jwtProvider.generateAccessToken(userId, userKey);
         String refreshToken = "";
 
         Member member = memberRepository.findById(userDetails.getMember().getMemberId())
