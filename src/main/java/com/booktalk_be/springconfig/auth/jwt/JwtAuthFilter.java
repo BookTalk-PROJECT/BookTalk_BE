@@ -30,21 +30,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         System.out.println(token+"x토토");
 
         String username = null;
+        Integer userId = jwtProvider.getUserIdFromToken(token);
 
         if(token != null && !token.isEmpty()) {
             String jwtToken = token.substring(7);
             username = jwtProvider.getUsernameFromToken(jwtToken);
         }
 
-        if(username != null && !username.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
-            SecurityContextHolder.getContext().setAuthentication(getUserAuth(username));
+        if(username != null && userId != null && !username.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
+            SecurityContextHolder.getContext().setAuthentication(getUserAuth(userId));
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private UsernamePasswordAuthenticationToken getUserAuth(String username) {
-        Member memberInfo = memberService.getMemberById(username);
+    private UsernamePasswordAuthenticationToken getUserAuth(int userId) {
+        Member memberInfo = memberService.getMemberById(userId);
 
         return new UsernamePasswordAuthenticationToken(memberInfo.getMemberId(),
                 memberInfo.getPassword(),
