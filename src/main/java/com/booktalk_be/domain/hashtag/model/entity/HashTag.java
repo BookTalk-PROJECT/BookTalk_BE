@@ -1,22 +1,22 @@
-package com.booktalk_be.domain.hashtag.model;
+package com.booktalk_be.domain.hashtag.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
+@Builder
 @Entity
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
-@Table(name = "hashtag") //모임 엔티티
+@Table(name = "hash_tag") //모임 엔티티
 public class HashTag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "hashtag_id", nullable = false)
-    private String hashtagId;
+    private Long hashtagId;
 
     @Column(name = "value", nullable = false)
     private String value;

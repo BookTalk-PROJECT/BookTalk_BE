@@ -6,6 +6,7 @@ import com.booktalk_be.domain.gathering.model.entity.*;
 import com.booktalk_be.domain.gathering.model.repository.*;
 import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
+import com.booktalk_be.domain.hashtag.service.HashTagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +33,7 @@ public class GatheringServiceImpl implements GatheringService {
     private final GatheringMemberMapService gatheringMemberMapService;
     private final GatheringBookMapService gatheringBookMapService;
     private final GatheringRecruitQuestionService  gatheringRecruitQuestionService;
+    private final HashTagService hashTagService;
 
     // 모임개설 비즈니스 로직
     @Transactional
@@ -94,7 +96,7 @@ public class GatheringServiceImpl implements GatheringService {
         gatheringRecruitQuestionService.createRecruitQuestionMap(gatheringSaved, command.getQuestions());
 
         if(command.getHashtags() != null && !command.getHashtags().isEmpty()) {
-
+            hashTagService.createHashTag(gatheringSaved, command.getHashtags());
         }
     }
 
