@@ -1,10 +1,12 @@
 package com.booktalk_be.domain.category.service;
 
 import com.booktalk_be.domain.category.command.CreateCategoryCommand;
+import com.booktalk_be.domain.category.command.UpdateCategoryCommand;
 import com.booktalk_be.domain.category.model.entity.Category;
 import com.booktalk_be.domain.category.model.repository.CategoryRepository;
 import com.booktalk_be.domain.category.responseDto.CategoryInfo;
 import com.booktalk_be.domain.category.responseDto.CategoryResponse;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Integer createCategory(CreateCategoryCommand cmd) {
-        Category category = new Category(cmd.getValue(), cmd.getPCategoryId());
+        Category category = new Category(cmd.getValue(), cmd.getIsActive(), cmd.getPCategoryId());
         categoryRepository.save(category);
         return category.getCategoryId();
     }
@@ -31,6 +33,31 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryResponse> getList() {
         List<CategoryInfo> categoryInfos = categoryRepository.findCategories();
+        return mappingCategoryTree(categoryInfos);
+    }
+
+    @Override
+    public List<CategoryResponse> getAllList() {
+        List<CategoryInfo> categoryInfos = categoryRepository.findAllCategories();
+        return mappingCategoryTree(categoryInfos);
+    }
+
+    @Override
+    public void editCategory(UpdateCategoryCommand cmd) {
+        Category category = categoryRepository.findById(cmd.getCategoryId())
+                .orElseThrow(EntityNotFoundException::new);
+        category.edit(cmd.getValue(), cmd.getIsActive());
+    }
+
+    @Override
+    public void deleteCategory(Integer categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(EntityNotFoundException::new);
+        category.delete();
+    }
+
+
+    private List<CategoryResponse> mappingCategoryTree(List<CategoryInfo> categoryInfos) {
         List<CategoryResponse> categoryResponses = new ArrayList<>();
         Map<Integer, CategoryResponse> categoryMap = new HashMap<>();
 
@@ -55,7 +82,6 @@ public class CategoryServiceImpl implements CategoryService {
                 if (parent != null) parent.addSubCategory(current); // 부모에 붙이기
             }
         }
-
         return categoryResponses;
     }
 }

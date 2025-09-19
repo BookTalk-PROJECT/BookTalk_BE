@@ -40,8 +40,18 @@ public class Category {
     @Column(name = "del_yn", nullable = false)
     private Boolean delYn;
 
-    public Category(String value, Integer pCategoryId) {
+    public Category(String value, Boolean isActive, Integer pCategoryId) {
         this.value = value;
+        this.isActive = isActive;
         this.pCategoryId = pCategoryId;
+    }
+
+    public void edit(String value, Boolean isActive) {
+        this.value = value;
+        this.isActive = isActive;
+    }
+
+    public void delete() {
+        this.delYn = true;
     }
 }

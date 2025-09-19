@@ -1,13 +1,20 @@
 package com.booktalk_be.domain.reply.service;
 
 import com.booktalk_be.common.command.PostSearchCondCommand;
+import com.booktalk_be.common.command.RestrictCommand;
+import com.booktalk_be.common.responseDto.PageResponseDto;
+import com.booktalk_be.domain.board.responseDto.BoardResponse;
 import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
 import com.booktalk_be.domain.reply.model.entity.Reply;
 import com.booktalk_be.domain.reply.model.repository.ReplyRepository;
 import com.booktalk_be.domain.reply.responseDto.ReplyResponse;
+import com.booktalk_be.domain.reply.responseDto.ReplySimpleResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,5 +97,29 @@ public class ReplyServiceImpl implements ReplyService {
                 .filter(reply -> reply.getParentReplyCode() == null)
                 .map(reply -> nodeMap.get(reply.getReplyCode()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public PageResponseDto<ReplySimpleResponse> getAllRepliesForPaging(int pageNum, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        Page<ReplySimpleResponse> page =  replyRepository.getAllRepliesForPaging(pageable);
+        return PageResponseDto.<ReplySimpleResponse>builder()
+                .content(page.getContent())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public void restrictReply(RestrictCommand cmd) {
+        Reply reply = replyRepository.findById(cmd.getTargetCode())
+                .orElseThrow(EntityNotFoundException::new);
+        reply.delete(cmd.getDelReason());
+    }
+
+    @Override
+    public void recoverReply(String replyCode) {
+        Reply reply = replyRepository.findById(replyCode)
+                .orElseThrow(EntityNotFoundException::new);
+        reply.recover();
     }
 }

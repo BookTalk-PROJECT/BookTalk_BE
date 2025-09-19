@@ -13,5 +13,6 @@ public class CreateCategoryCommand {
     private String value;
     @JsonProperty("pCategoryId")
     private Integer pCategoryId;
+    private Boolean isActive;
 
 }

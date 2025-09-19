@@ -79,4 +79,9 @@ public class Reply extends CommonEntity {
         this.delYn = true;
         this.delReason = reason;
     }
+
+    public void recover() {
+        this.delYn = false;
+        this.delReason = null;
+    }
 }

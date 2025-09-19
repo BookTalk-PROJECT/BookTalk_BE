@@ -11,6 +11,6 @@ public class UpdateCategoryCommand {
     @NotNull
     private Integer categoryId;
     private String value;
-    private Boolean active;
+    private Boolean isActive;
 
 }

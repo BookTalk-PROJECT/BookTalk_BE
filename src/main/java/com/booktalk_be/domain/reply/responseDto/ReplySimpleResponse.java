@@ -1,4 +1,4 @@
-package com.booktalk_be.domain.board.responseDto;
+package com.booktalk_be.domain.reply.responseDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -6,21 +6,21 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BoardResponse {
-    @JsonProperty("board_code")
-    private String boardCode;
-    private String title;
-    private String category;
+public class ReplySimpleResponse {
+
+    @JsonProperty("reply_code")
+    private String replyCode;
+    @JsonProperty("post_code")
+    private String postCode;
+    @JsonProperty("member_id")
+    private int memberId;
+    private String content;
     private Boolean delYn;
     private String deleteReason;
-//    private final String author;
     private String date;
-    private Integer views;
 
 }

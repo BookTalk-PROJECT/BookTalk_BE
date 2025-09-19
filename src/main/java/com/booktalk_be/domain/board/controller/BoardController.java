@@ -41,11 +41,11 @@ public class BoardController {
     @GetMapping("/list/search")
     @Tag(name = "Community Board API")
     @Operation(summary = "커뮤니티 게시글 목록 검색", description = "검색 조건과 카테고리에 맞는 게시글 목록을 조회합니다.")
-    public ResponseEntity<ResponseDto> getList(@RequestParam(value = "categoryId", required = true) String categoryId,
+    public ResponseEntity<ResponseDto> getList(@RequestParam(value = "categoryId", required = true) Integer categoryId,
                                                @RequestParam(value = "pageNum", required = true) Integer pageNum,
                                                @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
                                                @RequestBody @Valid PostSearchCondCommand cmd) {
-        Page<BoardResponse> page =  boardService.searchBoardsForPaging(categoryId, pageNum, pageSize, cmd);
+        PageResponseDto<BoardResponse> page =  boardService.searchBoardsForPaging(categoryId, pageNum, pageSize, cmd);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)
@@ -83,11 +83,21 @@ public class BoardController {
                 .build());
     }
 
-    @PatchMapping("/restriction")
+    @PatchMapping("/restrict")
     @Tag(name = "Community Board API")
     @Operation(summary = "커뮤니티 게시글 제재", description = "관리자가 특정 게시글을 제재합니다.")
     public ResponseEntity<ResponseDto> restriction(@RequestBody @Valid RestrictCommand cmd) {
         boardService.restrictBoard(cmd);
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
+    @PatchMapping("/recover/{boardCode}")
+    @Tag(name = "Community Board API")
+    @Operation(summary = "커뮤니티 게시글 제재", description = "관리자가 특정 게시글을 제재합니다.")
+    public ResponseEntity<ResponseDto> recover(@PathVariable String boardCode) {
+        boardService.recoverBoard(boardCode);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -100,6 +110,18 @@ public class BoardController {
         boardService.deleteBoard(boardCode);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
+                .build());
+    }
+
+    @GetMapping("/admin/all")
+    @Tag(name = "Admin Page All Community Board API")
+    @Operation(summary = "관리자 페이지 커뮤니티 게시글 전체 조회", description = "관리자 페이지의 모든 커뮤니티 게시글을 조회합니다.")
+    public ResponseEntity<ResponseDto> getAdminPageAll(@RequestParam(value = "pageNum", required = true) Integer pageNum,
+                                                       @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
+        PageResponseDto<BoardResponse> page =  boardService.getAllBoardsForPaging(pageNum, pageSize);
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
                 .build());
     }
 

@@ -34,6 +34,17 @@ public class CategoryController {
                 .build());
     }
 
+    @GetMapping("/admin/list/all")
+    @Tag(name = "Community Category API")
+    @Operation(summary = "커뮤니티 카테고리 전체 목록 조회", description = "카테고리 전체 목록 정보를 조회합니다.")
+    public ResponseEntity<ResponseDto> getAllList() {
+        List<CategoryResponse> res = categoryService.getAllList();
+        return ResponseEntity.ok(ResponseDto.builder()
+                .data(res)
+                .code(200)
+                .build());
+    }
+
     @PostMapping("/create")
     @Tag(name = "Community Category API")
     @Operation(summary = "커뮤니티 카테고리 등록", description = "새로운 카테고리를 등록합니다.")
@@ -45,10 +56,11 @@ public class CategoryController {
                 .build());
     }
 
-    @PutMapping("/modify")
+    @PatchMapping("/modify")
     @Tag(name = "Community Category API")
     @Operation(summary = "커뮤니티 카테고리 수정", description = "카테고리 상세 정보를 수정합니다.")
     public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateCategoryCommand cmd) {
+        categoryService.editCategory(cmd);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -57,7 +69,8 @@ public class CategoryController {
     @DeleteMapping("/delete/{categoryId}")
     @Tag(name = "Community Category API")
     @Operation(summary = "커뮤니티 카테고리 삭제", description = "카테고리를 삭제합니다.")
-    public ResponseEntity<ResponseDto> delete(@PathVariable String categoryId) {
+    public ResponseEntity<ResponseDto> delete(@PathVariable Integer categoryId) {
+        categoryService.deleteCategory(categoryId);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
