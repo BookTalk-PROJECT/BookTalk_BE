@@ -26,16 +26,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        final String token = request.getHeader("Authorization");
-        System.out.println(token+"x토토");
-
+        String token = request.getHeader("Authorization");
         String username = null;
-        Integer userId = jwtProvider.getUserIdFromToken(token);
 
         if(token != null && !token.isEmpty()) {
-            String jwtToken = token.substring(7);
-            username = jwtProvider.getUsernameFromToken(jwtToken);
+            token = token.substring(7);
+            username = jwtProvider.getUsernameFromToken(token);
         }
+        Integer userId = jwtProvider.getUserIdFromToken(token);
 
         if(username != null && userId != null && !username.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
             SecurityContextHolder.getContext().setAuthentication(getUserAuth(userId));

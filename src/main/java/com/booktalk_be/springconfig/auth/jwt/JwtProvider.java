@@ -40,7 +40,7 @@ public class JwtProvider {
     }
 
     public Integer getUserIdFromToken(final String token) {
-        return getClaimFromToken(token, claims -> claims.get("userKey", Integer.class));
+        return getClaimFromToken(token, claims -> Integer.valueOf(claims.get("userKey").toString()));
     }
 
     public AuthorityType getUserRoleFromToken(final String token) {
@@ -48,7 +48,7 @@ public class JwtProvider {
     }
 
     public <T> T getClaimFromToken(final String token, final Function<Claims, T> claimsResolver) {
-
+        
         if(Boolean.FALSE.equals(validateToken(token)))
             return null;
 
