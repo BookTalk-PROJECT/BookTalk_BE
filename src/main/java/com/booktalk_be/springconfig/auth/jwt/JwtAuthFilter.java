@@ -26,28 +26,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        final String token = request.getHeader("Authorization");
-        System.out.println(token+"x토토");
-
+        String token = request.getHeader("Authorization");
         String username = null;
 
         if(token != null && !token.isEmpty()) {
-            String jwtToken = token.substring(7);
-            username = jwtProvider.getUsernameFromToken(jwtToken);
+            token = token.substring(7);
+            username = jwtProvider.getUsernameFromToken(token);
         }
+        Integer userId = jwtProvider.getUserIdFromToken(token);
 
-        if(username != null && !username.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
-            SecurityContextHolder.getContext().setAuthentication(getUserAuth(username));
+        if(username != null && userId != null && !username.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
+            SecurityContextHolder.getContext().setAuthentication(getUserAuth(userId));
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private UsernamePasswordAuthenticationToken getUserAuth(String username) {
-        Member memberInfo = memberService.getMemberById(username);
+    private UsernamePasswordAuthenticationToken getUserAuth(int userId) {
+        Member memberInfo = memberService.getMemberById(userId);
 
-        return new UsernamePasswordAuthenticationToken(memberInfo.getMemberId(),
-                memberInfo.getPassword(),
+        return new UsernamePasswordAuthenticationToken(memberInfo,
+                null,
                 Collections.singleton(new SimpleGrantedAuthority(memberInfo.getAuthority().toString())));
     }
 }

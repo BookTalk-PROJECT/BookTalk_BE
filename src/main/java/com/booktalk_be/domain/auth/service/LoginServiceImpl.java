@@ -1,6 +1,7 @@
 package com.booktalk_be.domain.auth.service;
 
 import com.booktalk_be.domain.auth.command.LoginDTO;
+import com.booktalk_be.domain.auth.model.entity.AuthorityType;
 import com.booktalk_be.domain.auth.model.entity.Refresh_Token;
 import com.booktalk_be.domain.auth.model.repository.RefreshTokenRepository;
 import com.booktalk_be.domain.member.model.entity.Member;
@@ -37,7 +38,9 @@ public class LoginServiceImpl implements LoginService {
         );
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String userId = userDetails.getUsername();
-        String accessToken = jwtProvider.generateAccessToken(userId);
+        int userKey = userDetails.getMember().getMemberId();
+        AuthorityType userRole = userDetails.getMember().getAuthority();
+        String accessToken = jwtProvider.generateAccessToken(userId, userKey, userRole);
         String refreshToken = "";
 
         Member member = memberRepository.findById(userDetails.getMember().getMemberId())

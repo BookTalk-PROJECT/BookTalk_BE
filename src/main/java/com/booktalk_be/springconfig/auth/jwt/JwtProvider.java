@@ -1,6 +1,7 @@
 package com.booktalk_be.springconfig.auth.jwt;
 
 
+import com.booktalk_be.domain.auth.model.entity.AuthorityType;
 import com.booktalk_be.domain.auth.model.properties.JwtProperties;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -38,8 +39,16 @@ public class JwtProvider {
         return getClaimFromToken(token, Claims::getId);
     }
 
-    public <T> T getClaimFromToken(final String token, final Function<Claims, T> claimsResolver) {
+    public Integer getUserIdFromToken(final String token) {
+        return getClaimFromToken(token, claims -> Integer.valueOf(claims.get("userKey").toString()));
+    }
 
+    public AuthorityType getUserRoleFromToken(final String token) {
+        return getClaimFromToken(token, claims -> claims.get("roles", AuthorityType.class));
+    }
+
+    public <T> T getClaimFromToken(final String token, final Function<Claims, T> claimsResolver) {
+        
         if(Boolean.FALSE.equals(validateToken(token)))
             return null;
 
@@ -60,19 +69,21 @@ public class JwtProvider {
         return getClaimFromToken(token, Claims::getExpiration);
     }
 
-    public String generateAccessToken(final String id){
-        return generateAccessToken(id, new HashMap<>());
+    public String generateAccessToken(final String id, final int userKey, final AuthorityType userRole){
+        return generateAccessToken(id, userKey, userRole, new HashMap<>());
     }
 
-    public String generateAccessToken(final long id) {
-        return generateAccessToken(String.valueOf(id), new HashMap<>());
+//    public String generateAccessToken(final long id) {
+//        return generateAccessToken(String.valueOf(id), new HashMap<>());
+//    }
+
+    public String generateAccessToken(final String id, final int userKey, final AuthorityType userRole, final Map<String, Object> claims) {
+        claims.put("roles", userRole);
+        claims.put("userKey", userKey);
+        return doGenerateAccessToken(id, userKey, claims);
     }
 
-    public String generateAccessToken(final String id, final Map<String, Object> claims) {
-        return doGenerateAccessToken(id, claims);
-    }
-
-    private String doGenerateAccessToken(final String id, final Map<String, Object> claims) {
+    private String doGenerateAccessToken(final String id, final int userKey, final Map<String, Object> claims) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setId(id)
