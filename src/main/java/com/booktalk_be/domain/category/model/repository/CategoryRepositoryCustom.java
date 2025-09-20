@@ -8,5 +8,7 @@ import java.util.List;
 public interface CategoryRepositoryCustom {
 
     List<CategoryInfo> findCategories();
+    List<CategoryInfo> findAllCategories();
+
 
 }

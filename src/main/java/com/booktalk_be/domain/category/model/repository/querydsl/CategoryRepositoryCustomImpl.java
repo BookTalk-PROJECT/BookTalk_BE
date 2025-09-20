@@ -26,6 +26,19 @@ public class CategoryRepositoryCustomImpl  extends Querydsl4RepositorySupport im
                         category.value,
                         category.isActive))
                 .from(category)
+                .where(category.isActive.eq(true).and(category.delYn.eq(false)))
+                .fetch();
+    }
+
+    @Override
+    public List<CategoryInfo> findAllCategories() {
+        return select(Projections.fields(CategoryInfo.class,
+                category.categoryId,
+                category.pCategoryId,
+                category.value,
+                category.isActive))
+                .from(category)
+                .where(category.delYn.eq(false))
                 .fetch();
     }
 }

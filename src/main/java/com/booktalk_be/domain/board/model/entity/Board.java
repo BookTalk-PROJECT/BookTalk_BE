@@ -51,4 +51,9 @@ public class Board extends Post {
         this.delYn = true;
         this.delReason = reason;
     }
+
+    public void recover() {
+        this.delYn = false;
+        this.delReason = null;
+    }
 }

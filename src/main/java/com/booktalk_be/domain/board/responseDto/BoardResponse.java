@@ -16,6 +16,9 @@ public class BoardResponse {
     @JsonProperty("board_code")
     private String boardCode;
     private String title;
+    private String category;
+    private Boolean delYn;
+    private String deleteReason;
 //    private final String author;
     private String date;
     private Integer views;

@@ -4,25 +4,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDate;
-import java.util.List;
+import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class ReplyResponse {
+public class ReplySimpleResponse {
+
     @JsonProperty("reply_code")
     private String replyCode;
+    @JsonProperty("post_code")
+    private String postCode;
     @JsonProperty("member_id")
     private int memberId;
-    private String postCode;
     private String content;
-    @JsonProperty("create_at")
-    private String regDate;
-    private String updateDate;
-    private Integer likesCnt;
-    private Boolean isLiked;
+    private Boolean delYn;
+    private String deleteReason;
+    private String date;
 
-    private List<ReplyResponse> replies;
 }

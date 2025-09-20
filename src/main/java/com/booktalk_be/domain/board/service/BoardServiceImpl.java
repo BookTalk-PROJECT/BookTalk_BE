@@ -66,6 +66,13 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    public void recoverBoard(String boardCode) {
+        Board board = boardRepository.findById(boardCode)
+                .orElseThrow(EntityNotFoundException::new);
+        board.recover();
+    }
+
+    @Override
     public void deleteBoard(String boardCode) {
         Board board = boardRepository.findById(boardCode)
                 .orElseThrow(EntityNotFoundException::new);
@@ -84,10 +91,14 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public Page<BoardResponse> searchBoardsForPaging(
-            String categoryId, Integer pageNum, Integer pageSize, PostSearchCondCommand cnd) {
+    public PageResponseDto<BoardResponse> searchBoardsForPaging(
+            Integer categoryId, Integer pageNum, Integer pageSize, PostSearchCondCommand cnd) {
         Pageable pageable = PageRequest.of(pageNum, pageSize);
-        return boardRepository.searchBoardsForPaging(categoryId, pageable, cnd);
+        Page<BoardResponse> page = boardRepository.searchBoardsForPaging(categoryId, pageable, cnd);
+        return PageResponseDto.<BoardResponse>builder()
+                .content(page.getContent())
+                .totalPages(page.getTotalPages())
+                .build();
     }
 
     @Override
@@ -98,6 +109,16 @@ public class BoardServiceImpl implements BoardService {
         return BoardDetailResponse.builder()
                 .post(detail)
                 .replies(replies)
+                .build();
+    }
+
+    @Override
+    public PageResponseDto<BoardResponse> getAllBoardsForPaging(Integer pageNum, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        Page<BoardResponse> page =  boardRepository.getAllBoardsForPaging(pageable);
+        return PageResponseDto.<BoardResponse>builder()
+                .content(page.getContent())
+                .totalPages(page.getTotalPages())
                 .build();
     }
 }

@@ -16,8 +16,10 @@ public interface BoardService {
     public void createBoard(CreateBoardCommand cmd);
     public void modifyBoard(UpdateBoardCommand cmd);
     public void restrictBoard(RestrictCommand cmd);
+    public void recoverBoard(String boardCode);
     public void deleteBoard(String boardCode);
     public PageResponseDto<BoardResponse> getBoardsForPaging(Integer categoryId, Integer pageNum, Integer pageSize);
-    public Page<BoardResponse> searchBoardsForPaging(String categoryId, Integer pageNum, Integer pageSize, PostSearchCondCommand cnd);
+    public PageResponseDto<BoardResponse> searchBoardsForPaging(Integer categoryId, Integer pageNum, Integer pageSize, PostSearchCondCommand cnd);
     public BoardDetailResponse getBoardDetail(String boardCode);
+    public PageResponseDto<BoardResponse> getAllBoardsForPaging(Integer pageNum, Integer pageSize);
 }

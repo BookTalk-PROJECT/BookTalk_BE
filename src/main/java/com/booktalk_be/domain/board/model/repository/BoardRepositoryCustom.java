@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 public interface BoardRepositoryCustom {
 
     Page<BoardResponse> findBoardsForPaging(Integer categoryId, Pageable pageable);
-    Page<BoardResponse> searchBoardsForPaging(String categoryId, Pageable pageable, PostSearchCondCommand cmd);
+    Page<BoardResponse> searchBoardsForPaging(Integer categoryId, Pageable pageable, PostSearchCondCommand cmd);
     CommuDetailResponse getBoardDetailBy(String boardCode);
-
+    Page<BoardResponse> getAllBoardsForPaging(Pageable pageable);
 }

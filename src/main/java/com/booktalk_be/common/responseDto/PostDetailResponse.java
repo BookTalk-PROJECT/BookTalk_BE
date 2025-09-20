@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class PostDetailResponse {
     @JsonProperty("board_code")
     private String boardCode;
+    @JsonProperty("member_id")
     private int memberId;
     private String title;
     private String content;

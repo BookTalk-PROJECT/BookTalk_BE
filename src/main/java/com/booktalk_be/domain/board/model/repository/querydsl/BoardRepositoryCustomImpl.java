@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.booktalk_be.domain.board.model.entity.QBoard.board;
+import static com.booktalk_be.domain.category.model.entity.QCategory.category;
 
 public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implements BoardRepositoryCustom {
 
@@ -43,20 +44,22 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
 //                .from(board).innerJoin(board.member)
                 .from(board)
                 .where(board.categoryId.eq(categoryId).and(board.delYn.eq(false)))
-                .orderBy(board.code.asc())
+                .orderBy(board.code.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
         Long total = Optional.ofNullable(
                 select(Wildcard.count)
-                .from(board).innerJoin(board.member)
-                .fetchOne())
+                        .from(board)
+//                        .innerJoin(board.member)
+                        .where(board.categoryId.eq(categoryId).and(board.delYn.eq(false)))
+                        .fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);
     }
 
     @Override
-    public Page<BoardResponse> searchBoardsForPaging(String categoryId, Pageable pageable, PostSearchCondCommand cmd) {
+    public Page<BoardResponse> searchBoardsForPaging(Integer categoryId, Pageable pageable, PostSearchCondCommand cmd) {
         JPAQueryBase<BoardResponse, JPAQuery<BoardResponse>> baseQuery =
                 select(Projections.fields(BoardResponse.class,
                 board.code.as("boardCode"),
@@ -83,12 +86,15 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         pageQuery.where(searchCondition);
 
         List<BoardResponse> content = baseQuery
-                .orderBy(board.code.asc())
+                .where(board.categoryId.eq(categoryId).and(board.delYn.eq(false)))
+                .orderBy(board.code.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
         Long total = Optional.ofNullable(
-                pageQuery.fetchOne())
+                pageQuery
+                        .where(board.categoryId.eq(categoryId).and(board.delYn.eq(false)))
+                        .fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);
     }
@@ -112,6 +118,33 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 .from(board)
                 .where(board.code.eq(boardCode))
                 .fetchOne();
+    }
+
+    @Override
+    public Page<BoardResponse> getAllBoardsForPaging(Pageable pageable) {
+        List<BoardResponse> content = select(Projections.fields(BoardResponse.class,
+                board.code.as("boardCode"),
+                board.title,
+                category.value.as("category"),
+//                board.member.name.as("author"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.updateTime).as("date"),
+                board.views,
+                board.delYn,
+                board.delReason.as("deleteReason")))
+//                .from(board).innerJoin(board.member)
+                .from(board)
+                .leftJoin(category).on(board.categoryId.eq(category.categoryId))
+                .orderBy(board.code.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+        Long total = Optional.ofNullable(
+                        select(Wildcard.count)
+                                .from(board)
+//                        .innerJoin(board.member)
+                                .fetchOne())
+                .orElse(0L);
+        return new PageImpl<>(content, pageable, total);
     }
 
     private BooleanExpression keywordFilter(KeywordType type, String keyword) {
