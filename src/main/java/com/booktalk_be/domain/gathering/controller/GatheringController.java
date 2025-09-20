@@ -9,6 +9,7 @@ import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringService;
+import com.booktalk_be.domain.member.model.entity.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -69,12 +71,11 @@ public class GatheringController {
     @Operation(summary = "모임 개설", description = "모임 정보를 포함한 이미지 파일을 업로드하여 모임을 개설합니다.")
     public ResponseEntity<ResponseDto> create(
             @RequestPart("data") @Valid CreateGatheringCommand requestData,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile,
-            Principal principal) {
+            @RequestPart(value = "image", required = false) MultipartFile imageFile, Authentication authentication) {
         try {
-            String memberId = principal.getName();
+            Member member = (Member) authentication.getPrincipal();
             JsonPrinter.print(requestData);
-            gatheringService.create(requestData, imageFile, memberId);
+            gatheringService.create(requestData, imageFile, member.getMemberId());
 
             return ResponseEntity.ok(
                     ResponseDto.builder()

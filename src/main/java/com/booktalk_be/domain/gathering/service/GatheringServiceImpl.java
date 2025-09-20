@@ -38,11 +38,11 @@ public class GatheringServiceImpl implements GatheringService {
     // 모임개설 비즈니스 로직
     @Transactional
     @Override
-    public void create(CreateGatheringCommand command, MultipartFile imageFile, String memberId) {
+    public void create(CreateGatheringCommand command, MultipartFile imageFile, Integer memberId) {
         // 모집 정보 문자열 조합
 
         // 0) 필수 검증: 하나라도 없으면 예외 → 트랜잭션 전체 롤백
-        if (memberId == null || memberId.isBlank()) {
+        if (memberId == null) {
             throw new IllegalArgumentException("로그인이 필요합니다.(memberId null)");
         }
         if (command.getBooks() == null || command.getBooks().isEmpty()) {

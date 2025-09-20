@@ -18,10 +18,10 @@ public class GatheringMemberMapServiceImpl implements GatheringMemberMapService 
     private final MemberRepository memberRepository;
     private final GatheringMemberMapRepository gatheringMemberMapRepository;
 
-    public void createGatheringMemberMap(Gathering gatheringSaved, String memberId){
+    public void createGatheringMemberMap(Gathering gatheringSaved, Integer memberId){
         if (memberId != null) {
 
-            Member memberRef = memberRepository.getReferenceById(Integer.parseInt(memberId));
+            Member memberRef = memberRepository.getReferenceById(memberId);
             GatheringMemberMap gatheringMemberMap = GatheringMemberMap.builder()
                     .code(gatheringSaved)
                     .member(memberRef)

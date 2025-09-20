@@ -5,5 +5,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface GatheringMemberMapService {
-    void createGatheringMemberMap(Gathering gatheringSaved, String memberId);
+    void createGatheringMemberMap(Gathering gatheringSaved, Integer memberId);
 }
