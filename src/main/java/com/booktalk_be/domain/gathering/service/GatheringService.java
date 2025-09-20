@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public interface GatheringService {
-    void create(CreateGatheringCommand command, MultipartFile imageFile);
+    void create(CreateGatheringCommand command, MultipartFile imageFile, String memberId);
 
     Page<GatheringResponse> getList(GatheringStatus status, String search, int page, int size);
 

@@ -8,6 +8,8 @@ import com.booktalk_be.domain.gathering.model.repository.GatheringRepositoryCust
 import com.booktalk_be.common.utils.Querydsl4RepositorySupport;
 
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
+import com.booktalk_be.domain.hashtag.model.entity.QHashTag;
+import com.booktalk_be.domain.hashtag.model.entity.QHashTagMap;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -31,6 +33,7 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
     public Page<GatheringResponse> findGatheringList(GatheringStatus status, String search, Pageable pageable) {
         QGathering gathering = QGathering.gathering;
         QGatheringMemberMap gatheringMemberMap = QGatheringMemberMap.gatheringMemberMap;
+        QHashTagMap hashTagMap = QHashTagMap.hashTagMap;
 
         // 조건 구성
         BooleanBuilder condition = new BooleanBuilder();
@@ -69,6 +72,15 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
                     .where(gatheringMemberMap.code.eq(entity))
                     .fetchOne();
 
+            // 해시태그 리스트 조회
+            List<String> hashtags = getQueryFactory()
+                    .select(QHashTag.hashTag.value)
+                    .from(QHashTagMap.hashTagMap)
+                    .join(QHashTagMap.hashTagMap.hashtagId, QHashTag.hashTag)
+                    .where(QHashTagMap.hashTagMap.code.eq(entity))
+                    .fetch();
+
+
             return GatheringResponse.builder()
                     .code(entity.getCode())
                     .title(entity.getName())
@@ -77,7 +89,7 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
                     .maxMembers(entity.getRecruitmentPersonnel())
                     .status(entity.getStatus())
                     .imageUrl(entity.getImageUrl())
-                    .hashtags(List.of("#독서", "#문학", "#심리학")) // 임시
+                    .hashtags(hashtags) // 임시
                     .build();
         }).toList();
 

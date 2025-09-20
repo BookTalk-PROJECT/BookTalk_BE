@@ -20,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/gathering")
@@ -67,10 +69,12 @@ public class GatheringController {
     @Operation(summary = "모임 개설", description = "모임 정보를 포함한 이미지 파일을 업로드하여 모임을 개설합니다.")
     public ResponseEntity<ResponseDto> create(
             @RequestPart("data") @Valid CreateGatheringCommand requestData,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+            @RequestPart(value = "image", required = false) MultipartFile imageFile,
+            Principal principal) {
         try {
+            String memberId = principal.getName();
             JsonPrinter.print(requestData);
-            gatheringService.create(requestData, imageFile);
+            gatheringService.create(requestData, imageFile, memberId);
 
             return ResponseEntity.ok(
                     ResponseDto.builder()

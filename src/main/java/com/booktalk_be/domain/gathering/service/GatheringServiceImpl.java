@@ -6,6 +6,7 @@ import com.booktalk_be.domain.gathering.model.entity.*;
 import com.booktalk_be.domain.gathering.model.repository.*;
 import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
+import com.booktalk_be.domain.hashtag.service.HashTagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,15 +30,27 @@ import java.util.UUID;
 public class GatheringServiceImpl implements GatheringService {
 
     private final GatheringRepository gatheringRepository;
-    private final RecruitQuestionRepository recruitQuestionRepository;
+    private final GatheringMemberMapService gatheringMemberMapService;
     private final GatheringBookMapService gatheringBookMapService;
     private final GatheringRecruitQuestionService  gatheringRecruitQuestionService;
+    private final HashTagService hashTagService;
 
     // 모임개설 비즈니스 로직
     @Transactional
     @Override
-    public void create(CreateGatheringCommand command, MultipartFile imageFile) {
+    public void create(CreateGatheringCommand command, MultipartFile imageFile, String memberId) {
         // 모집 정보 문자열 조합
+
+        // 0) 필수 검증: 하나라도 없으면 예외 → 트랜잭션 전체 롤백
+        if (memberId == null || memberId.isBlank()) {
+            throw new IllegalArgumentException("로그인이 필요합니다.(memberId null)");
+        }
+        if (command.getBooks() == null || command.getBooks().isEmpty()) {
+            throw new IllegalArgumentException("도서 목록이 필요합니다.");
+        }
+        if (command.getQuestions() == null || command.getQuestions().isEmpty()) {
+            throw new IllegalArgumentException("참여 질문이 필요합니다.");
+        }
 
         String imageUrl = null;
 
@@ -75,13 +88,15 @@ public class GatheringServiceImpl implements GatheringService {
 
         Gathering gatheringSaved = gatheringRepository.save(gathering);
 
+        //유저 모임 매핑 테이블에 저장
+        gatheringMemberMapService.createGatheringMemberMap(gatheringSaved, memberId);
         //책 리스트 매핑 테이블에 저장
-        if(command.getBooks() != null){
-            gatheringBookMapService.createGatheringBookMap(gatheringSaved, command.getBooks());
-        }
+        gatheringBookMapService.createGatheringBookMap(gatheringSaved, command.getBooks());
         //참여신청 질문 리스트 저장
-        if(command.getQuestions() != null){
-            gatheringRecruitQuestionService.createRecruitQuestionMap(gatheringSaved, command.getQuestions());
+        gatheringRecruitQuestionService.createRecruitQuestionMap(gatheringSaved, command.getQuestions());
+
+        if(command.getHashtags() != null && !command.getHashtags().isEmpty()) {
+            hashTagService.createHashTag(gatheringSaved, command.getHashtags());
         }
     }
 

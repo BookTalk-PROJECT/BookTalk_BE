@@ -4,8 +4,10 @@ import com.booktalk_be.domain.member.model.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Builder
 @Entity
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @IdClass(GatheringMemberId.class)
 @Table(name = "gathering_member_map") //모임_멤버 매핑 엔티티
