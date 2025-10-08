@@ -14,6 +14,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,17 @@ public class MemberService {
                 .orElseThrow(() -> new EntityNotFoundException("회원 없음"));
     }
 
+    public List<MemberInformationResponse> getMemberAllList () {
+        List<MemberInformationResponse> allMemberList = memberRepository.findAll()
+                .stream()
+                .map(member -> new MemberInformationResponse(member))
+                .toList();
+        if(allMemberList.isEmpty()){
+            throw new EntityNotFoundException("member list is empty.");
+        }
+        return allMemberList;
+    }
+
     public Member createMember(CreateMemberCommand memberDTO) {
         Member member = memberDTO.toEntity(bCryptPasswordEncoder.encode(memberDTO.getPassword()));
         return memberRepository.save(member);
@@ -35,8 +49,8 @@ public class MemberService {
 
     public Member modifyMember(ModifyMemberCommand memberDTO, Authentication authentication) {
         Member authMember = (Member) authentication.getPrincipal();
-        authMember.modify(memberDTO);
-        System.out.println(authMember.getAddress());
+        String encordPassword = bCryptPasswordEncoder.encode(memberDTO.getPassword());
+        authMember.modify(memberDTO, encordPassword);
         memberRepository.save(authMember);
         return authMember;
     }
@@ -47,15 +61,7 @@ public class MemberService {
     }
 
     public MemberInformationResponse getAuthenticationMember (Member member) {
-        return MemberInformationResponse.builder().
-                name(member.getName())
-                .email(member.getEmail())
-                .phoneNumber(member.getPhoneNumber())
-                .address(member.getAddress())
-                .birth(member.getBirth())
-                .authType(member.getAuthType())
-                .gender(member.getGender())
-                .build();
+        return new MemberInformationResponse(member);
     }
 
     //Authentication 객체 호출 용, 시큐리티 컨텍스트에 저장된 정보를 얻기 위함

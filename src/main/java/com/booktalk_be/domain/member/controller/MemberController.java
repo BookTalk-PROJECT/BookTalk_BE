@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/member")
@@ -82,7 +83,7 @@ public class MemberController {
     }
 
     @GetMapping("/authentication")
-    @Tag(name = "Member Create API")
+    @Tag(name = "Member Information API")
     @Operation(summary = "회원 정보 조회", description = "현재 인증 된 회원 정보를 조회합니다.")
     public ResponseEntity<ResponseDto> getAuthenticationMember(Authentication authentication) {
         Member member = (Member) authentication.getPrincipal();
@@ -90,6 +91,17 @@ public class MemberController {
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(memberDto)
+                .build());
+    }
+
+    @GetMapping("/list")
+    @Tag(name = "Member List API")
+    @Operation(summary = "회원 전체 목록 조회", description = "회원 전체 목록을 조회합니다..")
+    public ResponseEntity<ResponseDto> getMemberList() {
+        List<MemberInformationResponse> memberListDto = memberService.getMemberAllList();
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(memberListDto)
                 .build());
     }
 }
