@@ -25,7 +25,7 @@ public class ModifyMemberCommand {
     @NotNull
     private Boolean delYn = false;
 
-    public Member toEntity() {
+    public Member toEntity(String password) {
         return Member.builder()
                 .password(this.password)
                 .phoneNumber(this.phoneNumber)

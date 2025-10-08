@@ -2,6 +2,7 @@ package com.booktalk_be.domain.member.model.entity;
 
 import com.booktalk_be.domain.auth.model.entity.AuthenticateType;
 import com.booktalk_be.domain.auth.model.entity.AuthorityType;
+import com.booktalk_be.domain.member.command.ModifyMemberCommand;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -66,5 +67,11 @@ public class Member {
         this.address = address;
         this.gender = gender;
         this.birth = birth;
+    }
+
+    public void modify(ModifyMemberCommand memberDTO) {
+        this.password = memberDTO.getPassword();
+        this.phoneNumber = memberDTO.getPhoneNumber();
+        this.address = memberDTO.getAddress();
     }
 }
