@@ -19,7 +19,7 @@ public class BoardResponse {
     private String category;
     private Boolean delYn;
     private String deleteReason;
-//    private final String author;
+    private String author;
     private String date;
     private Integer views;
 

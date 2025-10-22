@@ -25,7 +25,7 @@ public class Member {
     @Column(name = "member_id", nullable = false)
     private int memberId;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "name", nullable = false)

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
+import static com.booktalk_be.domain.board.model.entity.QBoard.board;
 import static com.booktalk_be.domain.reply.model.entity.QReply.reply;
 
 public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implements ReplyRepositoryCustom {
@@ -35,21 +36,45 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         List<ReplySimpleResponse> content = select(Projections.fields(ReplySimpleResponse.class,
                 reply.replyCode,
                 reply.postCode,
-//                reply.member.memberId,
+                reply.member.memberId,
+                reply.member.name.as("author"),
                 Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", reply.updateTime).as("date"),
                 reply.content,
                 reply.delYn,
                 reply.delReason.as("deleteReason")))
-//                .from(board).innerJoin(board.member)
-                .from(reply)
+                .from(reply).innerJoin(reply.member)
                 .orderBy(reply.replyCode.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
         Long total = Optional.ofNullable(
                         select(Wildcard.count)
-                                .from(reply)
-//                        .innerJoin(board.member)
+                                .from(reply).innerJoin(reply.member)
+                                .fetchOne())
+                .orElse(0L);
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<ReplySimpleResponse> getAllRepliesForPagingByMe(Pageable pageable, int memberId) {
+        List<ReplySimpleResponse> content = select(Projections.fields(ReplySimpleResponse.class,
+                reply.replyCode,
+                reply.postCode,
+                reply.member.memberId,
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", reply.updateTime).as("date"),
+                reply.content,
+                reply.delYn,
+                reply.delReason.as("deleteReason")))
+                .from(reply).innerJoin(reply.member)
+                .where(reply.member.memberId.eq(memberId))
+                .orderBy(reply.replyCode.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+        Long total = Optional.ofNullable(
+                        select(Wildcard.count)
+                                .from(reply).innerJoin(reply.member)
+                                .where(reply.member.memberId.eq(memberId))
                                 .fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);

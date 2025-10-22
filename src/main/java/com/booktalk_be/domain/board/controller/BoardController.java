@@ -9,14 +9,19 @@ import com.booktalk_be.domain.board.command.UpdateBoardCommand;
 import com.booktalk_be.domain.board.responseDto.BoardDetailResponse;
 import com.booktalk_be.domain.board.responseDto.BoardResponse;
 import com.booktalk_be.domain.board.service.BoardService;
+import com.booktalk_be.domain.member.model.entity.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/community/board")
@@ -57,6 +62,12 @@ public class BoardController {
     @Operation(summary = "커뮤니티 게시글 상세 조회", description = "게시글 상세 정보를 조회합니다.")
     public ResponseEntity<ResponseDto> getDetail(@PathVariable String boardCode) {
         BoardDetailResponse res = boardService.getBoardDetail(boardCode);
+        if(res.getPost().getDelYn()) {
+            return new ResponseEntity<>(ResponseDto.builder()
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .data("삭제된 게시글 입니다.")
+                    .build(), HttpStatus.BAD_REQUEST);
+        }
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(res)
@@ -66,8 +77,12 @@ public class BoardController {
     @PostMapping("/create")
     @Tag(name = "Community Board API")
     @Operation(summary = "커뮤니티 게시글 등록", description = "새로운 게시글을 등록합니다.")
-    public ResponseEntity<ResponseDto> create(@RequestBody @Valid CreateBoardCommand cmd) {
-        boardService.createBoard(cmd);
+    public ResponseEntity<ResponseDto> create(
+            @RequestBody @Valid CreateBoardCommand cmd,
+            Authentication authentication
+    ) {
+        Member member =  (Member) authentication.getPrincipal();
+        boardService.createBoard(cmd, member);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -129,11 +144,16 @@ public class BoardController {
     @GetMapping("/mylist")
     @Tag(name = "Community Board API")
     @Operation(summary = "마이 페이지 커뮤니티 게시글 조회", description = "마이 페이지의 커뮤니티 게시글을 조회합니다.")
-    public ResponseEntity<ResponseDto> getCommunityBoardList(@RequestParam(value = "categoryId", required = true) String categoryId,
-                                                             @RequestParam(value = "pageNum", required = true) Integer pageNum,
-                                                             @RequestBody @Valid PostSearchCondCommand cmd) {
+    public ResponseEntity<ResponseDto> getCommunityBoardList(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            Authentication authentication
+    ) {
+        Member member =  (Member) authentication.getPrincipal();
+        PageResponseDto<BoardResponse> page =  boardService.getAllBoardsForPagingByMe(pageNum, pageSize, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
+                .data(page)
                 .build());
     }
 

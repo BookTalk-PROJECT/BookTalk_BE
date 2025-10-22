@@ -4,6 +4,7 @@ import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.board.responseDto.BoardResponse;
+import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
 import com.booktalk_be.common.command.RestrictCommand;
@@ -13,13 +14,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/reply")
 @RequiredArgsConstructor
 @Tag(name = "Reply API", description = "게시판 댓글 API 입니다.")
+@Slf4j
 public class ReplyController {
     private final ReplyService replyService;
 
@@ -35,8 +40,20 @@ public class ReplyController {
     @PostMapping("/create")
     @Tag(name = "Reply API")
     @Operation(summary = "게시판 댓글 등록", description = "새로운 댓글을 등록합니다.")
-    public ResponseEntity<ResponseDto> create(@RequestBody @Valid CreateReplyCommand cmd) {
-        replyService.createReply(cmd);
+    public ResponseEntity<ResponseDto> create(
+            @RequestBody @Valid CreateReplyCommand cmd,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        try{
+            replyService.createReply(cmd, member);
+        }catch (Exception e){
+            log.error(e.fillInStackTrace().toString());
+            return new ResponseEntity<>(ResponseDto.builder()
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .data("댓글 등록에 실패하였습니다.")
+                    .build(), HttpStatus.BAD_REQUEST);
+        }
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -75,11 +92,15 @@ public class ReplyController {
     @GetMapping("/mylist")
     @Tag(name = "Reply API")
     @Operation(summary = "내 댓글 조회", description = "내 댓글 목록을 조회합니다.")
-    public ResponseEntity<ResponseDto> getCommunityCommentList(@RequestParam(value = "category", required = true) String category,
-                                                               @RequestParam(value = "pageNum", required = true) Integer pageNum,
-                                                               @RequestBody @Valid PostSearchCondCommand cmd) {
+    public ResponseEntity<ResponseDto> getCommunityCommentList(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<ReplySimpleResponse> page =  replyService.getAllRepliesForPagingByMe(pageNum, pageSize, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
+                .data(page)
                 .build());
     }
 

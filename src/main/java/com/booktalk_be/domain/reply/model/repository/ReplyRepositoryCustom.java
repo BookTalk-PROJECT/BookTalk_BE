@@ -11,4 +11,5 @@ import java.util.List;
 public interface ReplyRepositoryCustom {
     List<Reply> getRepliesByPostCode(String postCode);
     Page<ReplySimpleResponse> getAllRepliesForPaging(Pageable pageable);
+    Page<ReplySimpleResponse> getAllRepliesForPagingByMe(Pageable pageable, int memberId);
 }

@@ -1,10 +1,8 @@
 package com.booktalk_be.domain.board.service;
 
-import com.booktalk_be.common.baseEntity.Post;
 import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.common.command.RestrictCommand;
 import com.booktalk_be.common.responseDto.PageResponseDto;
-import com.booktalk_be.common.responseDto.PostDetailResponse;
 import com.booktalk_be.domain.board.command.CreateBoardCommand;
 import com.booktalk_be.domain.board.command.UpdateBoardCommand;
 import com.booktalk_be.domain.board.model.entity.Board;
@@ -13,19 +11,15 @@ import com.booktalk_be.domain.board.responseDto.BoardDetailResponse;
 import com.booktalk_be.domain.board.responseDto.BoardResponse;
 import com.booktalk_be.domain.board.responseDto.CommuDetailResponse;
 import com.booktalk_be.domain.likes.model.repository.LikesRepository;
-import com.booktalk_be.domain.reply.model.entity.Reply;
-import com.booktalk_be.domain.reply.model.repository.ReplyRepository;
+import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.reply.responseDto.ReplyResponse;
 import com.booktalk_be.domain.reply.service.ReplyService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedModel;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,12 +34,13 @@ public class BoardServiceImpl implements BoardService {
     private final LikesRepository likesRepository;
 
     @Override
-    public void createBoard(CreateBoardCommand cmd) {
+    public void createBoard(CreateBoardCommand cmd, Member member) {
         Board board = Board.builder()
                 .categoryId(cmd.getCategoryId())
                 .title(cmd.getTitle())
                 .content(cmd.getContent())
                 .notificationYn(cmd.getNotification_yn())
+                .member(member)
                 .build();
 
         boardRepository.save(board);
@@ -105,6 +100,7 @@ public class BoardServiceImpl implements BoardService {
     public BoardDetailResponse getBoardDetail(String boardCode) {
         CommuDetailResponse detail = boardRepository.getBoardDetailBy(boardCode);
         List<ReplyResponse> replies = replyService.getRepliesByPostCode(detail.getBoardCode());
+        //TODO 좋아요 기능 추가 후 활성화
 //        Boolean isLikedByMe = likesRepository.isLikedAtBoardBy(boardCode, userId);
         return BoardDetailResponse.builder()
                 .post(detail)
@@ -116,6 +112,16 @@ public class BoardServiceImpl implements BoardService {
     public PageResponseDto<BoardResponse> getAllBoardsForPaging(Integer pageNum, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
         Page<BoardResponse> page =  boardRepository.getAllBoardsForPaging(pageable);
+        return PageResponseDto.<BoardResponse>builder()
+                .content(page.getContent())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public PageResponseDto<BoardResponse> getAllBoardsForPagingByMe(Integer pageNum, Integer pageSize, int memberId) {
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        Page<BoardResponse> page =  boardRepository.getAllBoardsForPagingByMe(pageable, memberId);
         return PageResponseDto.<BoardResponse>builder()
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())
