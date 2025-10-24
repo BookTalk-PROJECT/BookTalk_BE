@@ -4,6 +4,7 @@ import com.booktalk_be.domain.gathering.command.BookDto;
 import com.booktalk_be.domain.gathering.model.entity.Gathering;
 import com.booktalk_be.domain.gathering.model.entity.GatheringBookMap;
 import com.booktalk_be.domain.gathering.model.repository.GatheringBookMapRepository;
+import com.booktalk_be.domain.gathering.responseDto.BookItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,5 +31,13 @@ public class GatheringBookMapServiceImpl implements GatheringBookMapService {
                     .toList();
             gatheringBookMapRepository.saveAll(bookMaps);
         }
+    }
+
+
+    @Override
+    public List<BookItemResponse> getBooksByGatheringCode(String code) {
+        return gatheringBookMapRepository.findAllByGatheringCode(code).stream()
+                .map(BookItemResponse::from)
+                .toList();
     }
 }

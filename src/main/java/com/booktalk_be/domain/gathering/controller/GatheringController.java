@@ -5,9 +5,15 @@ import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.command.CreateRecruitRequest;
+import com.booktalk_be.domain.gathering.command.RecruitRequestCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
+import com.booktalk_be.domain.gathering.model.repository.GatheringMemberMapRepository;
+import com.booktalk_be.domain.gathering.responseDto.BookItemResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
+import com.booktalk_be.domain.gathering.service.GatheringBookMapService;
+import com.booktalk_be.domain.gathering.service.GatheringRecruitQuestionService;
+import com.booktalk_be.domain.gathering.service.GatheringRecruitRequestService;
 import com.booktalk_be.domain.gathering.service.GatheringService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,6 +37,13 @@ import java.security.Principal;
 public class GatheringController {
 
     private final GatheringService gatheringService;
+
+    private final GatheringBookMapService gatheringBookMapService;
+
+    private final GatheringRecruitQuestionService gatheringRecruitQuestionService;
+
+    private final GatheringRecruitRequestService gatheringRecruitRequestService;
+
 
     @GetMapping("/list")
     @Tag(name = "Gathering API")
@@ -52,9 +66,13 @@ public class GatheringController {
     }
 
     @GetMapping("/detail/{code}")
-    @Operation(summary = "모임 상세 조회",  description = "code로 특정 모임의 상세 정보를 조회합니다.")
-    public ResponseEntity<ResponseDto> getDetail(@PathVariable String code) {
-        GatheringDetailResponse result = gatheringService.getDetailByCode(code);
+    @Operation(summary = "모임 상세 조회", description = "code로 특정 모임의 상세 정보를 조회합니다.")
+    public ResponseEntity<ResponseDto> getDetail(@PathVariable String code, Principal principal) {
+        String memberId = principal.getName();
+        var result = gatheringService.getDetailByCode(code, memberId);
+
+        System.out.println("멤버 아이디는 : "+memberId);
+
         return ResponseEntity.ok(
                 ResponseDto.builder()
                         .code(200)
@@ -91,6 +109,19 @@ public class GatheringController {
         }
     }
 
+    @GetMapping("/{code}/books")
+    @Operation(summary = "모임 책 목록", description = "gathering_code 기준으로 등록된 책 리스트를 반환합니다.")
+    public ResponseEntity<ResponseDto> gatheringBookList(@PathVariable("code") String code) {
+        var data = gatheringBookMapService.getBooksByGatheringCode(code);
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .code(200)
+                        .msg("책 목록 조회 성공")
+                        .data(data) // Object 자리에 List<BookItemResponse> 들어감
+                        .build()
+        );
+    }
+
     @PatchMapping("/modify")
     @Tag(name = "Gathering API")
     @Operation(summary = "모임 수정", description = "모임을 수정합니다.")
@@ -121,13 +152,42 @@ public class GatheringController {
                 .build());
     }
 
-    @PostMapping("/createRecruitRequest")
-    @Tag(name = "Gathering API")
-    @Operation(summary = "모임 신청 답변 등록", description = "모임 신청 질문 리스트를 작성하고 등록합니다.")
-    public ResponseEntity<ResponseDto> createRecruitRequest(@RequestBody @Valid CreateRecruitRequest requestList) {
-        return ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .build());
+    @GetMapping("/{code}/recruitQuestions")
+    @Operation(summary = "모임 참여 질문 목록", description = "모임(gathering_code)에 연결된 참여 질문 리스트를 order 순으로 조회합니다.")
+    public ResponseEntity<ResponseDto> gatheringRecruitList(@PathVariable("code") String code) {
+        var data = gatheringRecruitQuestionService.getRecruitQuestions(code);
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .code(200)
+                        .msg("질문 목록 조회 성공")
+                        .data(data)
+                        .build()
+        );
+    }
+
+
+    @PostMapping("/{code}/recruitRequest")
+    @Operation(summary = "모임 가입 신청", description = "모임 참여 답변을 제출합니다.")
+    public ResponseEntity<ResponseDto> gatheringRequestSubmit(
+            @PathVariable("code") String code,
+            @Valid @RequestBody RecruitRequestCommand command,
+            Principal principal
+    ) {
+        String memberId = (principal != null ? principal.getName() : null);
+        if (memberId == null || memberId.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseDto.builder().code(401).msg("인증 필요").build()
+            );
+        }
+
+        gatheringRecruitRequestService.submit(code, memberId, command);
+
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .code(200)
+                        .msg("가입 신청 완료")
+                        .build()
+        );
     }
 
     //마이 페이지 내 모임 조회 API

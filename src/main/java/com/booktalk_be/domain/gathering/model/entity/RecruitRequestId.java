@@ -16,7 +16,7 @@ public class RecruitRequestId implements Serializable {
 
     private Gathering code;
     private Member member;
-
+    private String recruitQuestion;
 }
 
 

@@ -30,6 +30,7 @@ import java.util.UUID;
 public class GatheringServiceImpl implements GatheringService {
 
     private final GatheringRepository gatheringRepository;
+    private final GatheringMemberMapRepository gatheringMemberMapRepository;
     private final GatheringMemberMapService gatheringMemberMapService;
     private final GatheringBookMapService gatheringBookMapService;
     private final GatheringRecruitQuestionService  gatheringRecruitQuestionService;
@@ -108,9 +109,18 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     @Override
-    public GatheringDetailResponse getDetailByCode(String code) {
-        Gathering g = gatheringRepository.findByCodeAndDelYnFalse(code)
+    public GatheringDetailResponse getDetailByCode(String code, String currentMemberId) {
+        var g = gatheringRepository.findByCodeAndDelYnFalse(code)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "모임을 찾을 수 없습니다."));
-        return GatheringDetailResponse.from(g);
+
+        int masterYn = 0;
+        if (currentMemberId != null && !currentMemberId.isBlank()) {
+            masterYn = gatheringMemberMapRepository
+                    .findMasterYn(code, currentMemberId)
+                    .map(b -> Boolean.TRUE.equals(b) ? 1 : 0)
+                    .orElse(0);
+        }
+
+        return GatheringDetailResponse.from(g, masterYn);
     }
 }

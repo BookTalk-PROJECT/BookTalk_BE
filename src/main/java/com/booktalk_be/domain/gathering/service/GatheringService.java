@@ -14,5 +14,5 @@ public interface GatheringService {
 
     Page<GatheringResponse> getList(GatheringStatus status, String search, int page, int size);
 
-    GatheringDetailResponse getDetailByCode(String code);
+    GatheringDetailResponse getDetailByCode(String code, String currentMemberId);
 }
