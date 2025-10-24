@@ -1,6 +1,7 @@
 package com.booktalk_be.domain.member.service;
 
 
+import com.booktalk_be.domain.auth.model.entity.AuthorityType;
 import com.booktalk_be.domain.member.command.CreateMemberCommand;
 import com.booktalk_be.domain.member.command.ModifyMemberCommand;
 import com.booktalk_be.domain.member.model.entity.Member;
@@ -62,6 +63,12 @@ public class MemberService {
 
     public MemberInformationResponse getAuthenticationMember (Member member) {
         return new MemberInformationResponse(member);
+    }
+
+    public Member modifyRole(String id, AuthorityType role) {
+        Member member = getMemberById(Integer.parseInt(id));
+        member.modifyRole(role);
+        return memberRepository.save(member);
     }
 
     //Authentication 객체 호출 용, 시큐리티 컨텍스트에 저장된 정보를 얻기 위함

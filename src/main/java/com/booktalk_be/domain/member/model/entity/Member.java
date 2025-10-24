@@ -75,4 +75,9 @@ public class Member extends CommonTimeEntity {
         this.phoneNumber = memberDTO.getPhoneNumber();
         this.address = memberDTO.getAddress();
     }
+
+    public void modifyRole(AuthorityType authority) {
+        this.authority = authority;
+
+    }
 }

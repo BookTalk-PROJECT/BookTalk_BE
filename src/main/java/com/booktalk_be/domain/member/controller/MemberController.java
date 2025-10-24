@@ -104,4 +104,15 @@ public class MemberController {
                 .data(memberListDto)
                 .build());
     }
+
+    @PostMapping("/role/{userid}")
+    @Tag(name = "Member Role Manage API")
+    @Operation(summary = "회원 권한 변경", description = "회원의 권한을 수정합니다.")
+    public ResponseEntity<ResponseDto> modifyMemberRole(@PathVariable String userid) {
+        List<MemberInformationResponse> memberListDto = memberService.getMemberAllList();
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(memberListDto)
+                .build());
+    }
 }
