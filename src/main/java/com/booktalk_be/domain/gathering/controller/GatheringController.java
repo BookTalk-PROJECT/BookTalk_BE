@@ -69,11 +69,13 @@ public class GatheringController {
 
     @GetMapping("/detail/{code}")
     @Operation(summary = "모임 상세 조회", description = "code로 특정 모임의 상세 정보를 조회합니다.")
-    public ResponseEntity<ResponseDto> getDetail(@PathVariable String code, Principal principal) {
-        String memberId = principal.getName();
-        var result = gatheringService.getDetailByCode(code, memberId);
+    public ResponseEntity<ResponseDto> getDetail(
+            @PathVariable String code,
+            Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        var result = gatheringService.getDetailByCode(code, member.getMemberId());
 
-        System.out.println("멤버 아이디는 : "+memberId);
+        System.out.println("멤버 아이디는 : "+member.getMemberId());
 
         return ResponseEntity.ok(
                 ResponseDto.builder()
@@ -172,14 +174,9 @@ public class GatheringController {
     public ResponseEntity<ResponseDto> gatheringRequestSubmit(
             @PathVariable("code") String code,
             @Valid @RequestBody RecruitRequestCommand command,
-            Principal principal
+            Authentication authentication
     ) {
-        String memberId = (principal != null ? principal.getName() : null);
-        if (memberId == null || memberId.isBlank()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    ResponseDto.builder().code(401).msg("인증 필요").build()
-            );
-        }
+        Member memberId = (Member) authentication.getPrincipal();
 
         gatheringRecruitRequestService.submit(code, memberId, command);
 

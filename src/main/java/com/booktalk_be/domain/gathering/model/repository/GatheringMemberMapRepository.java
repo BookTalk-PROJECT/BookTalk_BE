@@ -16,5 +16,5 @@ public interface GatheringMemberMapRepository extends JpaRepository<GatheringMem
         where gm.code.code = :gatheringCode
           and gm.member.memberId = :memberId
     """)
-    Optional<Boolean> findMasterYn(String gatheringCode, String memberId);
+    Optional<Boolean> findMasterYn(String gatheringCode, int memberId);
 }

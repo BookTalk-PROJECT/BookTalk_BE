@@ -8,7 +8,6 @@ import com.booktalk_be.domain.gathering.model.repository.GatheringRepository;
 import com.booktalk_be.domain.gathering.model.repository.RecruitRequestRepository;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.member.model.repository.MemberRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,10 +25,10 @@ public class GatheringRecruitRequestServiceImpl implements GatheringRecruitReque
 
     @Override
     @Transactional
-    public void submit(String gatheringCode, String memberId, RecruitRequestCommand command) {
+    public void submit(String gatheringCode, Member memberId, RecruitRequestCommand command) {
         // 1) 레퍼런스 조회 (프록시)
         Gathering gatheringRef = gatheringRepository.getReferenceById(gatheringCode);
-        Member memberRef = memberRepository.getReferenceById(Integer.parseInt(memberId));
+        Member memberRef = memberRepository.getReferenceById(memberId.getMemberId());
 
 
         // 3) 신규 엔티티들 빌드 → List로 모아 saveAll

@@ -1,6 +1,5 @@
 package com.booktalk_be.domain.gathering.service;
 
-import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.model.entity.*;
 import com.booktalk_be.domain.gathering.model.repository.*;
@@ -22,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -109,17 +107,15 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     @Override
-    public GatheringDetailResponse getDetailByCode(String code, String currentMemberId) {
+    public GatheringDetailResponse getDetailByCode(String code, int currentMemberId) {
         var g = gatheringRepository.findByCodeAndDelYnFalse(code)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "모임을 찾을 수 없습니다."));
 
         int masterYn = 0;
-        if (currentMemberId != null && !currentMemberId.isBlank()) {
-            masterYn = gatheringMemberMapRepository
-                    .findMasterYn(code, currentMemberId)
-                    .map(b -> Boolean.TRUE.equals(b) ? 1 : 0)
-                    .orElse(0);
-        }
+        masterYn = gatheringMemberMapRepository
+                .findMasterYn(code, currentMemberId)
+                .map(b -> Boolean.TRUE.equals(b) ? 1 : 0)
+                .orElse(0);
 
         return GatheringDetailResponse.from(g, masterYn);
     }
