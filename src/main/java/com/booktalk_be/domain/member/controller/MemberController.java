@@ -6,15 +6,19 @@ import com.booktalk_be.domain.member.command.CreateMemberCommand;
 import com.booktalk_be.domain.member.command.ModifyMemberCommand;
 import com.booktalk_be.domain.member.command.ValidationMemberCommand;
 import com.booktalk_be.domain.member.model.entity.Member;
+import com.booktalk_be.domain.member.responseDto.MemberInformationResponse;
 import com.booktalk_be.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/member")
@@ -38,7 +42,9 @@ public class MemberController {
     @PatchMapping("/modify")
     @Tag(name = "Member Modify API")
     @Operation(summary = "회원 정보 수정", description = "기존 멤버의 정보를 수정합니다.")
-    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid ModifyMemberCommand cmd) {
+    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid ModifyMemberCommand cmd, Authentication authentication) {
+        Member member = memberService.modifyMember(cmd, authentication);
+        System.out.println("modify new Member :" + member.getName());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -73,6 +79,40 @@ public class MemberController {
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(Collections.singletonMap("isExistMember", isExistMember))
+                .build());
+    }
+
+    @GetMapping("/authentication")
+    @Tag(name = "Member Information API")
+    @Operation(summary = "회원 정보 조회", description = "현재 인증 된 회원 정보를 조회합니다.")
+    public ResponseEntity<ResponseDto> getAuthenticationMember(Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        MemberInformationResponse memberDto = memberService.getAuthenticationMember(member);
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(memberDto)
+                .build());
+    }
+
+    @GetMapping("/list")
+    @Tag(name = "Member List API")
+    @Operation(summary = "회원 전체 목록 조회", description = "회원 전체 목록을 조회합니다..")
+    public ResponseEntity<ResponseDto> getMemberList() {
+        List<MemberInformationResponse> memberListDto = memberService.getMemberAllList();
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(memberListDto)
+                .build());
+    }
+
+    @PostMapping("/role/{userid}")
+    @Tag(name = "Member Role Manage API")
+    @Operation(summary = "회원 권한 변경", description = "회원의 권한을 수정합니다.")
+    public ResponseEntity<ResponseDto> modifyMemberRole(@PathVariable String userid, @RequestParam String role) {
+        Member modifyRoleMember = memberService.modifyRole(userid, role);
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(modifyRoleMember)
                 .build());
     }
 }

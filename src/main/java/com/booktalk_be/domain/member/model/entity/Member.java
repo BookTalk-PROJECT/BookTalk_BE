@@ -1,7 +1,9 @@
 package com.booktalk_be.domain.member.model.entity;
 
+import com.booktalk_be.common.baseEntity.CommonTimeEntity;
 import com.booktalk_be.domain.auth.model.entity.AuthenticateType;
 import com.booktalk_be.domain.auth.model.entity.AuthorityType;
+import com.booktalk_be.domain.member.command.ModifyMemberCommand;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -13,7 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 @Table(name = "member")
-public class Member {
+public class Member extends CommonTimeEntity {
     @PrePersist
     public void generateId() {
         this.authority = AuthorityType.COMMON;
@@ -66,5 +68,16 @@ public class Member {
         this.address = address;
         this.gender = gender;
         this.birth = birth;
+    }
+
+    public void modify(ModifyMemberCommand memberDTO, String encordPassword) {
+        this.password = encordPassword;
+        this.phoneNumber = memberDTO.getPhoneNumber();
+        this.address = memberDTO.getAddress();
+    }
+
+    public void modifyRole(AuthorityType authority) {
+        this.authority = authority;
+
     }
 }
