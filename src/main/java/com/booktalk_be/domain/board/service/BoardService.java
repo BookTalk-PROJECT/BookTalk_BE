@@ -7,13 +7,11 @@ import com.booktalk_be.domain.board.command.CreateBoardCommand;
 import com.booktalk_be.domain.board.command.UpdateBoardCommand;
 import com.booktalk_be.domain.board.responseDto.BoardDetailResponse;
 import com.booktalk_be.domain.board.responseDto.BoardResponse;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.web.PagedModel;
+import com.booktalk_be.domain.member.model.entity.Member;
 
 public interface BoardService {
 
-    public void createBoard(CreateBoardCommand cmd);
+    public void createBoard(CreateBoardCommand cmd, Member member);
     public void modifyBoard(UpdateBoardCommand cmd);
     public void restrictBoard(RestrictCommand cmd);
     public void recoverBoard(String boardCode);
@@ -22,4 +20,5 @@ public interface BoardService {
     public PageResponseDto<BoardResponse> searchBoardsForPaging(Integer categoryId, Integer pageNum, Integer pageSize, PostSearchCondCommand cnd);
     public BoardDetailResponse getBoardDetail(String boardCode);
     public PageResponseDto<BoardResponse> getAllBoardsForPaging(Integer pageNum, Integer pageSize);
+    PageResponseDto<BoardResponse> getAllBoardsForPagingByMe(Integer pageNum, Integer pageSize, int memberId);
 }

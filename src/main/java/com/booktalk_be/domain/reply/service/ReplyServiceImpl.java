@@ -1,9 +1,8 @@
 package com.booktalk_be.domain.reply.service;
 
-import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.common.command.RestrictCommand;
 import com.booktalk_be.common.responseDto.PageResponseDto;
-import com.booktalk_be.domain.board.responseDto.BoardResponse;
+import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
 import com.booktalk_be.domain.reply.model.entity.Reply;
@@ -30,12 +29,13 @@ public class ReplyServiceImpl implements ReplyService {
     private final ReplyRepository replyRepository;
 
     @Override
-    public void createReply(CreateReplyCommand cmd) {
+    public void createReply(CreateReplyCommand cmd, Member member) {
         Reply reply;
         if (cmd.getParentReplyCode() == null) {
              reply = Reply.builder()
                      .postCode(cmd.getPostCode())
                      .content(cmd.getContent())
+                     .member(member)
                      .build();
         }else {
             Reply pReply = replyRepository.findById(cmd.getParentReplyCode())
@@ -44,6 +44,7 @@ public class ReplyServiceImpl implements ReplyService {
                     .postCode(cmd.getPostCode())
                     .content(cmd.getContent())
                     .parentReplyCode(pReply)
+                    .member(member)
                     .build();
         }
         replyRepository.save(reply);
@@ -121,5 +122,15 @@ public class ReplyServiceImpl implements ReplyService {
         Reply reply = replyRepository.findById(replyCode)
                 .orElseThrow(EntityNotFoundException::new);
         reply.recover();
+    }
+
+    @Override
+    public PageResponseDto<ReplySimpleResponse> getAllRepliesForPagingByMe(Integer pageNum, Integer pageSize, int memberId) {
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        Page<ReplySimpleResponse> page =  replyRepository.getAllRepliesForPagingByMe(pageable, memberId);
+        return PageResponseDto.<ReplySimpleResponse>builder()
+                .content(page.getContent())
+                .totalPages(page.getTotalPages())
+                .build();
     }
 }

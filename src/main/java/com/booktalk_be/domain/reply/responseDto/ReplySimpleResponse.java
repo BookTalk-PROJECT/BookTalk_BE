@@ -18,6 +18,7 @@ public class ReplySimpleResponse {
     private String postCode;
     @JsonProperty("member_id")
     private int memberId;
+    private String author;
     private String content;
     private Boolean delYn;
     private String deleteReason;

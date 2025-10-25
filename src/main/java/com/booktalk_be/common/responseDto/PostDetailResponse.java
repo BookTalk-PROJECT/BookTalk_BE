@@ -33,6 +33,8 @@ public class PostDetailResponse {
     private Boolean isLiked;
     @JsonProperty("notification_yn")
     private Boolean notificationYn;
+    @JsonProperty("del_yn")
+    private Boolean delYn;
     @JsonProperty("del_reason")
     private String delReason;
 }

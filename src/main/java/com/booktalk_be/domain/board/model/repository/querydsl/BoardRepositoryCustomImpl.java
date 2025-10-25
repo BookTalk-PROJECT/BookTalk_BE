@@ -38,10 +38,10 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         List<BoardResponse> content = select(Projections.fields(BoardResponse.class,
                 board.code.as("boardCode"),
                 board.title,
-//                board.member.name.as("author"),
+                board.member.name.as("author"),
                 Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.updateTime).as("date"),
                 board.views))
-//                .from(board).innerJoin(board.member)
+                .from(board).leftJoin(board.member)
                 .from(board)
                 .where(board.categoryId.eq(categoryId).and(board.delYn.eq(false)))
                 .orderBy(board.code.desc())
@@ -51,7 +51,7 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         Long total = Optional.ofNullable(
                 select(Wildcard.count)
                         .from(board)
-//                        .innerJoin(board.member)
+                        .leftJoin(board.member)
                         .where(board.categoryId.eq(categoryId).and(board.delYn.eq(false)))
                         .fetchOne())
                 .orElse(0L);
@@ -103,18 +103,20 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
     public CommuDetailResponse getBoardDetailBy(String boardCode) {
         return select(Projections.fields(CommuDetailResponse.class,
                 board.code.as("boardCode"),
-//                board.member.memberId.as("memberId"),
+                board.member.memberId.as("memberId"),
                 board.title.as("title"),
                 board.content.as("content"),
-//                board.member.name.as("author"),
+                board.member.name.as("author"),
                 board.views.as("views"),
                 board.likesCnt.as("likesCnt"),
                 Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.regTime).as("regDate"),
                 Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.updateTime).as("regDate"),
+                //TODO 좋아요 기능 추가 후 활성화
 //                Expressions.constant(false).as("isLiked"),
                 board.notificationYn.as("notificationYn"),
+                board.delYn.as("delYn"),
                 board.delReason.as("delReason")))
-//                .from(board).innerJoin(board.member)
+                .from(board).leftJoin(board.member)
                 .from(board)
                 .where(board.code.eq(boardCode))
                 .fetchOne();
@@ -126,14 +128,13 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 board.code.as("boardCode"),
                 board.title,
                 category.value.as("category"),
-//                board.member.name.as("author"),
+                board.member.name.as("author"),
                 Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.updateTime).as("date"),
                 board.views,
                 board.delYn,
                 board.delReason.as("deleteReason")))
-//                .from(board).innerJoin(board.member)
-                .from(board)
-                .leftJoin(category).on(board.categoryId.eq(category.categoryId))
+                .from(board).leftJoin(board.member)
+                .from(board).leftJoin(category).on(board.categoryId.eq(category.categoryId))
                 .orderBy(board.code.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -141,7 +142,34 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         Long total = Optional.ofNullable(
                         select(Wildcard.count)
                                 .from(board)
-//                        .innerJoin(board.member)
+                                .leftJoin(board.member)
+                                .fetchOne())
+                .orElse(0L);
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<BoardResponse> getAllBoardsForPagingByMe(Pageable pageable, int memberId) {
+        List<BoardResponse> content = select(Projections.fields(BoardResponse.class,
+                board.code.as("boardCode"),
+                board.title,
+                category.value.as("category"),
+                board.member.name.as("author"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.updateTime).as("date"),
+                board.views,
+                board.delYn,
+                board.delReason.as("deleteReason")))
+                .from(board).leftJoin(board.member)
+                .where(board.member.memberId.eq(memberId))
+                .from(board).leftJoin(category).on(board.categoryId.eq(category.categoryId))
+                .orderBy(board.code.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+        Long total = Optional.ofNullable(
+                        select(Wildcard.count)
+                                .from(board).leftJoin(board.member)
+                                .where(board.member.memberId.eq(memberId))
                                 .fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);
@@ -151,7 +179,6 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         return switch (type) {
             case TITLE -> board.title.containsIgnoreCase(keyword);
             case WRITER -> board.member.name.containsIgnoreCase(keyword);
-            default -> null;
         };
     }
 
