@@ -7,6 +7,7 @@ import com.booktalk_be.domain.gathering.model.entity.GatheringRecruitQuestionMap
 import com.booktalk_be.domain.gathering.model.entity.RecruitQuestion;
 import com.booktalk_be.domain.gathering.model.repository.GatheringRecruitQuestionMapRepository;
 import com.booktalk_be.domain.gathering.model.repository.RecruitQuestionRepository;
+import com.booktalk_be.domain.gathering.responseDto.RecruitQuestionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -40,5 +41,13 @@ public class GatheringRecruitQuestionServiceImpl implements GatheringRecruitQues
                     .toList();
             gatheringRecruitQuestionMapRepository.saveAll(questionMaps);
         }
+    }
+
+    @Override
+    public List<RecruitQuestionResponse> getRecruitQuestions(String gatheringCode) {
+        return gatheringRecruitQuestionMapRepository.findAllByGatheringCodeOrderByQuestionOrder(gatheringCode)
+                .stream()
+                .map(RecruitQuestionResponse::from)
+                .toList();
     }
 }

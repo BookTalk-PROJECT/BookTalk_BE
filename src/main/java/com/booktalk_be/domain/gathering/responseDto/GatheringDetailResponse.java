@@ -1,42 +1,53 @@
+// src/main/java/com/booktalk_be/domain/gathering/responseDto/GatheringDetailResponse.java
 package com.booktalk_be.domain.gathering.responseDto;
 
-
 import com.booktalk_be.domain.gathering.model.entity.Gathering;
-import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.List;
 
 @Getter
 @AllArgsConstructor
 @Builder
 public class GatheringDetailResponse {
 
-    private String code;                 // PK
-    private String name;                 // 모임 이름
-    private GatheringStatus status;      // 상태 (문자열 저장 권장)
-    private Long recruitmentPersonnel;   // 모집 인원수
-    private String recruitmentPeriod;    // 모집 기간
-    private String activityPeriod;       // 활동 기간
-    private String emdCd;                // 읍면동 코드
-    private String sigCd;                // 행정구역 코드
-    private String imageUrl;             // 이미지 경로
-    private String summary;              // 모임소개
+    private String gatheringCode;
+    private String name;
+    private int status;
+    private Long recruitmentPersonnel;
+    private String recruitmentPeriod;
+    private String activityPeriod;
+    private String emdCd;
+    private String sigCd;
+    private String summary;
 
-    public static GatheringDetailResponse from(Gathering g) {
+    private boolean delYn;
+    private String delReason;
+
+    /** 모임 개설자 여부 (1: 개설자, 0: 일반/비회원) */
+    private int masterYn;
+
+    // 기존 from(Gathering) 대신 masterYn을 받는 팩토리 사용
+    public static GatheringDetailResponse from(Gathering g, int masterYn) {
         return GatheringDetailResponse.builder()
-                .code(g.getCode())
+                .gatheringCode(g.getCode())
                 .name(g.getName())
-                .status(g.getStatus())
+                .status(asInt(g.getStatus()))
                 .recruitmentPersonnel(g.getRecruitmentPersonnel())
                 .recruitmentPeriod(g.getRecruitmentPeriod())
                 .activityPeriod(g.getActivityPeriod())
                 .emdCd(g.getEmdCd())
                 .sigCd(g.getSigCd())
-                .imageUrl(g.getImageUrl())
                 .summary(g.getSummary())
+                .delYn(Boolean.TRUE.equals(g.getDelYn()))
+                .delReason(g.getDelReason())
+                .masterYn(masterYn)
                 .build();
+    }
+
+    private static int asInt(Object v) {
+        if (v == null) return 0;
+        if (v instanceof Number n) return n.intValue();
+        try { return Integer.parseInt(String.valueOf(v)); } catch (Exception e) { return 0; }
     }
 }
