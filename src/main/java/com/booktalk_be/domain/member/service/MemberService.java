@@ -65,9 +65,9 @@ public class MemberService {
         return new MemberInformationResponse(member);
     }
 
-    public Member modifyRole(String id, AuthorityType role) {
+    public Member modifyRole(String id, String role) {
         Member member = getMemberById(Integer.parseInt(id));
-        member.modifyRole(role);
+        member.modifyRole(AuthorityType.valueOf(role));
         return memberRepository.save(member);
     }
 

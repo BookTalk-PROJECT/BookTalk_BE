@@ -108,11 +108,11 @@ public class MemberController {
     @PostMapping("/role/{userid}")
     @Tag(name = "Member Role Manage API")
     @Operation(summary = "회원 권한 변경", description = "회원의 권한을 수정합니다.")
-    public ResponseEntity<ResponseDto> modifyMemberRole(@PathVariable String userid) {
-        List<MemberInformationResponse> memberListDto = memberService.getMemberAllList();
+    public ResponseEntity<ResponseDto> modifyMemberRole(@PathVariable String userid, @RequestParam String role) {
+        Member modifyRoleMember = memberService.modifyRole(userid, role);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
-                .data(memberListDto)
+                .data(modifyRoleMember)
                 .build());
     }
 }
