@@ -28,17 +28,18 @@ public class SecurityConfig  {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/uploads/images/**", "/login","/gathering/**", "/community/**", "/reply/**", "/member/**", "/dashboard/**", "/token-refresh", "/error","/api/nlk/**").permitAll()
+                        .requestMatchers("/uploads/images/**", "/login","/gathering/**", "/community/**", "/reply/**", "/member/**", "/dashboard/**", "/token-refresh", "/error","/api/nlk/**","/oauth/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/oauth/logincomplete", true))
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(new CustomAuthenticationEntryPointHandler())
-                        .accessDeniedHandler(new CustomAccessDeniedHandler()));
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+//                .exceptionHandling(exception -> exception
+//                        .authenticationEntryPoint(new CustomAuthenticationEntryPointHandler())
+//                        .accessDeniedHandler(new CustomAccessDeniedHandler()));
 
         return http.build();
     }
