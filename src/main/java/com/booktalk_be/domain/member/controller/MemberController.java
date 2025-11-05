@@ -87,6 +87,7 @@ public class MemberController {
     @Operation(summary = "회원 정보 조회", description = "현재 인증 된 회원 정보를 조회합니다.")
     public ResponseEntity<ResponseDto> getAuthenticationMember(Authentication authentication) {
         Member member = (Member) authentication.getPrincipal();
+        System.out.println("게또 이메일"+ member.getEmail());
         MemberInformationResponse memberDto = memberService.getAuthenticationMember(member);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
