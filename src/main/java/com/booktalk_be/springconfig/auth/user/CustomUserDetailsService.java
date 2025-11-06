@@ -1,5 +1,6 @@
 package com.booktalk_be.springconfig.auth.user;
 
+import com.booktalk_be.domain.auth.model.entity.AuthenticateType;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.member.model.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Member member = memberRepository.findByEmail(username)
+        Member member = memberRepository.findByEmailAndAuthType(username, AuthenticateType.OWN)
                 .orElseThrow(() -> new UsernameNotFoundException("해당 사용자를 찾을 수 없습니다 : "+username));
         return new CustomUserDetails(member);
     }

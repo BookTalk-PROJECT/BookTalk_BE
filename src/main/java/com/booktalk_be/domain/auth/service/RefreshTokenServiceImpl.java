@@ -43,4 +43,10 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         Member member = memberRepository.findById(memberId).orElseThrow(EntityNotFoundException::new);
         return refreshTokenRepository.findByMember(member);
     }
+
+    @Override
+    public void deleteRefreshToken(int memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(EntityNotFoundException::new);
+        refreshTokenRepository.deleteByMember(member);
+    }
 }

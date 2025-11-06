@@ -2,40 +2,34 @@ package com.booktalk_be.domain.auth.controller;
 
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.auth.command.LoginDTO;
-import com.booktalk_be.domain.auth.service.LoginService;
-import com.booktalk_be.springconfig.auth.jwt.JwtProvider;
-import com.booktalk_be.springconfig.auth.user.CustomUserDetails;
+import com.booktalk_be.domain.auth.service.AuthService;
+import com.booktalk_be.domain.auth.service.RefreshTokenService;
+import com.booktalk_be.domain.member.model.entity.Member;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
-import org.apache.juli.logging.Log;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.security.core.Authentication;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-public class LoginController {
+public class AuthController {
 
-    private final LoginService loginService;
+    private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginData, HttpServletResponse response) {
         try {
-            Map<String, String> tokens = loginService.login(loginData);
+            Map<String, String> tokens = authService.login(loginData);
 
             String accessToken  = tokens.get("accessToken");
             String refreshToken = tokens.get("refreshToken");
@@ -43,10 +37,10 @@ public class LoginController {
             // 1) Refresh Token을 HttpOnly 쿠키로 전달
             ResponseCookie rtCookie = ResponseCookie.from("refresh_token", refreshToken)
                     .httpOnly(true)
-//                    .secure(true)
+                    .secure(false)
+                    .path("/")
                     .sameSite("Lax")
-                    .path("/auth/refresh")
-                    .maxAge(Duration.ofDays(30))
+                    .maxAge(Duration.ofDays(7))
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());
 
@@ -69,6 +63,22 @@ public class LoginController {
                     .build());
         }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response, Authentication authentication) {
+            refreshTokenService.deleteRefreshToken(((Member) authentication.getPrincipal()).getMemberId());
+
+            ResponseCookie rtCookie = ResponseCookie.from("refresh_token", null)
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/")
+                    .sameSite("Lax")
+                    .maxAge(Duration.ofDays(7))
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());
+
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
 }
-
-

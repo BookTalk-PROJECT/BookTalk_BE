@@ -47,17 +47,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         ResponseCookie accessCookie = ResponseCookie.from("access_token", accessToken)
                 .httpOnly(false)
-//                .secure(true)
-                .sameSite("Lax")
+                .secure(false)
                 .path("/")
+                .sameSite("Lax") //
+                .maxAge(Duration.ofDays(7))
                 .build();
 
         ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
-//                    .secure(true)
+                .secure(false)
+                .path("/")
                 .sameSite("Lax")
-                .path("/auth/refresh")
-                .maxAge(Duration.ofDays(30))
+                .maxAge(Duration.ofDays(7))
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
