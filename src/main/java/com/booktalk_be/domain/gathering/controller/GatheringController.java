@@ -10,6 +10,7 @@ import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.model.repository.GatheringMemberMapRepository;
 import com.booktalk_be.domain.gathering.responseDto.BookItemResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
+import com.booktalk_be.domain.gathering.responseDto.GatheringEditInitResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringBookMapService;
 import com.booktalk_be.domain.gathering.service.GatheringRecruitQuestionService;
@@ -123,6 +124,20 @@ public class GatheringController {
                         .data(data) // Object 자리에 List<BookItemResponse> 들어감
                         .build()
         );
+    }
+
+    @GetMapping("/{code}")
+    @Operation(summary = "모임 상세+편집 초기값 조회", description = "기존 상세 정보에 책/질문/해시태그를 합친 편집 초기 데이터를 반환합니다.")
+    public ResponseEntity<GatheringEditInitResponse> getDetailForEdit(
+            @PathVariable String code,
+            Authentication authentication
+    ) {
+        int memberId = 0;
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof Member m) {
+            memberId = m.getMemberId();
+        }
+        return ResponseEntity.ok(gatheringService.getEditInitByCode(code, memberId));
     }
 
     @PatchMapping("/modify")

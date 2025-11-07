@@ -4,7 +4,10 @@ import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.model.entity.*;
 import com.booktalk_be.domain.gathering.model.repository.*;
 import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
+import com.booktalk_be.domain.gathering.responseDto.GatheringEditInitResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
+import com.booktalk_be.domain.hashtag.model.entity.HashTag;
+import com.booktalk_be.domain.hashtag.model.entity.HashTagMap;
 import com.booktalk_be.domain.hashtag.service.HashTagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -119,4 +124,53 @@ public class GatheringServiceImpl implements GatheringService {
 
         return GatheringDetailResponse.from(g, masterYn);
     }
+
+    // ====== 편집 초기값(상세 + 책/질문/태그) ======
+    @Transactional(readOnly = true)
+    @Override
+    public GatheringEditInitResponse getEditInitByCode(String code, int currentMemberId) {
+        Gathering gathering = gatheringRepository.findByCodeAndDelYnFalse(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "모임을 찾을 수 없습니다."));
+
+        GatheringDetailResponse base = getDetailByCode(code, currentMemberId);
+
+        var bookRows = gatheringBookMapService.findAllByGathering(gathering);
+        var books = bookRows.stream()
+                .sorted(Comparator.comparing(GatheringBookMap::getOrder, Comparator.nullsLast(Integer::compareTo)))
+                .map(b -> GatheringEditInitResponse.BookItem.builder()
+                        .isbn(b.getIsbn())
+                        .name(b.getName())
+                        .order(b.getOrder() == null ? null : b.getOrder().longValue())
+                        .complete_yn(Boolean.TRUE.equals(b.getCompleteYn()) ? "1" : "0")
+                        .startDate(b.getStartDate())
+                        .build())
+                .toList();
+
+        var qMaps = gatheringRecruitQuestionService.findAllByGathering(gathering);
+        var questions = qMaps.stream()
+                .map(GatheringRecruitQuestionMap::getRecruitQuestion)
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(RecruitQuestion::getOrder, Comparator.nullsLast(Integer::compareTo)))
+                .map(q -> GatheringEditInitResponse.QuestionItem.builder()
+                        .id(q.getRecruit_question())
+                        .order(q.getOrder())
+                        .question(q.getQuestion())
+                        .build())
+                .toList();
+
+        var hashtags = hashTagService.findAllByGathering(gathering).stream()
+                .map(HashTagMap::getHashtagId)
+                .filter(Objects::nonNull)
+                .map(HashTag::getValue)
+                .toList();
+
+        return GatheringEditInitResponse.builder()
+                .base(base)
+                .imageUrl(gathering.getImageUrl())   // ★ 여기
+                .books(books)
+                .questions(questions)
+                .hashtags(hashtags)
+                .build();
+    }
+
 }

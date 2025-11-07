@@ -7,6 +7,7 @@ import com.booktalk_be.domain.gathering.model.repository.GatheringBookMapReposit
 import com.booktalk_be.domain.gathering.responseDto.BookItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -39,5 +40,11 @@ public class GatheringBookMapServiceImpl implements GatheringBookMapService {
         return gatheringBookMapRepository.findAllByGatheringCode(code).stream()
                 .map(BookItemResponse::from)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GatheringBookMap> findAllByGathering(Gathering gathering) {
+        return gatheringBookMapRepository.findAllByCode(gathering);
     }
 }
