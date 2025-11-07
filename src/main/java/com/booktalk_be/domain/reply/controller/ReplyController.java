@@ -1,9 +1,8 @@
 package com.booktalk_be.domain.reply.controller;
 
-import com.booktalk_be.common.command.PostSearchCondCommand;
+import com.booktalk_be.common.command.ReplySearchCondCommand;
 import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.common.utils.ResponseDto;
-import com.booktalk_be.domain.board.responseDto.BoardResponse;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
@@ -104,13 +103,45 @@ public class ReplyController {
                 .build());
     }
 
+    @PostMapping("/mylist/search")
+    @Tag(name = "Reply API")
+    @Operation(summary = "내가 쓴 댓글 검색", description = "내가 쓴 댓글 목록을 검색합니다.")
+    public ResponseEntity<ResponseDto> searchCommunityCommentList(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestBody @Valid ReplySearchCondCommand cmd,
+            Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<ReplySimpleResponse> page =  replyService.searchAllRepliesForPagingByMe(cmd, pageNum, pageSize, member.getMemberId());
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
+                .build());
+    }
+
     //관리자 페이지 댓글 조회 API
     @GetMapping("/admin/all")
     @Tag(name = "AdminPage API")
-    @Operation(summary = "관리자 댓글 관리", description = "관리자 권한으로 모든 댓글을 조회합니다.")
+    @Operation(summary = "관리자 댓글 조회", description = "관리자 권한으로 모든 댓글을 조회합니다.")
     public ResponseEntity<ResponseDto> getCommentList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
                                                       @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
         PageResponseDto<ReplySimpleResponse> page =  replyService.getAllRepliesForPaging(pageNum, pageSize);
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
+                .build());
+    }
+
+    @PostMapping("/admin/search")
+    @Tag(name = "AdminPage API")
+    @Operation(summary = "관리자 댓글 검색", description = "관리자 권한으로 모든 댓글을 검색합니다.")
+    public ResponseEntity<ResponseDto> searchCommentList(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestBody @Valid ReplySearchCondCommand cmd,
+            Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<ReplySimpleResponse> page =  replyService.searchAllRepliesForPaging(cmd, pageNum, pageSize, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)

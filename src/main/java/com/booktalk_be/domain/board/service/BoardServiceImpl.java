@@ -88,7 +88,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public PageResponseDto<BoardResponse> searchBoardsForPaging(
             Integer categoryId, Integer pageNum, Integer pageSize, PostSearchCondCommand cnd) {
-        Pageable pageable = PageRequest.of(pageNum, pageSize);
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
         Page<BoardResponse> page = boardRepository.searchBoardsForPaging(categoryId, pageable, cnd);
         return PageResponseDto.<BoardResponse>builder()
                 .content(page.getContent())
@@ -126,5 +126,35 @@ public class BoardServiceImpl implements BoardService {
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())
                 .build();
+    }
+
+    @Override
+    public PageResponseDto<BoardResponse> searchAllBoardsForPagingByMe(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        Page<BoardResponse> page =  boardRepository.searchAllBoardsForPagingByMe(cmd, pageable, memberId);
+        return PageResponseDto.<BoardResponse>builder()
+                .content(page.getContent())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public PageResponseDto<BoardResponse> searchAllBoardsForPaging(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        Page<BoardResponse> page =  boardRepository.searchAllBoardsForPaging(cmd, pageable, memberId);
+        return PageResponseDto.<BoardResponse>builder()
+                .content(page.getContent())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public String queryNextBoard(String boardCode, Integer categoryId) {
+        return boardRepository.queryNextBoard(boardCode, categoryId);
+    }
+
+    @Override
+    public String queryPrevBoard(String boardCode, Integer categoryId) {
+        return boardRepository.queryPrevBoard(boardCode, categoryId);
     }
 }

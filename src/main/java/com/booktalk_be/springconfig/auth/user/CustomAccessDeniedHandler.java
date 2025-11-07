@@ -21,7 +21,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException{
         log.info("[CustomAccessDeniedHandler] :: {}", accessDeniedException.getMessage());
         log.info("[CustomAccessDeniedHandler] :: {}", request.getRequestURL());
-        log.info("[CustomAccessDeniedHandler] :: 토근 정보가 만료되었거나 존재하지 않음");
+        log.info("[CustomAccessDeniedHandler] :: 토큰 정보가 만료되었거나 존재하지 않음");
 
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setCharacterEncoding("UTF-8");

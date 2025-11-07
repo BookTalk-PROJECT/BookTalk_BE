@@ -4,12 +4,8 @@ import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
-import com.booktalk_be.domain.gathering.command.CreateRecruitRequest;
 import com.booktalk_be.domain.gathering.command.RecruitRequestCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
-import com.booktalk_be.domain.gathering.model.repository.GatheringMemberMapRepository;
-import com.booktalk_be.domain.gathering.responseDto.BookItemResponse;
-import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringBookMapService;
 import com.booktalk_be.domain.gathering.service.GatheringRecruitQuestionService;
@@ -27,9 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

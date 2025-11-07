@@ -35,7 +35,7 @@ public class MemberService {
     public List<MemberInformationResponse> getMemberAllList () {
         List<MemberInformationResponse> allMemberList = memberRepository.findAll()
                 .stream()
-                .map(member -> new MemberInformationResponse(member))
+                .map(MemberInformationResponse::new)
                 .toList();
         if(allMemberList.isEmpty()){
             throw new EntityNotFoundException("member list is empty.");
