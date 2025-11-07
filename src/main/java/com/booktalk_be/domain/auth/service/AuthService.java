@@ -6,4 +6,5 @@ import java.util.Map;
 
 public interface AuthService {
     Map<String, String> login(LoginDTO loginData);
+    Map<String, String> reissueToken(String refreshToken);
 }

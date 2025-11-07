@@ -30,7 +30,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         Member member = memberRepository.findById(memberId).orElseThrow(EntityNotFoundException::new);
         String refreshToken = null;
         if (member != null) {
-            refreshToken = jwtProvider.generateRefreshToken(member.getEmail());
+            refreshToken = jwtProvider.generateRefreshToken(member.getEmail(), member.getMemberId());
         }
         Refresh_Token token_entity = Refresh_Token.builder()
                 .user(member)
