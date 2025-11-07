@@ -9,6 +9,7 @@ import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.hashtag.model.entity.HashTag;
 import com.booktalk_be.domain.hashtag.model.entity.HashTagMap;
 import com.booktalk_be.domain.hashtag.service.HashTagService;
+import com.booktalk_be.domain.member.model.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +39,13 @@ public class GatheringServiceImpl implements GatheringService {
     private final GatheringBookMapService gatheringBookMapService;
     private final GatheringRecruitQuestionService  gatheringRecruitQuestionService;
     private final HashTagService hashTagService;
+
+    //모임 리스트 전체조회 비즈니스 로직
+    @Override
+    public Page<GatheringResponse> getList(GatheringStatus status, String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return gatheringRepository.findGatheringList(status, search, pageable);
+    }
 
     // 모임개설 비즈니스 로직
     @Transactional
@@ -104,12 +112,7 @@ public class GatheringServiceImpl implements GatheringService {
         }
     }
 
-    //모임 리스트 전체조회 비즈니스 로직
-    @Override
-    public Page<GatheringResponse> getList(GatheringStatus status, String search, int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        return gatheringRepository.findGatheringList(status, search, pageable);
-    }
+
 
     @Override
     public GatheringDetailResponse getDetailByCode(String code, int currentMemberId) {
@@ -173,4 +176,27 @@ public class GatheringServiceImpl implements GatheringService {
                 .build();
     }
 
+    @Transactional
+    @Override
+    public void softDeleteGathering(String code, String reason, Member member) {
+        // 권한 체크: 방장만 삭제 가능
+        int memberId = Objects.requireNonNull(member, "로그인이 필요합니다.").getMemberId();
+
+        var gathering = gatheringRepository.findByCodeAndDelYnFalse(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "이미 삭제되었거나 존재하지 않는 모임입니다."));
+
+        boolean isMaster = gatheringMemberMapRepository
+                .findMasterYn(code, memberId)
+                .map(Boolean::booleanValue)
+                .orElse(false);
+        if (!isMaster) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
+        }
+
+        int updated = gatheringRepository.softDelete(code, reason);
+        if (updated == 0) {
+            // 동시성 등으로 이미 삭제되었을 수 있음
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 삭제된 모임입니다.");
+        }
+    }
 }
