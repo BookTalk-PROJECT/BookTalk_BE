@@ -1,10 +1,8 @@
 package com.booktalk_be.domain.board.model.repository.querydsl;
 
-import com.booktalk_be.common.command.KeywordType;
 import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.domain.board.model.repository.BoardRepositoryCustom;
 import com.booktalk_be.common.utils.Querydsl4RepositorySupport;
-import com.booktalk_be.domain.board.responseDto.BoardDetailResponse;
 import com.booktalk_be.domain.board.responseDto.BoardResponse;
 import com.booktalk_be.domain.board.responseDto.CommuDetailResponse;
 import com.querydsl.core.BooleanBuilder;
@@ -65,19 +63,16 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 board.code.as("boardCode"),
                 board.title,
                 board.member.name.as("author"),
-                Expressions.dateTemplate(
-                        LocalDate.class,
-                        "DATE({0})", board.updateTime
-                ).as("date"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.updateTime).as("date"),
                 board.views))
-                .from(board).innerJoin(board.member);
+                .from(board).leftJoin(board.member);
         JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
                 select(Wildcard.count)
-                .from(board).innerJoin(board.member);
+                .from(board).leftJoin(board.member);
 
         BooleanBuilder searchCondition = new BooleanBuilder();
         if (cmd.getKeyword() != null && !cmd.getKeyword().isEmpty()) {
-            searchCondition.and(keywordFilter(cmd.getKeywordType(), cmd.getKeyword()));
+            searchCondition.and(keywordFilter(cmd.getType(), cmd.getKeyword()));
         }
         if (cmd.getStartDate() != null || cmd.getEndDate() != null) {
             searchCondition.and(dateFilter(cmd.getStartDate(), cmd.getEndDate()));
@@ -91,11 +86,10 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-        Long total = Optional.ofNullable(
-                pageQuery
+        Long total = Optional.ofNullable(pageQuery
                         .where(board.categoryId.eq(categoryId).and(board.delYn.eq(false)))
-                        .fetchOne())
-                .orElse(0L);
+                        .fetchOne()
+                ).orElse(0L);
         return new PageImpl<>(content, pageable, total);
     }
 
@@ -149,6 +143,72 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
     }
 
     @Override
+    public Page<BoardResponse> searchAllBoardsForPaging(PostSearchCondCommand cmd, Pageable pageable, int memberId) {
+        JPAQueryBase<BoardResponse, JPAQuery<BoardResponse>> baseQuery =
+                select(Projections.fields(BoardResponse.class,
+                        board.code.as("boardCode"),
+                        board.title,
+                        category.value.as("category"),
+                        board.member.name.as("author"),
+                        Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.updateTime).as("date"),
+                        board.views,
+                        board.delYn,
+                        board.delReason.as("deleteReason")))
+                        .from(board).leftJoin(board.member);
+
+        JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
+                select(Wildcard.count)
+                        .from(board)
+                        .leftJoin(board.member);
+
+        BooleanBuilder searchCondition = new BooleanBuilder();
+        if (cmd.getKeyword() != null && !cmd.getKeyword().isEmpty()) {
+            searchCondition.and(keywordFilter(cmd.getType(), cmd.getKeyword()));
+        }
+        if (cmd.getStartDate() != null || cmd.getEndDate() != null) {
+            searchCondition.and(dateFilter(cmd.getStartDate(), cmd.getEndDate()));
+        }
+        baseQuery.where(searchCondition);
+        pageQuery.where(searchCondition);
+
+        List<BoardResponse> content = baseQuery
+                .from(board).leftJoin(category).on(board.categoryId.eq(category.categoryId))
+                .orderBy(board.code.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+        Long total = Optional.ofNullable(pageQuery
+                .where(board.member.memberId.eq(memberId))
+                .fetchOne()
+        ).orElse(0L);
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public String queryNextBoard(String boardCode, Integer categoryId) {
+        return select(board.code.as("boardCode"))
+                .from(board)
+                .where(board.code.gt(boardCode)
+                        .and(board.categoryId.eq(categoryId))
+                        .and(board.delYn.eq(false)))
+                .orderBy(board.code.asc())
+                .limit(1)
+                .fetchOne();
+    }
+
+    @Override
+    public String queryPrevBoard(String boardCode, Integer categoryId) {
+        return select(board.code.as("boardCode"))
+                .from(board)
+                .where(board.code.lt(boardCode)
+                        .and(board.categoryId.eq(categoryId))
+                        .and(board.delYn.eq(false)))
+                .orderBy(board.code.desc())
+                .limit(1)
+                .fetchOne();
+    }
+
+    @Override
     public Page<BoardResponse> getAllBoardsForPagingByMe(Pageable pageable, int memberId) {
         List<BoardResponse> content = select(Projections.fields(BoardResponse.class,
                 board.code.as("boardCode"),
@@ -166,6 +226,7 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
         Long total = Optional.ofNullable(
                         select(Wildcard.count)
                                 .from(board).leftJoin(board.member)
@@ -175,10 +236,62 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         return new PageImpl<>(content, pageable, total);
     }
 
-    private BooleanExpression keywordFilter(KeywordType type, String keyword) {
+    @Override
+    public Page<BoardResponse> searchAllBoardsForPagingByMe(PostSearchCondCommand cmd, Pageable pageable, int memberId) {
+        JPAQueryBase<BoardResponse, JPAQuery<BoardResponse>> baseQuery =
+                select(Projections.fields(BoardResponse.class,
+                board.code.as("boardCode"),
+                board.title,
+                category.value.as("category"),
+                board.member.name.as("author"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.updateTime).as("date"),
+                board.views,
+                board.delYn,
+                board.delReason.as("deleteReason")))
+                .from(board).leftJoin(board.member);
+
+        JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
+                select(Wildcard.count)
+                        .from(board)
+                        .leftJoin(board.member);
+
+        BooleanBuilder searchCondition = new BooleanBuilder();
+        if (cmd.getKeyword() != null && !cmd.getKeyword().isEmpty()) {
+            searchCondition.and(keywordFilter(cmd.getType(), cmd.getKeyword()));
+        }
+        if (cmd.getStartDate() != null || cmd.getEndDate() != null) {
+            searchCondition.and(dateFilter(cmd.getStartDate(), cmd.getEndDate()));
+        }
+        baseQuery.where(searchCondition);
+        pageQuery.where(searchCondition);
+
+        List<BoardResponse> content = baseQuery
+                .where(board.member.memberId.eq(memberId))
+                .from(board).leftJoin(category).on(board.categoryId.eq(category.categoryId))
+                .orderBy(board.code.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+        Long total = Optional.ofNullable(pageQuery
+                        .where(board.member.memberId.eq(memberId))
+                        .fetchOne()
+                ).orElse(0L);
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    private BooleanExpression keywordFilter(PostSearchCondCommand.PostKeywordType type, String keyword) {
+        if(type == PostSearchCondCommand.PostKeywordType.CATEGORY) {
+            List<Integer> matchedIds = select(category.categoryId)
+                    .from(category)
+                    .where(category.value.contains(keyword))
+                    .fetch();
+            return board.categoryId.in(matchedIds);
+        }
         return switch (type) {
+            case BOARD_CODE -> board.code.eq(keyword);
             case TITLE -> board.title.containsIgnoreCase(keyword);
-            case WRITER -> board.member.name.containsIgnoreCase(keyword);
+            case AUTHOR -> board.member.name.containsIgnoreCase(keyword);
+            default -> null;
         };
     }
 

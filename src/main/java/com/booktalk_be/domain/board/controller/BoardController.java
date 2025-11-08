@@ -14,14 +14,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/community/board")
@@ -43,7 +39,8 @@ public class BoardController {
                 .data(page)
                 .build());
     }
-    @GetMapping("/list/search")
+
+    @PostMapping("/list/search")
     @Tag(name = "Community Board API")
     @Operation(summary = "커뮤니티 게시글 목록 검색", description = "검색 조건과 카테고리에 맞는 게시글 목록을 조회합니다.")
     public ResponseEntity<ResponseDto> getList(@RequestParam(value = "categoryId", required = true) Integer categoryId,
@@ -68,6 +65,34 @@ public class BoardController {
                     .data("삭제된 게시글 입니다.")
                     .build(), HttpStatus.BAD_REQUEST);
         }
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(res)
+                .build());
+    }
+
+    @GetMapping("/query/next")
+    @Tag(name = "Community Board API")
+    @Operation(summary = "커뮤니티 게시글 다음 글 코드 조회", description = "다음 게시글의 글 코드를 조회합니다.")
+    public ResponseEntity<ResponseDto> queryNextBoard(
+            @RequestParam String boardCode,
+            @RequestParam Integer categoryId
+            ) {
+        String res = boardService.queryNextBoard(boardCode, categoryId);
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(res)
+                .build());
+    }
+
+    @GetMapping("/query/prev")
+    @Tag(name = "Community Board API")
+    @Operation(summary = "커뮤니티 게시글 이전 글 코드 조회", description = "이전 게시글의 글 코드를 조회합니다.")
+    public ResponseEntity<ResponseDto> queryPrevBoard(
+            @RequestParam String boardCode,
+            @RequestParam Integer categoryId
+    ) {
+        String res = boardService.queryPrevBoard(boardCode, categoryId);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(res)
@@ -140,6 +165,23 @@ public class BoardController {
                 .build());
     }
 
+    @PostMapping("/admin/search")
+    @Tag(name = "Community Board API")
+    @Operation(summary = "관리자 페이지 커뮤니티 게시글 검색", description = "관리자 페이지의 모든 커뮤니티 게시글을 검색합니다.")
+    public ResponseEntity<ResponseDto> searchAdminPage(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestBody @Valid PostSearchCondCommand cmd,
+            Authentication authentication
+    ) {
+        Member member =  (Member) authentication.getPrincipal();
+        PageResponseDto<BoardResponse> page =  boardService.searchAllBoardsForPaging(cmd, pageNum, pageSize, member.getMemberId());
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
+                .build());
+    }
+
     //마이 페이지 내 커뮤니티 게시글 조회 API
     @GetMapping("/mylist")
     @Tag(name = "Community Board API")
@@ -151,6 +193,22 @@ public class BoardController {
     ) {
         Member member =  (Member) authentication.getPrincipal();
         PageResponseDto<BoardResponse> page =  boardService.getAllBoardsForPagingByMe(pageNum, pageSize, member.getMemberId());
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
+                .build());
+    }
+    @PostMapping("/mylist/search")
+    @Tag(name = "Community Board API")
+    @Operation(summary = "마이 페이지 커뮤니티 게시글 검색", description = "마이 페이지의 커뮤니티 게시글을 검색합니다.")
+    public ResponseEntity<ResponseDto> searchCommunityBoardList(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestBody @Valid PostSearchCondCommand cmd,
+            Authentication authentication
+    ) {
+        Member member =  (Member) authentication.getPrincipal();
+        PageResponseDto<BoardResponse> page =  boardService.searchAllBoardsForPagingByMe(cmd, pageNum, pageSize, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)

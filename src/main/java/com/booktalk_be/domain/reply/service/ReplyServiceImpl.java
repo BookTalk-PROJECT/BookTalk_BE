@@ -1,5 +1,6 @@
 package com.booktalk_be.domain.reply.service;
 
+import com.booktalk_be.common.command.ReplySearchCondCommand;
 import com.booktalk_be.common.command.RestrictCommand;
 import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.domain.member.model.entity.Member;
@@ -128,6 +129,26 @@ public class ReplyServiceImpl implements ReplyService {
     public PageResponseDto<ReplySimpleResponse> getAllRepliesForPagingByMe(Integer pageNum, Integer pageSize, int memberId) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
         Page<ReplySimpleResponse> page =  replyRepository.getAllRepliesForPagingByMe(pageable, memberId);
+        return PageResponseDto.<ReplySimpleResponse>builder()
+                .content(page.getContent())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        Page<ReplySimpleResponse> page =  replyRepository.searchAllRepliesForPagingByMe(cmd, pageable, memberId);
+        return PageResponseDto.<ReplySimpleResponse>builder()
+                .content(page.getContent())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        Page<ReplySimpleResponse> page =  replyRepository.searchAllRepliesForPaging(cmd, pageable, memberId);
         return PageResponseDto.<ReplySimpleResponse>builder()
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())

@@ -8,6 +8,7 @@ import com.booktalk_be.domain.board.command.UpdateBoardCommand;
 import com.booktalk_be.domain.board.responseDto.BoardDetailResponse;
 import com.booktalk_be.domain.board.responseDto.BoardResponse;
 import com.booktalk_be.domain.member.model.entity.Member;
+import jakarta.validation.Valid;
 
 public interface BoardService {
 
@@ -21,4 +22,9 @@ public interface BoardService {
     public BoardDetailResponse getBoardDetail(String boardCode);
     public PageResponseDto<BoardResponse> getAllBoardsForPaging(Integer pageNum, Integer pageSize);
     PageResponseDto<BoardResponse> getAllBoardsForPagingByMe(Integer pageNum, Integer pageSize, int memberId);
+    PageResponseDto<BoardResponse> searchAllBoardsForPagingByMe(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId);
+    PageResponseDto<BoardResponse> searchAllBoardsForPaging(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId);
+
+    String queryNextBoard(String boardCode, Integer categoryId);
+    String queryPrevBoard(String boardCode, Integer categoryId);
 }

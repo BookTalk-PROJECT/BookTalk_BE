@@ -1,7 +1,7 @@
 package com.booktalk_be.domain.reply.model.repository;
 
+import com.booktalk_be.common.command.ReplySearchCondCommand;
 import com.booktalk_be.domain.reply.model.entity.Reply;
-import com.booktalk_be.domain.reply.responseDto.ReplyResponse;
 import com.booktalk_be.domain.reply.responseDto.ReplySimpleResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,4 +12,6 @@ public interface ReplyRepositoryCustom {
     List<Reply> getRepliesByPostCode(String postCode);
     Page<ReplySimpleResponse> getAllRepliesForPaging(Pageable pageable);
     Page<ReplySimpleResponse> getAllRepliesForPagingByMe(Pageable pageable, int memberId);
+    Page<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Pageable pageable, int memberId);
+    Page<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Pageable pageable, int memberId);
 }
