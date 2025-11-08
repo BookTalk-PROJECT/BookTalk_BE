@@ -9,4 +9,6 @@ public interface RefreshTokenRepository extends JpaRepository<Refresh_Token, Ref
     boolean existsByMember(Member member);
 
     Refresh_Token findByMember(Member member);
+
+    void deleteByMember(Member member);
 }
