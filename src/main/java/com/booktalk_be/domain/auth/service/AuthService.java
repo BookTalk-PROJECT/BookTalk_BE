@@ -4,6 +4,7 @@ import com.booktalk_be.domain.auth.command.LoginDTO;
 
 import java.util.Map;
 
-public interface LoginService {
+public interface AuthService {
     Map<String, String> login(LoginDTO loginData);
+    Map<String, String> reissueToken(String refreshToken);
 }

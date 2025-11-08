@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -86,11 +87,13 @@ public class MemberController {
     @Operation(summary = "회원 정보 조회", description = "현재 인증 된 회원 정보를 조회합니다.")
     public ResponseEntity<ResponseDto> getAuthenticationMember(Authentication authentication) {
         Member member = (Member) authentication.getPrincipal();
+        System.out.println("게또 이메일"+ member.getEmail());
         MemberInformationResponse memberDto = memberService.getAuthenticationMember(member);
-        return ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .data(memberDto)
-                .build());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseDto.builder()
+                        .code(401)
+                        .data(Collections.singletonMap("error", "zz"))
+                        .build());
     }
 
     @GetMapping("/list")
