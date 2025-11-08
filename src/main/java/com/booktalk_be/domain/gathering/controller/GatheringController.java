@@ -5,11 +5,13 @@ import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.command.CreateRecruitRequest;
+import com.booktalk_be.domain.gathering.command.DeleteGatheringCommand;
 import com.booktalk_be.domain.gathering.command.RecruitRequestCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.model.repository.GatheringMemberMapRepository;
 import com.booktalk_be.domain.gathering.responseDto.BookItemResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
+import com.booktalk_be.domain.gathering.responseDto.GatheringEditInitResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.service.GatheringBookMapService;
 import com.booktalk_be.domain.gathering.service.GatheringRecruitQuestionService;
@@ -125,6 +127,20 @@ public class GatheringController {
         );
     }
 
+    @GetMapping("/{code}")
+    @Operation(summary = "모임 상세+편집 초기값 조회", description = "기존 상세 정보에 책/질문/해시태그를 합친 편집 초기 데이터를 반환합니다.")
+    public ResponseEntity<GatheringEditInitResponse> getDetailForEdit(
+            @PathVariable String code,
+            Authentication authentication
+    ) {
+        int memberId = 0;
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof Member m) {
+            memberId = m.getMemberId();
+        }
+        return ResponseEntity.ok(gatheringService.getEditInitByCode(code, memberId));
+    }
+
     @PatchMapping("/modify")
     @Tag(name = "Gathering API")
     @Operation(summary = "모임 수정", description = "모임을 수정합니다.")
@@ -136,14 +152,16 @@ public class GatheringController {
                 .build());
     }
 
-    @PatchMapping("/delete")
-    @Tag(name = "Gathering API")
-    @Operation(summary = "모임 삭제(비활성화)", description = "모임을 삭제(비활성화)합니다.")
-    public ResponseEntity<ResponseDto> delete(@RequestBody @Valid String gatheringId) {
-        //gatheringService.create(requestData, member);
-        return  ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .build());
+    @PostMapping("/{code}/delete")
+    @Operation(summary = "모임 소프트 삭제", description = "del_yn=1, del_reason 업데이트")
+    public ResponseEntity<ResponseDto> softDelete(
+            @PathVariable String code,
+            @RequestBody @Valid DeleteGatheringCommand request,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        gatheringService.softDeleteGathering(code, request.getReason(), member);
+        return ResponseEntity.ok(ResponseDto.builder().code(200).build());
     }
 
     @GetMapping("/recruitQuestionList")

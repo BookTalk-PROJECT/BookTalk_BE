@@ -10,6 +10,7 @@ import com.booktalk_be.domain.gathering.model.repository.RecruitQuestionReposito
 import com.booktalk_be.domain.gathering.responseDto.RecruitQuestionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -49,5 +50,11 @@ public class GatheringRecruitQuestionServiceImpl implements GatheringRecruitQues
                 .stream()
                 .map(RecruitQuestionResponse::from)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GatheringRecruitQuestionMap> findAllByGathering(Gathering gathering) {
+        return gatheringRecruitQuestionMapRepository.findAllByCode(gathering);
     }
 }

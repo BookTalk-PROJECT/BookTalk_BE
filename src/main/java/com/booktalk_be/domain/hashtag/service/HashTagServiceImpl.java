@@ -7,6 +7,7 @@ import com.booktalk_be.domain.hashtag.model.repository.HashTagMapRepository;
 import com.booktalk_be.domain.hashtag.model.repository.HashTagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -35,5 +36,11 @@ public class HashTagServiceImpl implements HashTagService {
                         .build())
                 .toList();
         hashTagMapRepository.saveAll(hashTagMaps);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HashTagMap> findAllByGathering(Gathering gathering) {
+        return hashTagMapRepository.findAllByCode(gathering);
     }
 }

@@ -37,6 +37,7 @@ public class GatheringRepositoryCustomImpl extends Querydsl4RepositorySupport im
 
         // 조건 구성
         BooleanBuilder condition = new BooleanBuilder();
+        condition.and(gathering.delYn.isFalse());
         if (status != null) {
             condition.and(gathering.status.eq(status));
         }
