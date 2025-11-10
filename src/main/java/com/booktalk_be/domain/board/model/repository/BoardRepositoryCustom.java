@@ -14,7 +14,7 @@ public interface BoardRepositoryCustom {
     Page<BoardResponse> getAllBoardsForPaging(Pageable pageable);
     Page<BoardResponse> getAllBoardsForPagingByMe(Pageable pageable, int memberId);
     Page<BoardResponse> searchAllBoardsForPagingByMe(PostSearchCondCommand cmd, Pageable pageable, int memberId);
-    Page<BoardResponse> searchAllBoardsForPaging(PostSearchCondCommand cmd, Pageable pageable, int memberId);
+    Page<BoardResponse> searchAllBoardsForPaging(PostSearchCondCommand cmd, Pageable pageable);
     String queryNextBoard(String boardCode, Integer categoryId);
     String queryPrevBoard(String boardCode, Integer categoryId);
 }

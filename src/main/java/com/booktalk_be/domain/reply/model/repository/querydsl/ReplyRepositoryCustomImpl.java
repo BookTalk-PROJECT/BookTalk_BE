@@ -30,12 +30,10 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
 
     @Override
     public List<Reply> getRepliesByPostCode(String postCode) {
-
         return selectFrom(reply)
                 .where(reply.postCode.eq(postCode))
                 .where(reply.delYn.eq(false))
                 .fetch();
-
     }
 
     @Override
@@ -45,7 +43,7 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 reply.postCode,
                 reply.member.memberId,
                 reply.member.name.as("author"),
-                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", reply.updateTime).as("date"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", reply.regTime).as("date"),
                 reply.content,
                 reply.delYn,
                 reply.delReason.as("deleteReason")))
@@ -55,9 +53,9 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 .limit(pageable.getPageSize())
                 .fetch();
         Long total = Optional.ofNullable(
-                        select(Wildcard.count)
-                                .from(reply).leftJoin(reply.member)
-                                .fetchOne())
+                select(Wildcard.count)
+                .from(reply).leftJoin(reply.member)
+                .fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);
     }
@@ -69,21 +67,19 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 reply.replyCode,
                 reply.postCode,
                 reply.member.memberId,
-                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", reply.updateTime).as("date"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", reply.regTime).as("date"),
                 reply.content,
                 reply.delYn,
                 reply.delReason.as("deleteReason")))
-                .from(reply).leftJoin(reply.member)
-                .where(reply.member.memberId.eq(memberId))
+                .from(reply).innerJoin(reply.member).on(reply.member.memberId.eq(memberId))
                 .orderBy(reply.replyCode.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
         Long total = Optional.ofNullable(
-                        select(Wildcard.count)
-                                .from(reply).leftJoin(reply.member)
-                                .where(reply.member.memberId.eq(memberId))
-                                .fetchOne())
+                select(Wildcard.count)
+                .from(reply).innerJoin(reply.member).on(reply.member.memberId.eq(memberId))
+                .fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);
     }
@@ -92,52 +88,50 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
     public Page<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Pageable pageable, int memberId) {
         JPAQueryBase<ReplySimpleResponse, JPAQuery<ReplySimpleResponse>> baseQuery =
                 select(Projections.fields(ReplySimpleResponse.class,
-                        reply.replyCode,
-                        reply.postCode,
-                        reply.member.memberId,
-                        Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", reply.updateTime).as("date"),
-                        reply.content,
-                        reply.delYn,
-                        reply.delReason.as("deleteReason")))
-                        .from(reply).leftJoin(reply.member);
+                reply.replyCode,
+                reply.postCode,
+                reply.member.memberId,
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", reply.regTime).as("date"),
+                reply.content,
+                reply.delYn,
+                reply.delReason.as("deleteReason")))
+                .from(reply).innerJoin(reply.member).on(reply.member.memberId.eq(memberId))
+                .where(reply.delYn.eq(false));
 
         JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
                 select(Wildcard.count)
-                        .from(reply).leftJoin(reply.member);
+                .from(reply).innerJoin(reply.member).on(reply.member.memberId.eq(memberId))
+                .where(reply.delYn.eq(false));
 
-        BooleanBuilder searchCondition = new BooleanBuilder();
-        if (cmd.getKeyword() != null && !cmd.getKeyword().isEmpty()) {
-            searchCondition.and(keywordFilter(cmd.getType(), cmd.getKeyword()));
-        }
-        if (cmd.getStartDate() != null || cmd.getEndDate() != null) {
-            searchCondition.and(dateFilter(cmd.getStartDate(), cmd.getEndDate()));
-        }
-        baseQuery.where(searchCondition);
-        pageQuery.where(searchCondition);
+        BooleanBuilder searchCondition = new BooleanBuilder()
+                .and(keywordFilter(cmd.getType(), cmd.getKeyword()))
+                .and(dateFilter(cmd.getStartDate(), cmd.getEndDate()));
 
-        List<ReplySimpleResponse> content = baseQuery
-                .where(reply.member.memberId.eq(memberId))
-                .where(reply.delYn.eq(false))
+        List<ReplySimpleResponse> content =
+                baseQuery
+                .where(searchCondition)
                 .orderBy(reply.replyCode.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        Long total = Optional.ofNullable(pageQuery
-                .where(reply.delYn.eq(false))
+        Long total = Optional.ofNullable(
+                pageQuery
+                .where(searchCondition)
                 .fetchOne()
         ).orElse(0L);
+
         return new PageImpl<>(content, pageable, total);
     }
 
     @Override
-    public Page<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Pageable pageable, int memberId) {
+    public Page<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Pageable pageable) {
         JPAQueryBase<ReplySimpleResponse, JPAQuery<ReplySimpleResponse>> baseQuery =
                 select(Projections.fields(ReplySimpleResponse.class,
                         reply.replyCode,
                         reply.postCode,
                         reply.member.memberId,
-                        Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", reply.updateTime).as("date"),
+                        Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", reply.regTime).as("date"),
                         reply.content,
                         reply.delYn,
                         reply.delReason.as("deleteReason")))
@@ -145,26 +139,23 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
 
         JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
                 select(Wildcard.count)
-                        .from(reply).leftJoin(reply.member);
+                .from(reply).leftJoin(reply.member);
 
-        BooleanBuilder searchCondition = new BooleanBuilder();
-        if (cmd.getKeyword() != null && !cmd.getKeyword().isEmpty()) {
-            searchCondition.and(keywordFilter(cmd.getType(), cmd.getKeyword()));
-        }
-        if (cmd.getStartDate() != null || cmd.getEndDate() != null) {
-            searchCondition.and(dateFilter(cmd.getStartDate(), cmd.getEndDate()));
-        }
-        baseQuery.where(searchCondition);
-        pageQuery.where(searchCondition);
+        BooleanBuilder searchCondition = new BooleanBuilder()
+                .and(keywordFilter(cmd.getType(), cmd.getKeyword()))
+                .and(dateFilter(cmd.getStartDate(), cmd.getEndDate()));
 
-        List<ReplySimpleResponse> content = baseQuery
+        List<ReplySimpleResponse> content =
+                baseQuery
+                .where(searchCondition)
                 .orderBy(reply.replyCode.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        Long total = Optional.ofNullable(pageQuery
-                .where(reply.delYn.eq(false))
+        Long total = Optional.ofNullable(
+                pageQuery
+                .where(searchCondition)
                 .fetchOne()
         ).orElse(0L);
         return new PageImpl<>(content, pageable, total);
@@ -172,6 +163,9 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
 
 
     private BooleanExpression keywordFilter(ReplySearchCondCommand.CommentKeywordType type, String keyword) {
+        if (keyword == null || keyword.isEmpty()) {
+            return null;
+        }
         return switch (type) {
             case POST_CODE -> reply.postCode.containsIgnoreCase(keyword);
             case REPLY_CODE -> reply.replyCode.containsIgnoreCase(keyword);
@@ -190,6 +184,9 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         if (startDate != null) {
             return reply.regTime.goe(startDate.atStartOfDay());
         }
-        return reply.regTime.loe(endDate.atTime(LocalTime.MAX));
+        if (endDate != null) {
+            return reply.regTime.loe(endDate.atTime(LocalTime.MAX));
+        }
+        return null;
     }
 }
