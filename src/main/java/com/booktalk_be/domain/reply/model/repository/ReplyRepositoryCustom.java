@@ -13,5 +13,5 @@ public interface ReplyRepositoryCustom {
     Page<ReplySimpleResponse> getAllRepliesForPaging(Pageable pageable);
     Page<ReplySimpleResponse> getAllRepliesForPagingByMe(Pageable pageable, int memberId);
     Page<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Pageable pageable, int memberId);
-    Page<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Pageable pageable, int memberId);
+    Page<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Pageable pageable);
 }

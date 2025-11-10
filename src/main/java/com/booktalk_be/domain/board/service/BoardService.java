@@ -23,8 +23,7 @@ public interface BoardService {
     public PageResponseDto<BoardResponse> getAllBoardsForPaging(Integer pageNum, Integer pageSize);
     PageResponseDto<BoardResponse> getAllBoardsForPagingByMe(Integer pageNum, Integer pageSize, int memberId);
     PageResponseDto<BoardResponse> searchAllBoardsForPagingByMe(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId);
-    PageResponseDto<BoardResponse> searchAllBoardsForPaging(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId);
-
+    PageResponseDto<BoardResponse> searchAllBoardsForPaging(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize);
     String queryNextBoard(String boardCode, Integer categoryId);
     String queryPrevBoard(String boardCode, Integer categoryId);
 }

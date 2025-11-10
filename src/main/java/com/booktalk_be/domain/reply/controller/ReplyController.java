@@ -138,10 +138,8 @@ public class ReplyController {
     public ResponseEntity<ResponseDto> searchCommentList(
             @RequestParam(value = "pageNum", required = true) Integer pageNum,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
-            @RequestBody @Valid ReplySearchCondCommand cmd,
-            Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal();
-        PageResponseDto<ReplySimpleResponse> page =  replyService.searchAllRepliesForPaging(cmd, pageNum, pageSize, member.getMemberId());
+            @RequestBody @Valid ReplySearchCondCommand cmd) {
+        PageResponseDto<ReplySimpleResponse> page =  replyService.searchAllRepliesForPaging(cmd, pageNum, pageSize);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)

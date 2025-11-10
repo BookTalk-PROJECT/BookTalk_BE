@@ -139,9 +139,9 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public PageResponseDto<BoardResponse> searchAllBoardsForPaging(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
+    public PageResponseDto<BoardResponse> searchAllBoardsForPaging(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
-        Page<BoardResponse> page =  boardRepository.searchAllBoardsForPaging(cmd, pageable, memberId);
+        Page<BoardResponse> page =  boardRepository.searchAllBoardsForPaging(cmd, pageable);
         return PageResponseDto.<BoardResponse>builder()
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())

@@ -35,12 +35,16 @@ public class SecurityConfig  {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new CustomAuthenticationEntryPointHandler())
+<<<<<<< Updated upstream
                         .accessDeniedHandler(new CustomAccessDeniedHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
                         .requestMatchers("/uploads/images/**","/gathering/**", "/community/**", "/reply/**", "/member/**", "/dashboard/**", "/token-refresh", "/error","/api/nlk/**").permitAll()
                         .anyRequest().authenticated()
                 );
+=======
+                        .accessDeniedHandler(new CustomAccessDeniedHandler()));
+>>>>>>> Stashed changes
 
         return http.build();
     }

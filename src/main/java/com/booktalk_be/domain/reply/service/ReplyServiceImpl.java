@@ -146,9 +146,9 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
+    public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
-        Page<ReplySimpleResponse> page =  replyRepository.searchAllRepliesForPaging(cmd, pageable, memberId);
+        Page<ReplySimpleResponse> page =  replyRepository.searchAllRepliesForPaging(cmd, pageable);
         return PageResponseDto.<ReplySimpleResponse>builder()
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())

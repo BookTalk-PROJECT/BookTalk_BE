@@ -87,10 +87,18 @@ public class MemberController {
     public ResponseEntity<ResponseDto> getAuthenticationMember(Authentication authentication) {
         Member member = (Member) authentication.getPrincipal();
         MemberInformationResponse memberDto = memberService.getAuthenticationMember(member);
+<<<<<<< Updated upstream
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(memberDto)
                 .build());
+=======
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDto.builder()
+                        .code(200)
+                        .data(memberDto)
+                        .build());
+>>>>>>> Stashed changes
     }
 
     @GetMapping("/list")
