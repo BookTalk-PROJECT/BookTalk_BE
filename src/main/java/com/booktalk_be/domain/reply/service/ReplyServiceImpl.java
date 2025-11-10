@@ -73,7 +73,7 @@ public class ReplyServiceImpl implements ReplyService {
                         Reply::getReplyCode,
                         (entity) -> ReplyResponse.builder()
                                 .replyCode(entity.getReplyCode())
-//                                .memberId(getMemberId(entity))
+                                .memberName(entity.getMember().getName())
                                 .postCode(entity.getPostCode())
                                 .content(entity.getContent())
                                 .regDate(entity.getRegTime().toLocalDate().toString()) // 연도-월-일 문자열로
