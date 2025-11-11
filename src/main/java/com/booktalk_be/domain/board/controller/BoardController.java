@@ -175,7 +175,8 @@ public class BoardController {
             Authentication authentication
     ) {
         Member member =  (Member) authentication.getPrincipal();
-        PageResponseDto<BoardResponse> page =  boardService.searchAllBoardsForPaging(cmd, pageNum, pageSize, member.getMemberId());
+        PageResponseDto<BoardResponse> page =  boardService.searchAllBoardsForPaging(cmd, pageNum, pageSize
+        );
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)

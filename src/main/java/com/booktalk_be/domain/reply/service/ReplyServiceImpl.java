@@ -73,7 +73,7 @@ public class ReplyServiceImpl implements ReplyService {
                         Reply::getReplyCode,
                         (entity) -> ReplyResponse.builder()
                                 .replyCode(entity.getReplyCode())
-//                                .memberId(getMemberId(entity))
+                                .memberName(entity.getMember().getName())
                                 .postCode(entity.getPostCode())
                                 .content(entity.getContent())
                                 .regDate(entity.getRegTime().toLocalDate().toString()) // 연도-월-일 문자열로
@@ -146,9 +146,9 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
+    public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
-        Page<ReplySimpleResponse> page =  replyRepository.searchAllRepliesForPaging(cmd, pageable, memberId);
+        Page<ReplySimpleResponse> page =  replyRepository.searchAllRepliesForPaging(cmd, pageable);
         return PageResponseDto.<ReplySimpleResponse>builder()
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())

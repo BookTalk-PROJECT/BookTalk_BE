@@ -7,6 +7,7 @@ import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
 import com.booktalk_be.common.command.RestrictCommand;
+import com.booktalk_be.domain.reply.responseDto.ReplyResponse;
 import com.booktalk_be.domain.reply.responseDto.ReplySimpleResponse;
 import com.booktalk_be.domain.reply.service.ReplyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/reply")
@@ -31,7 +34,9 @@ public class ReplyController {
     @Tag(name = "Reply API")
     @Operation(summary = "게시판 댓글 목록 조회", description = "특정 게시글의 댓글 목록 정보를 조회합니다.")
     public ResponseEntity<ResponseDto> getList(@PathVariable String postCode) {
+        List<ReplyResponse> res = replyService.getRepliesByPostCode(postCode);
         return ResponseEntity.ok(ResponseDto.builder()
+                .data(res)
                 .code(200)
                 .build());
     }
@@ -138,10 +143,8 @@ public class ReplyController {
     public ResponseEntity<ResponseDto> searchCommentList(
             @RequestParam(value = "pageNum", required = true) Integer pageNum,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
-            @RequestBody @Valid ReplySearchCondCommand cmd,
-            Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal();
-        PageResponseDto<ReplySimpleResponse> page =  replyService.searchAllRepliesForPaging(cmd, pageNum, pageSize, member.getMemberId());
+            @RequestBody @Valid ReplySearchCondCommand cmd) {
+        PageResponseDto<ReplySimpleResponse> page =  replyService.searchAllRepliesForPaging(cmd, pageNum, pageSize);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)
