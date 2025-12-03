@@ -28,7 +28,9 @@ public class PostSearchCondCommand extends SearchCondCommand {
         BOARD_CODE("board_code", "게시글코드"),
         TITLE("title", "제목"),
         AUTHOR("author", "작성자"),
-        CATEGORY("category", "카테고리");
+        CATEGORY("category", "카테고리"),
+        BOOK_TITLE("book_title", "도서명"), // Added for book reviews
+        ISBN("isbn", "ISBN"); // Added for book reviews
 
         private final String type;
         @Getter
