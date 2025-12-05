@@ -66,7 +66,13 @@ public class BookReview extends Post {
     public void modify(UpdateBookReviewCommand req) {
         this.title = req.getTitle();
         this.content = req.getContent();
+        this.bookTitle = req.getBookTitle();
+        this.authors = req.getAuthors();
+        this.publisher = req.getPublisher();
+        this.isbn = req.getIsbn();
+        this.thumbnail = req.getThumbnail();
         this.rating = req.getRating();
+        this.notificationYn = req.getNotificationYn();
     }
 
     public void delete() {
