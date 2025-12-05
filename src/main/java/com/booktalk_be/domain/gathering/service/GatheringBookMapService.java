@@ -17,4 +17,6 @@ public interface GatheringBookMapService {
     List<BookItemResponse> getBooksByGatheringCode(String code);
 
     List<GatheringBookMap> findAllByGathering(Gathering gathering);
+
+    void syncBooks(Gathering gathering, List<BookDto> books);
 }

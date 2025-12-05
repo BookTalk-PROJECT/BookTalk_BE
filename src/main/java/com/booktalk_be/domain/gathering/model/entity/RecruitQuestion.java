@@ -27,4 +27,13 @@ public class RecruitQuestion {
         this.order = order;
         this.question = question;
     }
+
+    public void update(Integer order, String question) {
+        if (order != null) {
+            this.order = order;
+        }
+        if (question != null) {
+            this.question = question;
+        }
+    }
 }

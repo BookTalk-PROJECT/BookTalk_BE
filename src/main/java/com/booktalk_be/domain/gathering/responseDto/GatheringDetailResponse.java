@@ -2,6 +2,7 @@
 package com.booktalk_be.domain.gathering.responseDto;
 
 import com.booktalk_be.domain.gathering.model.entity.Gathering;
+import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,7 +33,7 @@ public class GatheringDetailResponse {
         return GatheringDetailResponse.builder()
                 .gatheringCode(g.getCode())
                 .name(g.getName())
-                .status(asInt(g.getStatus()))
+                .status(toStatusCode(g.getStatus()))
                 .recruitmentPersonnel(g.getRecruitmentPersonnel())
                 .recruitmentPeriod(g.getRecruitmentPeriod())
                 .activityPeriod(g.getActivityPeriod())
@@ -45,9 +46,13 @@ public class GatheringDetailResponse {
                 .build();
     }
 
-    private static int asInt(Object v) {
-        if (v == null) return 0;
-        if (v instanceof Number n) return n.intValue();
-        try { return Integer.parseInt(String.valueOf(v)); } catch (Exception e) { return 0; }
+    private static int toStatusCode(GatheringStatus status) {
+        if (status == null) return 0;  // 기본값: 모집중
+
+        return switch (status) {
+            case INTENDED -> 0;
+            case PROGRESS -> 1;
+            case END      -> 2;
+        };
     }
 }

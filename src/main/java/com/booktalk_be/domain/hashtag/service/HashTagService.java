@@ -12,4 +12,6 @@ public interface HashTagService {
     void createHashTag(Gathering gathering, List<String> hashTags);
 
     List<HashTagMap> findAllByGathering(Gathering gathering);
+
+    void syncHashtags(Gathering gathering, List<String> tags);
 }

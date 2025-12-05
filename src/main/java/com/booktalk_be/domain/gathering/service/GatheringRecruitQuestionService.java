@@ -15,4 +15,6 @@ public interface GatheringRecruitQuestionService {
     List<RecruitQuestionResponse> getRecruitQuestions(String gatheringCode);
 
     List<GatheringRecruitQuestionMap> findAllByGathering(Gathering gathering);
+
+    void syncRecruitQuestions(Gathering gathering, List<QuestionCommand> questions);
 }
