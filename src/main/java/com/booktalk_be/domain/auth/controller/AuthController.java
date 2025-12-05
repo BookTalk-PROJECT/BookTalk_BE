@@ -38,7 +38,7 @@ public class AuthController {
 
             ResponseCookie rtCookie = ResponseCookie.from("refresh_token", refreshToken)
                     .httpOnly(true)
-                    .secure(true) // HTTPS 환경에서만 쿠키 전송
+                    .secure(false) // HTTPS 환경에서만 쿠키 전송
                     .sameSite("Lax")
                     .path("/") // 쿠키 사용 경로 지정
                     .maxAge(Duration.ofDays(1))
@@ -73,7 +73,7 @@ public class AuthController {
 
         ResponseCookie rtCookie = ResponseCookie.from("refresh_token", null)
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .sameSite("Lax")
                 .path("/")
                 .maxAge(0)
@@ -98,7 +98,7 @@ public class AuthController {
 
                 ResponseCookie rtCookie = ResponseCookie.from("refresh_token", rfToken)
                         .httpOnly(true)
-                        .secure(true) // HTTPS 환경에서만 쿠키 전송
+                        .secure(false) // HTTPS 환경에서만 쿠키 전송
                         .sameSite("Lax")
                         .path("/") // 쿠키 사용 경로 지정
                         .maxAge(Duration.ofDays(1))
