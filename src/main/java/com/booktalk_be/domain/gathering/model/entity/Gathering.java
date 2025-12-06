@@ -86,4 +86,42 @@ public class Gathering{
         this.summary = summary;
         this.status = status;
     }
+
+    public void updateCore(String name,
+                           Long recruitmentPersonnel,
+                           String recruitmentPeriod,
+                           String activityPeriod,
+                           String location,
+                           String summary,
+                           GatheringStatus status) {
+
+        if (name != null) {
+            this.name = name;
+        }
+        if (recruitmentPersonnel != null) {
+            this.recruitmentPersonnel = recruitmentPersonnel;
+        }
+        if (recruitmentPeriod != null) {
+            this.recruitmentPeriod = recruitmentPeriod;
+        }
+        if (activityPeriod != null) {
+            this.activityPeriod = activityPeriod;
+        }
+        if (location != null) {
+            // 생성 로직과 포맷 맞추기
+            this.sigCd = location;
+            this.emdCd = location + "_읍면동 코드";
+        }
+        if (summary != null) {
+            this.summary = summary;
+        }
+        if (status != null) {
+            this.status = status;
+        }
+    }
+
+    public void changeImage(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
 }

@@ -33,7 +33,7 @@ public class SecurityConfig  {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/uploads/images/**", "/login","/refresh","/gathering/**", "/community/**", "/reply/**", "/member/**", "/dashboard/**", "/token-refresh", "/error","/api/nlk/**","/oauth/**").permitAll()
+                        .requestMatchers("/uploads/**","/login","/refresh","/gathering/**", "/community/**", "/reply/**", "/member/**", "/dashboard/**", "/token-refresh", "/error","/nlk/**","/oauth/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(user -> user.userService(customOAuth2UserService))

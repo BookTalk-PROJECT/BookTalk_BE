@@ -39,4 +39,27 @@ public class GatheringBookMap {
 
     @Column(name = "end_date")
     private String end_date;
+
+    public void updateBook(String name,
+                           Integer order,
+                           Boolean completeYn,
+                           String startDate,
+                           String endDate) {
+
+        if (name != null) {
+            this.name = name;
+        }
+        if (order != null) {
+            this.order = order;
+        }
+        if (completeYn != null) {
+            this.completeYn = completeYn;
+        }
+        if (startDate != null) {
+            this.startDate = startDate;
+        }
+        if (endDate != null) {
+            this.end_date = endDate;
+        }
+    }
 }

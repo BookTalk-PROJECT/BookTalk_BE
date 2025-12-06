@@ -1,6 +1,7 @@
 package com.booktalk_be.domain.gathering.service;
 
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
+import com.booktalk_be.domain.gathering.command.EditGatheringRequest;
 import com.booktalk_be.domain.gathering.model.entity.*;
 import com.booktalk_be.domain.gathering.model.repository.*;
 import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
@@ -11,12 +12,14 @@ import com.booktalk_be.domain.hashtag.model.entity.HashTagMap;
 import com.booktalk_be.domain.hashtag.service.HashTagService;
 import com.booktalk_be.domain.member.model.entity.Member;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -32,6 +35,12 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class GatheringServiceImpl implements GatheringService {
+
+    @Value("${app.upload.image-dir}")
+    private String imageUploadDir;
+
+    @Value("${app.upload.url-prefix:/uploads/images}")
+    private String imageUrlPrefix;
 
     private final GatheringRepository gatheringRepository;
     private final GatheringMemberMapRepository gatheringMemberMapRepository;
@@ -51,9 +60,7 @@ public class GatheringServiceImpl implements GatheringService {
     @Transactional
     @Override
     public void create(CreateGatheringCommand command, MultipartFile imageFile, Integer memberId) {
-        // 모집 정보 문자열 조합
-
-        // 0) 필수 검증: 하나라도 없으면 예외 → 트랜잭션 전체 롤백
+        // 0) 필수 검증
         if (memberId == null) {
             throw new IllegalArgumentException("로그인이 필요합니다.(memberId null)");
         }
@@ -64,53 +71,37 @@ public class GatheringServiceImpl implements GatheringService {
             throw new IllegalArgumentException("참여 질문이 필요합니다.");
         }
 
+        // 1) 이미지 저장 (있을 때만)
         String imageUrl = null;
-
         if (imageFile != null && !imageFile.isEmpty()) {
-            try {
-                // 파일 저장 경로 지정
-                String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
-                Path uploadPath = Paths.get("uploads/images");
-
-                // 디렉토리가 없으면 생성
-                Files.createDirectories(uploadPath);
-
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-                imageUrl = "/uploads/images/" + fileName; // 또는 외부 URL
-            } catch (IOException e) {
-                throw new RuntimeException("이미지 저장 실패", e);
-            }
+            imageUrl = storeImage(imageFile);   // ★ 하드코딩 제거, 공용 메서드 사용
         }
 
-
-        // Gathering 데이터 저장
+        // 2) Gathering 생성
         Gathering gathering = Gathering.builder()
                 .name(command.getGroupName())
                 .recruitmentPersonnel(Long.parseLong(command.getRecruitmentPersonnel()))
                 .recruitmentPeriod(command.getRecruitmentPeriod())
                 .activityPeriod(command.getActivityPeriod())
                 .summary(command.getMeetingDetails())
-                .emdCd(command.getLocation()+"_읍면동 코드") // 임시로 Location과 임시 문자열 추가
-                .sigCd("행정구역코드") // 임시
+                .emdCd(command.getLocation() + "_읍면동 코드") // 임시
+                .sigCd("행정구역코드")                         // 임시
                 .imageData(imageUrl)
                 .status(GatheringStatus.INTENDED)
                 .build();
 
         Gathering gatheringSaved = gatheringRepository.save(gathering);
 
-        //유저 모임 매핑 테이블에 저장
+        // 3) 연관 데이터 저장
         gatheringMemberMapService.createGatheringMemberMap(gatheringSaved, memberId);
-        //책 리스트 매핑 테이블에 저장
         gatheringBookMapService.createGatheringBookMap(gatheringSaved, command.getBooks());
-        //참여신청 질문 리스트 저장
         gatheringRecruitQuestionService.createRecruitQuestionMap(gatheringSaved, command.getQuestions());
 
-        if(command.getHashtags() != null && !command.getHashtags().isEmpty()) {
+        if (command.getHashtags() != null && !command.getHashtags().isEmpty()) {
             hashTagService.createHashTag(gatheringSaved, command.getHashtags());
         }
     }
+
 
 
 
@@ -197,6 +188,86 @@ public class GatheringServiceImpl implements GatheringService {
         if (updated == 0) {
             // 동시성 등으로 이미 삭제되었을 수 있음
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 삭제된 모임입니다.");
+        }
+    }
+
+    @Transactional
+    @Override
+    public void updateGathering(String code, EditGatheringRequest command, MultipartFile image, Member member) {
+        // 1) 대상 모임 조회
+        Gathering gathering = gatheringRepository.findByCodeAndDelYnFalse(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "모임을 찾을 수 없습니다."));
+
+        // 2) 권한 체크: 방장인지 확인
+        int memberId = Objects.requireNonNull(member, "로그인이 필요합니다.").getMemberId();
+        boolean isMaster = gatheringMemberMapRepository
+                .findMasterYn(code, memberId)
+                .map(Boolean::booleanValue)
+                .orElse(false);
+
+        if (!isMaster) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "모임 수정 권한이 없습니다.");
+        }
+
+        // 3) 상태 파싱 (옵션)
+        GatheringStatus status = null;
+        if (StringUtils.hasText(command.getStatus())) {
+            try {
+                status = GatheringStatus.valueOf(command.getStatus());
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 모임 상태 값입니다.");
+            }
+        }
+
+        // 4) 모집 인원 파싱 (옵션)
+        Long recruitmentPersonnel = null;
+        if (StringUtils.hasText(command.getRecruitmentPersonnel())) {
+            try {
+                recruitmentPersonnel = Long.parseLong(command.getRecruitmentPersonnel());
+            } catch (NumberFormatException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "모집 인원 형식이 올바르지 않습니다.");
+            }
+        }
+
+        // 5) 엔티티에 값 반영 (null인 값은 무시)
+        gathering.updateCore(
+                command.getGroupName(),          // name
+                recruitmentPersonnel,            // recruitmentPersonnel
+                command.getRecruitmentPeriod(),  // recruitmentPeriod
+                command.getActivityPeriod(),     // activityPeriod
+                command.getLocation(),           // location → sigCd / emdCd
+                command.getMeetingDetails(),     // summary
+                status                           // status
+        );
+
+        // 6) 이미지 파일 교체 (있을 때만)
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = storeImage(image);
+            gathering.changeImage(imageUrl);
+        }
+        // 새 이미지 안 넘어오면 기존 imageUrl 유지
+        // (command.getImageUrl()는 지금 단계에서는 굳이 안 건들어도 됨)
+
+        // 다음 단계에서:
+         gatheringBookMapService.syncBooks(gathering, command.getBooks());
+         gatheringRecruitQuestionService.syncRecruitQuestions(gathering, command.getQuestions());
+         hashTagService.syncHashtags(gathering, command.getHashtags());
+        // 이런 식으로 연관관계 업데이트를 붙이면 된다.
+    }
+
+    private String storeImage(MultipartFile imageFile) {
+        try {
+            String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+
+            Path uploadPath = Paths.get(imageUploadDir).toAbsolutePath();
+            Files.createDirectories(uploadPath);
+
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            return imageUrlPrefix + "/" + fileName;
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 저장 실패", e);
         }
     }
 }

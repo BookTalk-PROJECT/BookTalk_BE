@@ -3,11 +3,8 @@ package com.booktalk_be.domain.gathering.controller;
 import com.booktalk_be.common.command.PostSearchCondCommand;
 import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.common.utils.ResponseDto;
-import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
-import com.booktalk_be.domain.gathering.command.RecruitRequestCommand;
+import com.booktalk_be.domain.gathering.command.*;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
-import com.booktalk_be.domain.gathering.command.CreateRecruitRequest;
-import com.booktalk_be.domain.gathering.command.DeleteGatheringCommand;
 import com.booktalk_be.domain.gathering.command.RecruitRequestCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.model.repository.GatheringMemberMapRepository;
@@ -140,17 +137,25 @@ public class GatheringController {
         return ResponseEntity.ok(gatheringService.getEditInitByCode(code, memberId));
     }
 
-    @PatchMapping("/modify")
-    @Tag(name = "Gathering API")
-    @Operation(summary = "모임 수정", description = "모임을 수정합니다.")
-    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid CreateGatheringCommand requestData) {
-        //gatheringService.create(requestData, member);
+    @PutMapping(value = "/modify/{code}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "모임 수정", description = "생성 포맷과 동일한 JSON을 data 파트에 담아 multipart로 요청")
+    public ResponseEntity<ResponseDto> update(
+            @PathVariable String code,
+            @RequestPart("data") @Valid EditGatheringRequest command,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            Authentication authentication
+    ) {
+        JsonPrinter.print(command);
 
-        return  ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .build());
+        Member member = (Member) authentication.getPrincipal();
+        gatheringService.updateGathering(code, command, image, member);
+
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .code(200)
+                        .build()
+        );
     }
-
     @PostMapping("/{code}/delete")
     @Operation(summary = "모임 소프트 삭제", description = "del_yn=1, del_reason 업데이트")
     public ResponseEntity<ResponseDto> softDelete(
