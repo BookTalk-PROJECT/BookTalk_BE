@@ -89,10 +89,10 @@ public class MemberController {
         Member member = (Member) authentication.getPrincipal();
         System.out.println("게또 이메일"+ member.getEmail());
         MemberInformationResponse memberDto = memberService.getAuthenticationMember(member);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDto.builder()
-                        .code(401)
-                        .data(Collections.singletonMap("error", "zz"))
+                        .code(200)
+                        .data(memberDto)
                         .build());
     }
 
