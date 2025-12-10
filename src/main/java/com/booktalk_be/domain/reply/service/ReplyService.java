@@ -8,7 +8,6 @@ import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
 import com.booktalk_be.domain.reply.responseDto.ReplyResponse;
 import com.booktalk_be.domain.reply.responseDto.ReplySimpleResponse;
-import jakarta.validation.Valid;
 
 import java.util.List;
 

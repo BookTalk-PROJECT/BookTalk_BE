@@ -1,4 +1,4 @@
-package com.booktalk_be.common.baseEntity;
+package com.booktalk_be.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

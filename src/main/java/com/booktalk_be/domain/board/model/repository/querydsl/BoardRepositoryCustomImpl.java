@@ -278,11 +278,11 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         return new PageImpl<>(content, pageable, total);
     }
 
-    private BooleanExpression keywordFilter(PostSearchCondCommand.PostKeywordType type, String keyword) {
+    private BooleanExpression keywordFilter(PostSearchCondCommand.KeywordType type, String keyword) {
         if (keyword == null || keyword.isEmpty()) {
             return null;
         }
-        if(type == PostSearchCondCommand.PostKeywordType.CATEGORY) {
+        if(type == PostSearchCondCommand.KeywordType.CATEGORY) {
             List<Integer> matchedIds =
                     select(category.categoryId)
                     .from(category)
@@ -291,7 +291,7 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
             return board.categoryId.in(matchedIds);
         }
         return switch (type) {
-            case BOARD_CODE -> board.code.eq(keyword);
+            case CODE -> board.code.eq(keyword);
             case TITLE -> board.title.containsIgnoreCase(keyword);
             case AUTHOR -> board.member.name.containsIgnoreCase(keyword);
             default -> null;
