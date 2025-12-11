@@ -23,12 +23,10 @@ public class PostSearchCondCommand extends SearchCondCommand {
     @RequiredArgsConstructor
     @JsonFormat(shape = JsonFormat.Shape.OBJECT)
     public enum KeywordType implements EntityEnumerable {
-        CODE("code", "코드"),
+        CODE("board_code", "코드"),
         TITLE("title", "제목"),
         AUTHOR("author", "작성자"),
-        CATEGORY("category", "카테고리"),
-        BOOK_TITLE("book_title", "도서명"), // Added for book reviews
-        ISBN("isbn", "ISBN"); // Added for book reviews
+        CATEGORY("category", "카테고리");
 
         private final String type;
         @Getter

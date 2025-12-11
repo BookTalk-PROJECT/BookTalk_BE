@@ -55,10 +55,10 @@ public class BookReviewController {
     public ResponseEntity<ResponseDto> searchBookReviews(
             @RequestParam(value = "categoryId", required = true) Integer categoryId,
             @RequestBody BookReviewSearchCondCommand cmd,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "0") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize
     ) {
-        Pageable pageable = PageRequest.of(page-1, size);
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
         PageResponseDto<BookReviewListDto> bookReviewList = bookReviewService.searchBookReviews(categoryId, cmd, pageable);
         return ResponseEntity.ok(ResponseDto.builder().code(200).msg("Success").data(bookReviewList).build());
     }
