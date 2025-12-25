@@ -5,6 +5,8 @@ import com.booktalk_be.domain.auth.command.LoginDTO;
 import com.booktalk_be.domain.auth.service.AuthService;
 import com.booktalk_be.domain.auth.service.RefreshTokenService;
 import com.booktalk_be.domain.member.model.entity.Member;
+import com.booktalk_be.springconfig.exception.Dto.ErrorDto;
+import com.booktalk_be.springconfig.exception.utils.ErrorResponseUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +31,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginData, HttpServletResponse response) {
 
-        System.out.println("야 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         try {
             Map<String, String> tokens = authService.login(loginData);
 
@@ -109,18 +110,9 @@ public class AuthController {
                         .code(200)
                         .data(Collections.singletonMap("accessToken", acToken))
                         .build());
-            } catch (BadCredentialsException e) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(ResponseDto.builder()
-                                .code(401)
-                                .data(Collections.singletonMap("error", "아이디 또는 비밀번호가 틀렸습니다."))
-                                .build());
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(ResponseDto.builder()
-                                .code(500)
-                                .data(Collections.singletonMap("error", "인증 중 알 수 없는 오류 발생: " + e.getMessage()))
-                                .build());
+                ErrorDto dto = ErrorResponseUtil.fromJwtException(e, true); // refresh
+                return ErrorResponseUtil.toResponseEntity(dto);
             }
     }
 }

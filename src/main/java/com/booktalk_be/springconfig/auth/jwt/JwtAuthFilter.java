@@ -2,6 +2,8 @@ package com.booktalk_be.springconfig.auth.jwt;
 
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.member.service.MemberService;
+import com.booktalk_be.springconfig.exception.Dto.ErrorDto;
+import com.booktalk_be.springconfig.exception.utils.ErrorResponseUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -36,7 +38,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final MemberService memberService;
 
     private static final List<String> EXCLUDED_URLS = List.of(
-            "/login","/refresh"
+            "/login","/refresh", "/logout"
     );
 
 
@@ -62,25 +64,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(getUserAuth(userId));
                 }
             }
-        } catch (ExpiredJwtException e) {
-            SecurityContextHolder.clearContext();
-            setErrorResponse(response, HttpStatus.UNAUTHORIZED, "ACCESS_TOKEN_EXPIRED", "Access Token has expired.");
-            return;
-        } catch (MalformedJwtException | SignatureException | IllegalArgumentException e) {
-            SecurityContextHolder.clearContext();
-            setErrorResponse(response, HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "Invalid JWT Token.");
-            return;
-        } catch (JwtException e) {
-            SecurityContextHolder.clearContext();
-            setErrorResponse(response, HttpStatus.UNAUTHORIZED, "JWT_ERROR", "JWT processing error: " + e.getMessage());
-            return;
+            filterChain.doFilter(request, response);
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
-            setErrorResponse(response, HttpStatus.INTERNAL_SERVER_ERROR, "AUTHENTICATION_ERROR", "Authentication Error: " + e.getMessage());
-            return;
+            ErrorDto dto = ErrorResponseUtil.fromJwtException(e, false); // access
+            ErrorResponseUtil.write(response, dto);
         }
-
-        filterChain.doFilter(request, response);
     }
 
     private String resolveToken(HttpServletRequest request) {
