@@ -34,7 +34,7 @@ public class MemberInformationResponse {
         this.phoneNumber = member.getPhoneNumber();
         this.address = member.getAddress();
         this.birth = member.getBirth();
-        this.joinDate =   member.getRegTime().toLocalDate();
+        this.joinDate = member.getRegTime() == null ? null : member.getRegTime().toLocalDate();
         this.authType = member.getAuthType().getType();
         this.authority = member.getAuthority().getType();
 //        this.authType = member.getAuthType();

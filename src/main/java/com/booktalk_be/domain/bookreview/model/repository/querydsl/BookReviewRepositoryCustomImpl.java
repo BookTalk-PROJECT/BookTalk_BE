@@ -1,10 +1,9 @@
-package com.booktalk_be.domain.bookreview.repository.querydsl;
+package com.booktalk_be.domain.bookreview.model.repository.querydsl;
 
 import com.booktalk_be.common.utils.Querydsl4RepositorySupport;
-import com.booktalk_be.domain.bookreview.dto.BookReviewListDto;
-import com.booktalk_be.domain.bookreview.dto.BookReviewSearchCondCommand;
-import com.booktalk_be.domain.bookreview.repository.BookReviewRepositoryCustom;
-import com.booktalk_be.common.command.PostSearchCondCommand; // Corrected import
+import com.booktalk_be.domain.bookreview.command.BookReviewSearchCondCommand;
+import com.booktalk_be.domain.bookreview.responseDto.BookReviewListDto;
+import com.booktalk_be.domain.bookreview.model.repository.BookReviewRepositoryCustom;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -21,7 +20,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
-import static com.booktalk_be.domain.bookreview.entity.QBookReview.bookReview;
+import static com.booktalk_be.domain.bookreview.model.entity.QBookReview.bookReview;
 
 public class BookReviewRepositoryCustomImpl extends Querydsl4RepositorySupport implements BookReviewRepositoryCustom {
 
@@ -30,17 +29,18 @@ public class BookReviewRepositoryCustomImpl extends Querydsl4RepositorySupport i
     }
 
     @Override
-    public Page<BookReviewListDto> findByCondition(Pageable pageable) {
+    public Page<BookReviewListDto> findForPaging(Integer categoryId, Pageable pageable) {
         List<BookReviewListDto> content = select(Projections.fields(BookReviewListDto.class,
                 bookReview.code.as("code"),
                 bookReview.bookTitle.as("bookTitle"),
                 bookReview.title.as("reviewTitle"),
                 bookReview.member.name.as("author"),
-                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", bookReview.regTime).as("publicationDate"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", bookReview.regTime).as("regDate"),
                 bookReview.rating.as("rating"),
-                bookReview.thumbnail.as("thumbnailUrl")))
+                bookReview.thumbnailUrl.as("thumbnailUrl")))
                 .from(bookReview)
                 .leftJoin(bookReview.member)
+                .where(bookReview.categoryId.eq(categoryId))
                 .where(bookReview.delYn.eq(false))
                 .orderBy(bookReview.code.desc())
                 .offset(pageable.getOffset())
@@ -50,6 +50,7 @@ public class BookReviewRepositoryCustomImpl extends Querydsl4RepositorySupport i
         Long total = Optional.ofNullable(
                         select(Wildcard.count)
                                 .from(bookReview)
+                                .where(bookReview.categoryId.eq(categoryId))
                                 .where(bookReview.delYn.eq(false))
                                 .fetchOne())
                 .orElse(0L);
@@ -58,22 +59,24 @@ public class BookReviewRepositoryCustomImpl extends Querydsl4RepositorySupport i
     }
 
     @Override
-    public Page<BookReviewListDto> searchByCondition(BookReviewSearchCondCommand cmd, Pageable pageable) {
+    public Page<BookReviewListDto> searchByCondition(Integer categoryId, BookReviewSearchCondCommand cmd, Pageable pageable) {
         JPAQuery<BookReviewListDto> baseQuery = select(Projections.fields(BookReviewListDto.class,
                 bookReview.code.as("code"),
                 bookReview.bookTitle.as("bookTitle"),
                 bookReview.title.as("reviewTitle"),
                 bookReview.member.name.as("author"),
-                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", bookReview.regTime).as("publicationDate"),
+                Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", bookReview.regTime).as("regDate"),
                 bookReview.rating.as("rating"),
-                bookReview.thumbnail.as("thumbnailUrl")))
+                bookReview.thumbnailUrl.as("thumbnailUrl")))
                 .from(bookReview)
                 .leftJoin(bookReview.member)
+                .where(bookReview.categoryId.eq(categoryId))
                 .where(bookReview.delYn.eq(false));
 
         JPAQuery<Long> countQuery = select(Wildcard.count)
                 .from(bookReview)
                 .leftJoin(bookReview.member)
+                .where(bookReview.categoryId.eq(categoryId))
                 .where(bookReview.delYn.eq(false));
 
         BooleanBuilder searchCondition = new BooleanBuilder()
@@ -96,17 +99,16 @@ public class BookReviewRepositoryCustomImpl extends Querydsl4RepositorySupport i
         return new PageImpl<>(content, pageable, total);
     }
 
-    private BooleanExpression keywordFilter(PostSearchCondCommand.PostKeywordType type, String keyword) {
+    private BooleanExpression keywordFilter(BookReviewSearchCondCommand.KeywordType type, String keyword) {
         if (keyword == null || keyword.isEmpty()) {
             return null;
         }
         return switch (type) {
             case TITLE -> bookReview.title.containsIgnoreCase(keyword);
-            case AUTHOR -> bookReview.member.name.containsIgnoreCase(keyword);
-            // Assuming you want to search by book title and ISBN as well
+            case AUTHOR -> bookReview.authors.containsIgnoreCase(keyword);
             case BOOK_TITLE -> bookReview.bookTitle.containsIgnoreCase(keyword);
             case ISBN -> bookReview.isbn.containsIgnoreCase(keyword);
-            default -> null; // BOOK_CODE as default
+            default -> null;
         };
     }
 

@@ -14,4 +14,5 @@ public class NlkBookDto {
     private String author;
     private String year;
     private String cover;
+    private String publisher;
 }

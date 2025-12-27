@@ -2,11 +2,11 @@ package com.booktalk_be.domain.bookreview.controller;
 
 import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.common.utils.ResponseDto;
-import com.booktalk_be.domain.bookreview.dto.BookReviewDetailResponse;
-import com.booktalk_be.domain.bookreview.dto.BookReviewListDto;
-import com.booktalk_be.domain.bookreview.dto.CreateBookReviewCommand;
-import com.booktalk_be.domain.bookreview.dto.BookReviewSearchCondCommand; // Add this import
-import com.booktalk_be.domain.bookreview.dto.UpdateBookReviewCommand;
+import com.booktalk_be.domain.bookreview.command.BookReviewSearchCondCommand;
+import com.booktalk_be.domain.bookreview.responseDto.BookReviewDetailDto;
+import com.booktalk_be.domain.bookreview.responseDto.BookReviewListDto;
+import com.booktalk_be.domain.bookreview.command.CreateBookReviewCommand;
+import com.booktalk_be.domain.bookreview.command.UpdateBookReviewCommand;
 import com.booktalk_be.domain.bookreview.service.BookReviewService;
 import com.booktalk_be.domain.member.model.entity.Member;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,42 +22,44 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/book-reviews") // Corrected RequestMapping
 @RequiredArgsConstructor
-@Tag(name = "Book Review API", description = "서평 API 입니다.")
+@Tag(name = "Book Review API", description = "책리뷰 API 입니다.")
 public class BookReviewController {
 
     private final BookReviewService bookReviewService;
 
     @PostMapping
-    @Operation(summary = "서평 등록", description = "새로운 서평을 등록합니다.")
+    @Operation(summary = "책리뷰 등록", description = "새로운 책리뷰를 등록합니다.")
     public ResponseEntity<ResponseDto> createBookReview(
-            @RequestBody @Valid CreateBookReviewCommand cmd,
+            @RequestBody CreateBookReviewCommand cmd,
             Authentication authentication
     ) {
         Member member = (Member) authentication.getPrincipal();
-        String bookReviewId = bookReviewService.createBookReview(member.getEmail(), cmd);
+        String bookReviewId = bookReviewService.createBookReview(member, cmd);
         return ResponseEntity.ok(ResponseDto.builder().code(200).msg("Success").data(bookReviewId).build());
     }
 
     @GetMapping
     @Operation(summary = "서평 목록 조회", description = "서평 목록을 조회합니다.")
     public ResponseEntity<ResponseDto> getBookReviewList(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(value = "categoryId", required = true) Integer categoryId,
+            @RequestParam(defaultValue = "0") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize
     ) {
-        Pageable pageable = PageRequest.of(page-1, size);
-        PageResponseDto<BookReviewListDto> bookReviewList = bookReviewService.getBookReviewList(pageable);
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        PageResponseDto<BookReviewListDto> bookReviewList = bookReviewService.getBookReviewList(categoryId, pageable);
         return ResponseEntity.ok(ResponseDto.builder().code(200).msg("Success").data(bookReviewList).build());
     }
 
     @PostMapping("/search") // New search endpoint
     @Operation(summary = "서평 검색", description = "검색 조건에 맞는 서평 목록을 조회합니다.")
     public ResponseEntity<ResponseDto> searchBookReviews(
-            @RequestBody @Valid BookReviewSearchCondCommand cmd,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(value = "categoryId", required = true) Integer categoryId,
+            @RequestBody BookReviewSearchCondCommand cmd,
+            @RequestParam(defaultValue = "0") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize
     ) {
-        Pageable pageable = PageRequest.of(page-1, size);
-        PageResponseDto<BookReviewListDto> bookReviewList = bookReviewService.searchBookReviews(cmd, pageable);
+        Pageable pageable = PageRequest.of(pageNum-1, pageSize);
+        PageResponseDto<BookReviewListDto> bookReviewList = bookReviewService.searchBookReviews(categoryId, cmd, pageable);
         return ResponseEntity.ok(ResponseDto.builder().code(200).msg("Success").data(bookReviewList).build());
     }
 
@@ -67,7 +69,7 @@ public class BookReviewController {
     public ResponseEntity<ResponseDto> getBookReview(
             @PathVariable String bookReviewId
     ) {
-        BookReviewDetailResponse bookReview = bookReviewService.getBookReview(bookReviewId);
+        BookReviewDetailDto bookReview = bookReviewService.getBookReview(bookReviewId);
         return ResponseEntity.ok(ResponseDto.builder().code(200).msg("Success").data(bookReview).build());
     }
 

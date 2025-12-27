@@ -1,4 +1,4 @@
-package com.booktalk_be.common.baseEntity;
+package com.booktalk_be.common.entity;
 
 import com.booktalk_be.domain.member.model.entity.Member;
 import jakarta.persistence.*;
