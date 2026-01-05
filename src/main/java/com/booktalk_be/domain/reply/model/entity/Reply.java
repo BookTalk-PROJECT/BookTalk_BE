@@ -1,7 +1,8 @@
 package com.booktalk_be.domain.reply.model.entity;
 
+import com.booktalk_be.domain.board.command.UpdateBoardCommand;
 import com.booktalk_be.domain.member.model.entity.Member;
-import com.booktalk_be.common.entity.CommonEntity;
+import com.booktalk_be.common.baseEntity.CommonEntity;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

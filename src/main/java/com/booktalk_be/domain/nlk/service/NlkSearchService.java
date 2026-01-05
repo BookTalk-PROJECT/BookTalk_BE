@@ -74,7 +74,7 @@ public class NlkSearchService {
                     String rawTitle = firstNonEmpty(it,
                             "title_info", "titleInfo", "title", "TITLE");
                     String title = stripHtml(rawTitle);
-                    String publisher = firstNonEmpty(it, "pubInfo");
+
                     String rawIsbn = firstNonEmpty(it, "isbn", "ISBN");
                     String isbn = rawIsbn == null ? "" : rawIsbn.replaceAll("[^0-9Xx]", "");
 
@@ -101,7 +101,6 @@ public class NlkSearchService {
                             .author(author)
                             .year(year)
                             .cover(cover)
-                            .publisher(publisher)
                             .build());
                 }
             }

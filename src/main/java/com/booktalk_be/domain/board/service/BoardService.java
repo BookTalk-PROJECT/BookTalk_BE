@@ -8,6 +8,7 @@ import com.booktalk_be.domain.board.command.UpdateBoardCommand;
 import com.booktalk_be.domain.board.responseDto.BoardDetailResponse;
 import com.booktalk_be.domain.board.responseDto.BoardResponse;
 import com.booktalk_be.domain.member.model.entity.Member;
+import jakarta.validation.Valid;
 
 public interface BoardService {
 

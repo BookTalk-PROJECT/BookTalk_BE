@@ -1,6 +1,6 @@
 package com.booktalk_be.domain.member.model.entity;
 
-import com.booktalk_be.common.entity.CommonTimeEntity;
+import com.booktalk_be.common.baseEntity.CommonTimeEntity;
 import com.booktalk_be.domain.auth.model.entity.AuthenticateType;
 import com.booktalk_be.domain.auth.model.entity.AuthorityType;
 import com.booktalk_be.domain.member.command.ModifyMemberCommand;

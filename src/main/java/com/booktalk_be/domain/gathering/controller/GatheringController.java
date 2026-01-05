@@ -1,7 +1,6 @@
 package com.booktalk_be.domain.gathering.controller;
 
 import com.booktalk_be.common.command.PostSearchCondCommand;
-import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.*;
@@ -9,8 +8,14 @@ import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.command.RecruitRequestCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.model.repository.GatheringMemberMapRepository;
-import com.booktalk_be.domain.gathering.responseDto.*;
-import com.booktalk_be.domain.gathering.service.*;
+import com.booktalk_be.domain.gathering.responseDto.BookItemResponse;
+import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
+import com.booktalk_be.domain.gathering.responseDto.GatheringEditInitResponse;
+import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
+import com.booktalk_be.domain.gathering.service.GatheringBookMapService;
+import com.booktalk_be.domain.gathering.service.GatheringRecruitQuestionService;
+import com.booktalk_be.domain.gathering.service.GatheringRecruitRequestService;
+import com.booktalk_be.domain.gathering.service.GatheringService;
 import com.booktalk_be.domain.member.model.entity.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,8 +43,6 @@ public class GatheringController {
     private final GatheringRecruitQuestionService gatheringRecruitQuestionService;
 
     private final GatheringRecruitRequestService gatheringRecruitRequestService;
-
-    private final GatheringBoardService gatheringBoardService;
 
 
     @GetMapping("/list")
@@ -206,56 +209,6 @@ public class GatheringController {
                         .build()
         );
     }
-    //=====================================모임게시글=============================================
-    //==========================================================================================
-
-
-    @PostMapping("/board/create")
-    @Operation(summary = "모임 게시글 등록", description = "모임 게시글을 등록합니다.")
-    public ResponseEntity<ResponseDto> create(@RequestBody @Valid CreateGatheringBoardCommand cmd,
-                                              Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal();
-        gatheringBoardService.create(cmd, member);
-        return ResponseEntity.ok(ResponseDto.builder().code(200).build());
-    }
-
-    @PatchMapping("/board/modify")
-    @Operation(summary = "모임 게시글 수정", description = "모임 게시글을 수정합니다.")
-    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateGatheringBoardCommand cmd) {
-        gatheringBoardService.modify(cmd);
-        return ResponseEntity.ok(ResponseDto.builder().code(200).build());
-    }
-
-    @DeleteMapping("/board/delete/{postCode}")
-    @Operation(summary = "모임 게시글 삭제", description = "모임 게시글을 삭제합니다.")
-    public ResponseEntity<ResponseDto> delete(@PathVariable String postCode) {
-        gatheringBoardService.delete(postCode);
-        return ResponseEntity.ok(ResponseDto.builder().code(200).build());
-    }
-
-    @GetMapping("/board/list/{gatheringCode}")
-    @Operation(summary = "모임 게시글 목록", description = "모임별 게시글 목록을 페이징 조회합니다.")
-    public ResponseEntity<ResponseDto> list(@PathVariable String gatheringCode,
-                                            @RequestParam Integer pageNum,
-                                            @RequestParam(defaultValue = "10") Integer pageSize) {
-
-        PageResponseDto<GatheringBoardResponse> page = gatheringBoardService.list(gatheringCode, pageNum, pageSize);
-        return ResponseEntity.ok(ResponseDto.builder().code(200).data(page).build());
-    }
-
-    @GetMapping("/board/detail/{postCode}")
-    @Operation(summary = "모임 게시글 상세", description = "모임 게시글 상세 + 댓글을 조회합니다.")
-    public ResponseEntity<ResponseDto> detail(@PathVariable String postCode) {
-        System.out.println("올까용?");
-
-        GatheringBoardDetailResponse res = gatheringBoardService.detail(postCode);
-        return ResponseEntity.ok(ResponseDto.builder().code(200).data(res).build());
-    }
-
-
-    //========================================모임 마이페이지======================================
-    //==========================================================================================
-
 
     //마이 페이지 내 모임 조회 API
     @GetMapping("/mylist")
@@ -325,7 +278,4 @@ public class GatheringController {
                 .code(200)
                 .build());
     }
-
-
-
 }

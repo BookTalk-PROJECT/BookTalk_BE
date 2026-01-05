@@ -1,7 +1,7 @@
 package com.booktalk_be.domain.likes.model.entity;
 
 import com.booktalk_be.domain.member.model.entity.Member;
-import com.booktalk_be.common.entity.CommonTimeEntity;
+import com.booktalk_be.common.baseEntity.CommonTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

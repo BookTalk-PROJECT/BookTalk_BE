@@ -1,5 +1,4 @@
-package com.booktalk_be.domain.gathering.responseDto;
-
+package com.booktalk_be.domain.bookreview.dto;
 
 import com.booktalk_be.domain.reply.responseDto.ReplyResponse;
 import lombok.AllArgsConstructor;
@@ -11,7 +10,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @Builder
-public class GatheringBoardDetailResponse {
-    private final GatheringBoardPostDetailResponse post;
+public class BookReviewDetailResponse {
+    private final BookReviewDetailDto post;
     private final List<ReplyResponse> replies;
 }

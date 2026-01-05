@@ -18,13 +18,13 @@ public class ReplySearchCondCommand extends SearchCondCommand {
 
     @NotNull
     @JsonProperty("keywordType")
-    private KeywordType type;
+    private CommentKeywordType type;
 
     @RequiredArgsConstructor
     @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-    public enum KeywordType implements EntityEnumerable {
+    public enum CommentKeywordType implements EntityEnumerable {
         POST_CODE("post_code", "게시글 코드"),
-        REPLY_CODE("reply_code", "댓글 코드"),
+        REPLY_CODE("reply_code", "댓글 번호"),
         CONTENT("content", "댓글 내용"),
         AUTHOR("author", "작성자");
 
@@ -39,8 +39,8 @@ public class ReplySearchCondCommand extends SearchCondCommand {
 
         //Request Body로 부터 수신한 type string value를 매칭된 ENUM 타입으로 매핑
         @JsonCreator
-        public static KeywordType fromType(String value) {
-            for (KeywordType ct : values()) {
+        public static CommentKeywordType fromType(String value) {
+            for (CommentKeywordType ct : values()) {
                 if (ct.type.equalsIgnoreCase(value)) {
                     return ct;
                 }

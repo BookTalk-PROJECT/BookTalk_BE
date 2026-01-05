@@ -1,7 +1,7 @@
-package com.booktalk_be.domain.bookreview.model.entity;
+package com.booktalk_be.domain.bookreview.entity;
 
-import com.booktalk_be.common.entity.Post;
-import com.booktalk_be.domain.bookreview.command.UpdateBookReviewCommand;
+import com.booktalk_be.common.baseEntity.Post;
+import com.booktalk_be.domain.bookreview.dto.UpdateBookReviewCommand;
 import com.booktalk_be.domain.member.model.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,9 +30,6 @@ public class BookReview extends Post {
         }
     }
 
-    @Column(name = "category_id", nullable = false)
-    private Integer categoryId;
-
     @Column(name = "book_title", nullable = false)
     private String bookTitle;
 
@@ -45,16 +42,15 @@ public class BookReview extends Post {
     @Column(name = "isbn", nullable = false)
     private String isbn;
 
-    @Column(name = "thumbnail_url", length = 5000)
-    private String thumbnailUrl;
+    @Column(name = "thumbnail")
+    private String thumbnail;
 
     @Column(name = "rating", nullable = false)
     private Integer rating;
 
     @Builder
-    public BookReview(Integer categoryId, Member member, String title, String content, String bookTitle, String authors,
-                      String publisher, String isbn, String thumbnailUrl, Integer rating) {
-        this.categoryId = categoryId;
+    public BookReview(Member member, String title, String content, String bookTitle, String authors,
+                      String publisher, String isbn, String thumbnail, Integer rating, Boolean notificationYn) {
         this.member = member;
         this.title = title;
         this.content = content;
@@ -62,9 +58,9 @@ public class BookReview extends Post {
         this.authors = authors;
         this.publisher = publisher;
         this.isbn = isbn;
-        this.thumbnailUrl = thumbnailUrl;
+        this.thumbnail = thumbnail;
         this.rating = rating;
-        this.notificationYn = false;
+        this.notificationYn = notificationYn;
     }
 
     public void modify(UpdateBookReviewCommand req) {
@@ -74,8 +70,9 @@ public class BookReview extends Post {
         this.authors = req.getAuthors();
         this.publisher = req.getPublisher();
         this.isbn = req.getIsbn();
-        this.thumbnailUrl = req.getThumbnailUrl();
+        this.thumbnail = req.getThumbnail();
         this.rating = req.getRating();
+        this.notificationYn = req.getNotificationYn();
     }
 
     public void delete() {

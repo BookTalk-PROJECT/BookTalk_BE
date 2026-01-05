@@ -1,13 +1,14 @@
 package com.booktalk_be.domain.bookreview.service;
 
 import com.booktalk_be.common.responseDto.PageResponseDto;
-import com.booktalk_be.domain.bookreview.command.BookReviewSearchCondCommand;
-import com.booktalk_be.domain.bookreview.responseDto.BookReviewDetailDto;
-import com.booktalk_be.domain.bookreview.responseDto.BookReviewListDto;
-import com.booktalk_be.domain.bookreview.command.CreateBookReviewCommand;
-import com.booktalk_be.domain.bookreview.command.UpdateBookReviewCommand;
-import com.booktalk_be.domain.bookreview.model.entity.BookReview;
-import com.booktalk_be.domain.bookreview.model.repository.BookReviewRepository;
+import com.booktalk_be.domain.bookreview.dto.BookReviewDetailDto;
+import com.booktalk_be.domain.bookreview.dto.BookReviewDetailResponse;
+import com.booktalk_be.domain.bookreview.dto.BookReviewListDto;
+import com.booktalk_be.domain.bookreview.dto.CreateBookReviewCommand;
+import com.booktalk_be.domain.bookreview.dto.UpdateBookReviewCommand;
+import com.booktalk_be.domain.bookreview.dto.BookReviewSearchCondCommand;
+import com.booktalk_be.domain.bookreview.entity.BookReview;
+import com.booktalk_be.domain.bookreview.repository.BookReviewRepository;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.member.model.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
 
 @Service
 @Transactional
@@ -26,9 +29,11 @@ public class BookReviewServiceImpl implements BookReviewService {
     private final MemberRepository memberRepository;
 
     @Override
-    public String createBookReview(Member member, CreateBookReviewCommand cmd) {
+    public String createBookReview(String userEmail, CreateBookReviewCommand cmd) {
+        Member member = memberRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found with email: " + userEmail));
+
         BookReview bookReview = BookReview.builder()
-                .categoryId(cmd.getCategoryId())
                 .member(member)
                 .title(cmd.getTitle())
                 .content(cmd.getContent())
@@ -36,8 +41,9 @@ public class BookReviewServiceImpl implements BookReviewService {
                 .authors(cmd.getAuthors())
                 .publisher(cmd.getPublisher())
                 .isbn(cmd.getIsbn())
-                .thumbnailUrl(cmd.getThumbnailUrl())
+                .thumbnail(cmd.getThumbnail())
                 .rating(cmd.getRating())
+                .notificationYn(cmd.getNotificationYn())
                 .build();
 
         bookReviewRepository.save(bookReview);
@@ -46,26 +52,26 @@ public class BookReviewServiceImpl implements BookReviewService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDto<BookReviewListDto> getBookReviewList(Integer categoryId, Pageable pageable) {
-        Page<BookReviewListDto> page = bookReviewRepository.findForPaging(categoryId, pageable);
+    public PageResponseDto<BookReviewListDto> getBookReviewList(Pageable pageable) {
+        Page<BookReviewListDto> page = bookReviewRepository.findByCondition(pageable);
         return new PageResponseDto<>(page.getContent(), page.getTotalPages());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDto<BookReviewListDto> searchBookReviews(Integer categoryId, BookReviewSearchCondCommand cmd, Pageable pageable) {
-        Page<BookReviewListDto> page = bookReviewRepository.searchByCondition(categoryId, cmd, pageable);
+    public PageResponseDto<BookReviewListDto> searchBookReviews(BookReviewSearchCondCommand cmd, Pageable pageable) {
+        Page<BookReviewListDto> page = bookReviewRepository.searchByCondition(cmd, pageable);
         return new PageResponseDto<>(page.getContent(), page.getTotalPages());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public BookReviewDetailDto getBookReview(String bookReviewId) {
+    public BookReviewDetailResponse getBookReview(String bookReviewId) {
         BookReview bookReview = bookReviewRepository.findById(bookReviewId)
                 .orElseThrow(() -> new EntityNotFoundException("BookReview not found with id: " + bookReviewId));
 
         BookReviewDetailDto post = BookReviewDetailDto.builder()
-                .code(bookReview.getCode())
+                .boardCode(bookReview.getCode())
                 .memberId(bookReview.getMember().getMemberId())
                 .title(bookReview.getTitle())
                 .content(bookReview.getContent())
@@ -74,18 +80,19 @@ public class BookReviewServiceImpl implements BookReviewService {
                 .likesCnt(bookReview.getLikesCnt())
                 .regDate(bookReview.getRegTime().toString())
                 .updateDate(bookReview.getUpdateTime().toString())
-//                .isLiked(false) // Assuming not liked for now
+                .isLiked(false) // Assuming not liked for now
+                .notificationYn(bookReview.getNotificationYn())
                 .delYn(bookReview.getDelYn())
                 .delReason(bookReview.getDelReason())
                 .bookTitle(bookReview.getBookTitle())
                 .authors(bookReview.getAuthors())
                 .publisher(bookReview.getPublisher())
                 .isbn(bookReview.getIsbn())
-                .thumbnailUrl(bookReview.getThumbnailUrl())
+                .thumbnail(bookReview.getThumbnail())
                 .rating(bookReview.getRating())
                 .build();
 
-        return post; // No replies for now
+        return new BookReviewDetailResponse(post, Collections.emptyList()); // No replies for now
     }
 
     @Override
@@ -93,6 +100,7 @@ public class BookReviewServiceImpl implements BookReviewService {
         BookReview bookReview = bookReviewRepository.findById(bookReviewId)
                 .orElseThrow(() -> new EntityNotFoundException("BookReview not found with id: " + bookReviewId));
         bookReview.modify(cmd);
+        bookReviewRepository.save(bookReview);
     }
 
     @Override
@@ -100,5 +108,6 @@ public class BookReviewServiceImpl implements BookReviewService {
         BookReview bookReview = bookReviewRepository.findById(bookReviewId)
                 .orElseThrow(() -> new EntityNotFoundException("BookReview not found with id: " + bookReviewId));
         bookReview.delete();
+        bookReviewRepository.save(bookReview);
     }
 }

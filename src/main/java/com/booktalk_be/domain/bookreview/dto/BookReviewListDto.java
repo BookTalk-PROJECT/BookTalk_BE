@@ -1,4 +1,4 @@
-package com.booktalk_be.domain.bookreview.responseDto;
+package com.booktalk_be.domain.bookreview.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -17,8 +17,8 @@ public class BookReviewListDto {
     @JsonProperty("review_title")
     private String reviewTitle;
     private String author;
-    @JsonProperty("reg_date")
-    private String regDate;
+    @JsonProperty("publication_date")
+    private String publicationDate;
     private Integer rating;
     @JsonProperty("thumbnail_url")
     private String thumbnailUrl;
