@@ -5,8 +5,11 @@ import com.booktalk_be.domain.auth.command.LoginDTO;
 import com.booktalk_be.domain.auth.service.AuthService;
 import com.booktalk_be.domain.auth.service.RefreshTokenService;
 import com.booktalk_be.domain.member.model.entity.Member;
+import com.booktalk_be.springconfig.auth.jwt.JwtProvider;
 import com.booktalk_be.springconfig.exception.Dto.ErrorDto;
 import com.booktalk_be.springconfig.exception.utils.ErrorResponseUtil;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +30,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService; // 로그아웃 시 필요
+    private final JwtProvider jwtProvider;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginData, HttpServletResponse response) {
@@ -66,25 +70,32 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(Authentication authentication, HttpServletResponse response) {
-        if (authentication != null && authentication.getPrincipal() instanceof Member) {
-            Member member = (Member) authentication.getPrincipal();
-            refreshTokenService.deleteRefreshToken(member.getMemberId());
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Integer userId = jwtProvider.getUserKeyFromExpiredToken(jwtProvider.resolveToken(request));
+            if(refreshTokenService.validateExistMember(userId)) {
+                refreshTokenService.deleteRefreshToken(userId);
+            }
+            ResponseCookie rtCookie = ResponseCookie.from("refresh_token", null)
+                    .httpOnly(true)
+                    .secure(false)
+                    .sameSite("Lax")
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());
+
+            return ResponseEntity.ok(ResponseDto.builder()
+                    .code(200)
+                    .data(Collections.singletonMap("message", "로그아웃 되었습니다."))
+                    .build());
+        }catch (Exception e) {
+            System.out.println("occur logout error");
+            return ResponseEntity.ok(ResponseDto.builder()
+                    .code(500)
+                    .data(Collections.singletonMap("message", "로그아웃 실패"))
+                    .build());
         }
-
-        ResponseCookie rtCookie = ResponseCookie.from("refresh_token", null)
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
-                .path("/")
-                .maxAge(0)
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());
-
-        return ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .data(Collections.singletonMap("message", "로그아웃 되었습니다."))
-                .build());
     }
 
     @PostMapping("/refresh")
@@ -111,6 +122,7 @@ public class AuthController {
                         .data(Collections.singletonMap("accessToken", acToken))
                         .build());
             } catch (Exception e) {
+                System.out.println("리프레시 에러 터짐");
                 ErrorDto dto = ErrorResponseUtil.fromJwtException(e, true); // refresh
                 return ErrorResponseUtil.toResponseEntity(dto);
             }
