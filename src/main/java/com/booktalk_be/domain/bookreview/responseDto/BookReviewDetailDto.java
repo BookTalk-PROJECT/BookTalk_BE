@@ -1,4 +1,4 @@
-package com.booktalk_be.domain.bookreview.dto;
+package com.booktalk_be.domain.bookreview.responseDto;
 
 import com.booktalk_be.common.responseDto.PostDetailResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,11 +12,13 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 public class BookReviewDetailDto extends PostDetailResponse {
+    private String code;
     @JsonProperty("book_title")
     private String bookTitle;
     private String authors;
     private String publisher;
     private String isbn;
-    private String thumbnail;
+    @JsonProperty("thumbnail_url")
+    private String thumbnailUrl;
     private Integer rating;
 }

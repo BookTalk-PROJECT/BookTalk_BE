@@ -1,5 +1,6 @@
-package com.booktalk_be.common.command;
+package com.booktalk_be.domain.bookreview.command;
 
+import com.booktalk_be.common.command.SearchCondCommand;
 import com.booktalk_be.common.utils.EntityEnumerable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ReplySearchCondCommand extends SearchCondCommand {
+public class BookReviewSearchCondCommand extends SearchCondCommand {
 
     @NotNull
     @JsonProperty("keywordType")
@@ -23,10 +24,10 @@ public class ReplySearchCondCommand extends SearchCondCommand {
     @RequiredArgsConstructor
     @JsonFormat(shape = JsonFormat.Shape.OBJECT)
     public enum KeywordType implements EntityEnumerable {
-        POST_CODE("post_code", "게시글 코드"),
-        REPLY_CODE("reply_code", "댓글 코드"),
-        CONTENT("content", "댓글 내용"),
-        AUTHOR("author", "작성자");
+        TITLE("title", "제목"),
+        AUTHOR("author", "저자"),
+        BOOK_TITLE("book_title", "도서명"), // Added for book reviews
+        ISBN("isbn", "ISBN"); // Added for book reviews
 
         private final String type;
         @Getter
@@ -39,15 +40,14 @@ public class ReplySearchCondCommand extends SearchCondCommand {
 
         //Request Body로 부터 수신한 type string value를 매칭된 ENUM 타입으로 매핑
         @JsonCreator
-        public static KeywordType fromType(String value) {
-            for (KeywordType ct : values()) {
-                if (ct.type.equalsIgnoreCase(value)) {
-                    return ct;
+        public static BookReviewSearchCondCommand.KeywordType fromType(String value) {
+            for (BookReviewSearchCondCommand.KeywordType kt : values()) {
+                if (kt.type.equalsIgnoreCase(value)) {
+                    return kt;
                 }
             }
             throw new IllegalArgumentException("Unknown KeywordType: " + value);
         }
 
     }
-
 }
