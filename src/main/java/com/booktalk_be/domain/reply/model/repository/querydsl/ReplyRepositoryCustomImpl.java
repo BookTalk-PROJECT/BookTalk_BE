@@ -22,7 +22,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
-import static com.booktalk_be.domain.board.model.entity.QBoard.board;
 import static com.booktalk_be.domain.reply.model.entity.QReply.reply;
 
 public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implements ReplyRepositoryCustom {
@@ -162,7 +161,7 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
     }
 
 
-    private BooleanExpression keywordFilter(ReplySearchCondCommand.CommentKeywordType type, String keyword) {
+    private BooleanExpression keywordFilter(ReplySearchCondCommand.KeywordType type, String keyword) {
         if (keyword == null || keyword.isEmpty()) {
             return null;
         }
