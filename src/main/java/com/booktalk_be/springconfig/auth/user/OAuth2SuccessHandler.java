@@ -1,6 +1,7 @@
 package com.booktalk_be.springconfig.auth.user;
 
 import com.booktalk_be.domain.auth.model.entity.Refresh_Token;
+import com.booktalk_be.domain.auth.model.repository.RefreshTokenRepository;
 import com.booktalk_be.domain.auth.service.RefreshTokenServiceImpl;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.member.service.MemberService;
@@ -24,6 +25,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtProvider jwtProvider;
     private final RefreshTokenServiceImpl refreshTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final MemberService memberService;
 
     @Override
@@ -38,12 +40,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         String refreshToken = "";
 
-        if(!refreshTokenService.validateExistMember(memberId)) {
-            refreshTokenService.saveRefreshToken(memberId);
-        }else{
-            Refresh_Token refresh_token= refreshTokenService.getRefreshTokenByMember(memberId);
-            refreshToken = refresh_token.getToken();
+        if(refreshTokenService.validateExistMember(memberId)) {
+            refreshTokenService.deleteRefreshToken(memberId);
+            refreshTokenRepository.flush();
         }
+        Refresh_Token newRefreshToken = refreshTokenService.saveRefreshToken(memberId);
+        refreshToken = newRefreshToken.getToken();
 
         ResponseCookie accessCookie = ResponseCookie.from("access_token", accessToken)
                 .httpOnly(false)
