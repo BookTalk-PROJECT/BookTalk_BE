@@ -36,7 +36,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         Member member = memberRepository.findByEmailAndAuthType(email,authenticateType)
                     .orElseGet(() -> memberRepository.save(Member.builder()
-                                    .name("kakao")
+                                    .name(registrationId)
                                     .password("-")
                                     .email(email)
                                     .authType(authenticateType)
