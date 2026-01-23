@@ -14,11 +14,16 @@ import com.booktalk_be.domain.gathering.model.repository.GatheringMemberMapRepos
 import com.booktalk_be.domain.gathering.responseDto.*;
 import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageGatheringBoardResponse;
 import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageGatheringResponse;
+import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageRecruitApprovalResponse;
+import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageRecruitRequestResponse;
 import com.booktalk_be.domain.gathering.service.*;
 import com.booktalk_be.domain.member.model.entity.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -345,50 +350,72 @@ public class GatheringController {
     }
 
     //마이 페이지 내 모임 신청 신청 목록 조회 API
-    @GetMapping("/manage/request")
-    @Tag(name = "Gathering API")
-    @Operation(summary = "내 신청 모임 목록 조회", description = "내 신청 모임 목록들을 조회 합니다.")
-    public ResponseEntity<ResponseDto> getMyGatheringRequestList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
-                                                                 @RequestBody @Valid PostSearchCondCommand cmd) {
+    @GetMapping("/myRecruitList")
+    @Operation(summary = "마이페이지 모임 신청 조회", description = "내가 신청한 모임 목록(질문/답변 포함)을 페이징 조회합니다.")
+    public ResponseEntity<ResponseDto> getMyRecruitRequests(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+
+        PageResponseDto<MyPageRecruitRequestResponse> page =
+                gatheringRecruitRequestService.getMyRecruitRequests(pageNum, pageSize, member.getMemberId());
+
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
+                .data(page)
                 .build());
     }
 
     //마이 페이지 모임 신청 목록 조회 API
-    @GetMapping("/manage/approval")
-    @Tag(name = "Gathering API")
-    @Operation(summary = "내 모임 승인 목록 조회", description = "내 모임에 신청한 신청 목록들을 조회 합니다.")
-    public ResponseEntity<ResponseDto> getMyGatheringApprovalList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
-                                                                  @RequestBody @Valid PostSearchCondCommand cmd) {
+    @GetMapping("/requestMyList")
+    @Operation(summary = "모임장 신청 승인 목록", description = "내가 모임장인 모임에 들어온 참여 신청을 조회합니다.")
+    public ResponseEntity<ResponseDto> list(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<MyPageRecruitApprovalResponse> page =
+                gatheringRecruitRequestService.getApprovalList(pageNum, pageSize, member.getMemberId());
 
-        return ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .build());
+        return ResponseEntity.ok(ResponseDto.builder().code(200).data(page).build());
     }
 
-    //관리자 페이지 모임 게시글 조회 API
-    @GetMapping("/admin/boardlist")
-    @Tag(name = "Gathering API")
-    @Operation(summary = "관리자 게시글 조회", description = "관리자 권한으로 모든 게시글을 조회 합니다.")
-    public ResponseEntity<ResponseDto> getBoardList(@RequestParam(value = "category", required = true) String category,
-                                                    @RequestParam(value = "pageNum", required = true) Integer pageNum,
-                                                    @RequestBody @Valid PostSearchCondCommand cmd){
-        return ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .build());
+    @PostMapping("/approve")
+    public ResponseEntity<ResponseDto> approve(
+            @RequestBody ApproveCmd cmd,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        gatheringRecruitRequestService.approve(member.getMemberId(), cmd.getGathering_code(), cmd.getApplicant_id());
+        return ResponseEntity.ok(ResponseDto.builder().code(200).data(true).build());
     }
 
-    //관리자 페이지 모임 게시글 복구 API
-    @PostMapping("/admin/restoration/{boardCode}")
-    @Tag(name = "Gathering API")
-    @Operation(summary = "관리자 게시글 복구", description = "관리자 권한으로 게시글을 복구합니다.")
-    public ResponseEntity<ResponseDto> restoreBoard(@RequestParam(value = "categoryId", required = true) String categoryId,
-                                                    @PathVariable String boardCode)
-    {
-        return ResponseEntity.ok(ResponseDto.builder()
-                .code(200)
-                .build());
+    @PostMapping("/reject")
+    public ResponseEntity<ResponseDto> reject(
+            @RequestBody RejectCmd cmd,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        gatheringRecruitRequestService.reject(member.getMemberId(), cmd.getGathering_code(), cmd.getApplicant_id(), cmd.getReject_reason());
+        return ResponseEntity.ok(ResponseDto.builder().code(200).data(true).build());
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ApproveCmd {
+        private String gathering_code;
+        private int applicant_id;
+    }
+
+    @Getter @NoArgsConstructor @AllArgsConstructor
+    public static class RejectCmd {
+        private String gathering_code;
+        private int applicant_id;
+        private String reject_reason;
     }
 
 

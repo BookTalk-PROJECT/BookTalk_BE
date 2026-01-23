@@ -3,6 +3,8 @@ package com.booktalk_be.domain.reply.service;
 import com.booktalk_be.common.command.ReplySearchCondCommand;
 import com.booktalk_be.common.command.RestrictCommand;
 import com.booktalk_be.common.responseDto.PageResponseDto;
+import com.booktalk_be.domain.gathering.command.mypage.GatheringReplySearchCondCommand;
+import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageGatheringReplyResponse;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
@@ -22,4 +24,8 @@ public interface ReplyService {
     public PageResponseDto<ReplySimpleResponse> getAllRepliesForPagingByMe(Integer pageNum, Integer pageSize, int memberId);
     PageResponseDto<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId);
     PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize);
+
+    PageResponseDto<MyPageGatheringReplyResponse> getMyGatheringReplies(Integer pageNum, Integer pageSize, int memberId);
+    PageResponseDto<MyPageGatheringReplyResponse> searchMyGatheringReplies(GatheringReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId);
+
 }
