@@ -5,11 +5,15 @@ import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.common.utils.JsonPrinter;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.gathering.command.*;
+import com.booktalk_be.domain.gathering.command.mypage.GatheringBoardSearchCondCommand;
+import com.booktalk_be.domain.gathering.command.mypage.GatheringSearchCondCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.command.RecruitRequestCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.model.repository.GatheringMemberMapRepository;
 import com.booktalk_be.domain.gathering.responseDto.*;
+import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageGatheringBoardResponse;
+import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageGatheringResponse;
 import com.booktalk_be.domain.gathering.service.*;
 import com.booktalk_be.domain.member.model.entity.Member;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/gathering")
-@CrossOrigin("http://localhost:5173")
 @Tag(name = "Gathering API", description = "모임 관련 API 입니다.")
 public class GatheringController {
 
@@ -165,6 +168,18 @@ public class GatheringController {
         return ResponseEntity.ok(ResponseDto.builder().code(200).build());
     }
 
+    @PostMapping("/{code}/restore")
+    @Operation(summary = "모임 소프트 삭제", description = "del_yn=0, del_reason 초기화")
+    public ResponseEntity<ResponseDto> restore(
+            @PathVariable String code,
+            @RequestBody @Valid DeleteGatheringCommand request,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        gatheringService.restoreGathering(code, request.getReason(), member);
+        return ResponseEntity.ok(ResponseDto.builder().code(200).build());
+    }
+
     @GetMapping("/recruitQuestionList")
     @Tag(name = "Gathering API")
     @Operation(summary = "모임 신청 질문 리스트 조회", description = "모임 신청 질문 리스트를 조회합니다.")
@@ -257,25 +272,75 @@ public class GatheringController {
     //==========================================================================================
 
 
-    //마이 페이지 내 모임 조회 API
-    @GetMapping("/mylist")
-    @Tag(name = "Gathering API")
-    @Operation(summary = "내 모임 목록 조회", description = "내 모임 목록을 조회 합니다.")
-    public ResponseEntity<ResponseDto> getMyGatheringList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
-                                                          @RequestBody @Valid PostSearchCondCommand cmd) {
+    //마이 페이지 내 모임 조회 API(All)
+    @GetMapping("/myList")
+    @Operation(summary = "마이페이지 내 모임 목록 조회", description = "내가 속한 모임 목록을 페이징 조회합니다.")
+    public ResponseEntity<ResponseDto> getMyGatherings(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<MyPageGatheringResponse> page =
+                gatheringService.getMyGatherings(pageNum, pageSize, member.getMemberId());
+
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
+                .data(page)
                 .build());
     }
 
-    //마이 페이지 모임 게시판 게시물 조회 API
-    @GetMapping("/board/mylist")
-    @Tag(name = "Gathering API")
-    @Operation(summary = "내 모임 게시판 내 글 목록 조회", description = "내 모임 게시판 내 글 목록들을 조회 합니다.")
-    public ResponseEntity<ResponseDto> getMyGatheringBoardList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
-                                                               @RequestBody @Valid PostSearchCondCommand cmd) {
+    //마이 페이지 내 모임 조회 API(Search)
+    @PostMapping("/myList/search")
+    @Operation(summary = "마이페이지 내 모임 목록 검색", description = "검색어/날짜범위로 내 모임 목록을 필터링해 페이징 조회합니다. 값이 비면 조건 없이 전체 조회로 동작해야 합니다.")
+    public ResponseEntity<ResponseDto> searchMyGatherings(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestBody @Valid GatheringSearchCondCommand cmd,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<MyPageGatheringResponse> page =
+                gatheringService.searchMyGatherings(cmd, pageNum, pageSize, member.getMemberId());
+
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
+                .data(page)
+                .build());
+    }
+
+    @GetMapping("/myBoardList")
+    @Operation(summary = "마이페이지 모임 게시글 조회", description = "내가 작성한 모임 게시글을 페이징 조회합니다.")
+    public ResponseEntity<ResponseDto> getMyGatheringBoards(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<MyPageGatheringBoardResponse> page =
+                gatheringBoardService.getMyGatheringBoards(pageNum, pageSize, member.getMemberId());
+
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
+                .build());
+    }
+
+    @PostMapping("/myBoardList/search")
+    @Operation(summary = "마이페이지 모임 게시글 검색", description = "검색어/작성일(reg_time) 범위로 내 모임 게시글을 검색합니다. 값이 비면 전체조회로 동작해야 합니다.")
+    public ResponseEntity<ResponseDto> searchMyGatheringBoards(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestBody GatheringBoardSearchCondCommand cmd,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<MyPageGatheringBoardResponse> page =
+                gatheringBoardService.searchMyGatheringBoards(cmd, pageNum, pageSize, member.getMemberId());
+
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
                 .build());
     }
 

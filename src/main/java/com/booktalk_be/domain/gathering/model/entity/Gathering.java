@@ -1,6 +1,7 @@
 package com.booktalk_be.domain.gathering.model.entity;
 
 
+import com.booktalk_be.common.entity.CommonEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -13,7 +14,7 @@ import org.hibernate.annotations.DynamicInsert;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 @Table(name = "gathering") //모임 엔티티
-public class Gathering{
+public class Gathering extends CommonEntity {
 
     @Id
     @Column(name = "gathering_code", nullable = false) //모임 코드
