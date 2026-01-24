@@ -6,10 +6,12 @@ import com.booktalk_be.domain.auth.model.properties.JwtProperties;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -105,5 +107,30 @@ public class JwtProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    // 기존 메서드 (검증용 - 필터 등에서 사용)
+    public Integer getUserKeyFromToken(String token) {
+        Claims claims = getClaimsFromToken(token); // 여기서 만료되면 에러 터짐
+        return (Integer) claims.get("userKey");
+    }
+
+    // (로그아웃용 - 만료 무시)
+    public Integer getUserKeyFromExpiredToken(String token) {
+        try {
+            return getUserKeyFromToken(token);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return (Integer) e.getClaims().get("userKey");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

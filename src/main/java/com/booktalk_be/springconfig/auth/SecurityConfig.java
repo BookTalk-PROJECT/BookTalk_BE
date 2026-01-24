@@ -33,7 +33,7 @@ public class SecurityConfig  {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/uploads/**","/login","/refresh","/gathering/**", "/community/**", "/reply/**", "/member/**", "/dashboard/**", "/token-refresh", "/error","/nlk/**","/oauth/**").permitAll()
+                        .requestMatchers("/uploads/**","/login","/refresh","/gathering/**", "/community/**", "/reply/**", "/member/**", "/dashboard/**", "/token-refresh", "/error","/nlk/**","/oauth/**","/logout").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(user -> user.userService(customOAuth2UserService))
@@ -44,7 +44,7 @@ public class SecurityConfig  {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(new CustomAuthenticationEntryPointHandler())
+//                        .authenticationEntryPoint(new CustomAuthenticationEntryPointHandler())
                         .accessDeniedHandler(new CustomAccessDeniedHandler()));
 
         return http.build();
