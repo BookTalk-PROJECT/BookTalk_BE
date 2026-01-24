@@ -29,7 +29,7 @@ public class RecruitRequest {
     @Column(name = "request_question_answer")
     private String requestQuestionAnswer; // JSON 문자열로 저장
 
-    @Convert(converter = RecruitRequestStatus.Converter.class) // ★ 컨버터 추가
+    @Convert(converter = RecruitRequestStatus.Converter.class) //  컨버터 추가
     @Column(name = "status", nullable = false)
     private RecruitRequestStatus status;
 

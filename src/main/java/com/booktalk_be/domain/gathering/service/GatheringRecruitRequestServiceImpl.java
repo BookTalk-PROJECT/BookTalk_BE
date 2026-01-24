@@ -1,17 +1,21 @@
 package com.booktalk_be.domain.gathering.service;
 
+import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.domain.gathering.command.RecruitRequestCommand;
 import com.booktalk_be.domain.gathering.model.entity.Gathering;
 import com.booktalk_be.domain.gathering.model.entity.RecruitRequest;
 import com.booktalk_be.domain.gathering.model.entity.RecruitRequestStatus;
 import com.booktalk_be.domain.gathering.model.repository.GatheringRepository;
 import com.booktalk_be.domain.gathering.model.repository.RecruitRequestRepository;
+import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageRecruitApprovalResponse;
+import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageRecruitRequestResponse;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.member.model.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,5 +55,103 @@ public class GatheringRecruitRequestServiceImpl implements GatheringRecruitReque
 
         // 4) 일괄 저장
         recruitRequestRepository.saveAll(toSave);
+    }
+
+
+    @Override
+    public PageResponseDto<MyPageRecruitRequestResponse> getMyRecruitRequests(Integer pageNum, Integer pageSize, int memberId) {
+        List<Object[]> rows = recruitRequestRepository.callMyRecruitRequestList(memberId, pageNum, pageSize);
+        return buildPage(rows);
+    }
+
+    private PageResponseDto<MyPageRecruitRequestResponse> buildPage(List<Object[]> rows) {
+        int totalPages = 0;
+        if (rows != null && !rows.isEmpty()) {
+            Object[] first = rows.get(0);
+            totalPages = toInt(first[first.length - 1]); // 마지막 = total_pages
+        }
+
+        List<MyPageRecruitRequestResponse> content =
+                (rows == null) ? List.of() : rows.stream().map(this::mapRow).toList();
+
+        return PageResponseDto.<MyPageRecruitRequestResponse>builder()
+                .content(content)
+                .totalPages(totalPages)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<MyPageRecruitApprovalResponse> getApprovalList(Integer pageNum, Integer pageSize, int masterId) {
+        List<Object[]> rows = recruitRequestRepository.callRecruitApprovalList(masterId, pageNum, pageSize);
+        return buildPages(rows);
+    }
+
+    @Override
+    @Transactional
+    public void approve(int masterId, String gatheringCode, int applicantId) {
+        recruitRequestRepository.callRecruitApprove(masterId, gatheringCode, applicantId);
+    }
+
+    @Override
+    @Transactional
+    public void reject(int masterId, String gatheringCode, int applicantId, String rejectReason) {
+        recruitRequestRepository.callRecruitReject(masterId, gatheringCode, applicantId, rejectReason);
+    }
+
+    private PageResponseDto<MyPageRecruitApprovalResponse> buildPages(List<Object[]> rows) {
+        int totalPages = 0;
+        if (rows != null && !rows.isEmpty()) {
+            Object[] first = rows.get(0);
+            totalPages = toInt(first[first.length - 1]); // 마지막 = total_pages
+        }
+
+        List<MyPageRecruitApprovalResponse> content =
+                (rows == null) ? List.of() : rows.stream().map(this::mapRows).toList();
+
+        return PageResponseDto.<MyPageRecruitApprovalResponse>builder()
+                .content(content)
+                .totalPages(totalPages)
+                .build();
+    }
+
+    /**
+     * 프로시저 컬럼 순서(권장):
+     * 0 gathering_code
+     * 1 gathering_name
+     * 2 qa_json
+     * 3 status
+     * 4 reject_reason
+     * 5 total_pages (마지막)
+     */
+    private MyPageRecruitRequestResponse mapRow(Object[] r) {
+        return MyPageRecruitRequestResponse.builder()
+                .gatheringCode(r[0] == null ? null : String.valueOf(r[0]))
+                .gatheringName(r[1] == null ? null : String.valueOf(r[1]))
+                .qaJson(r[2] == null ? "[]" : String.valueOf(r[2]))
+                .status(r[3] == null ? null : String.valueOf(r[3]))
+                .rejectReason(r[4] == null ? null : String.valueOf(r[4]))
+                .build();
+    }
+
+    private MyPageRecruitApprovalResponse mapRows(Object[] r) {
+        return MyPageRecruitApprovalResponse.builder()
+                .gatheringCode(r[0] == null ? null : String.valueOf(r[0]))
+                .gatheringName(r[1] == null ? null : String.valueOf(r[1]))
+                .applicantId(toInt(r[2]))
+                .applicantName(r[3] == null ? null : String.valueOf(r[3]))
+                .qaJson(r[4] == null ? "[]" : String.valueOf(r[4]))
+                .status(r[5] == null ? null : String.valueOf(r[5]))
+                .rejectReason(r[6] == null ? null : String.valueOf(r[6]))
+                .build();
+    }
+
+    private static Integer toInt(Object v) {
+        if (v == null) return 0;
+        if (v instanceof Integer i) return i;
+        if (v instanceof Long l) return l.intValue();
+        if (v instanceof BigInteger bi) return bi.intValue();
+        if (v instanceof Number n) return n.intValue();
+        return Integer.parseInt(String.valueOf(v));
     }
 }

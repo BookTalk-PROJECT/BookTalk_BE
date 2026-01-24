@@ -3,6 +3,8 @@ package com.booktalk_be.domain.reply.service;
 import com.booktalk_be.common.command.ReplySearchCondCommand;
 import com.booktalk_be.common.command.RestrictCommand;
 import com.booktalk_be.common.responseDto.PageResponseDto;
+import com.booktalk_be.domain.gathering.command.mypage.GatheringReplySearchCondCommand;
+import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageGatheringReplyResponse;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
@@ -18,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -153,5 +156,81 @@ public class ReplyServiceImpl implements ReplyService {
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())
                 .build();
+    }
+
+    @Override
+    public PageResponseDto<MyPageGatheringReplyResponse> getMyGatheringReplies(Integer pageNum, Integer pageSize, int memberId) {
+        List<Object[]> rows = replyRepository.callMyGatheringReplyList(memberId, pageNum, pageSize);
+        return buildPage(rows);
+    }
+
+    @Override
+    public PageResponseDto<MyPageGatheringReplyResponse> searchMyGatheringReplies(GatheringReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
+        List<Object[]> rows = replyRepository.callMyGatheringReplySearch(
+                memberId,
+                emptyToNull(cmd.getKeywordType()),
+                emptyToNull(cmd.getKeyword()),
+                emptyToNull(cmd.getStartDate()),
+                emptyToNull(cmd.getEndDate()),
+                pageNum,
+                pageSize
+        );
+        return buildPage(rows);
+    }
+
+    private PageResponseDto<MyPageGatheringReplyResponse> buildPage(List<Object[]> rows) {
+        int totalPages = 0;
+        if (rows != null && !rows.isEmpty()) {
+            Object[] first = rows.get(0);
+            totalPages = toInt(first[first.length - 1]); // 마지막 = total_pages
+        }
+
+        List<MyPageGatheringReplyResponse> content =
+                (rows == null) ? List.of() : rows.stream().map(this::mapRow).toList();
+
+        return PageResponseDto.<MyPageGatheringReplyResponse>builder()
+                .content(content)
+                .totalPages(totalPages)
+                .build();
+    }
+
+    /**
+     * 프로시저 컬럼 순서(권장):
+     * 0 reply_code
+     * 1 post_code
+     * 2 gathering_name
+     * 3 post_title
+     * 4 content
+     * 5 author
+     * 6 del_yn
+     * 7 reg_date
+     * 8 total_pages (마지막)
+     */
+    private MyPageGatheringReplyResponse mapRow(Object[] r) {
+        return MyPageGatheringReplyResponse.builder()
+                .replyCode(r[0] == null ? null : String.valueOf(r[0]))
+                .postCode(r[1] == null ? null : String.valueOf(r[1]))
+                .gatheringName(r[2] == null ? null : String.valueOf(r[2]))
+                .postTitle(r[3] == null ? null : String.valueOf(r[3]))
+                .content(r[4] == null ? null : String.valueOf(r[4]))
+                .author(r[5] == null ? null : String.valueOf(r[5]))
+                .delYn(toInt(r[6]))
+                .regDate(r[7] == null ? null : String.valueOf(r[7]))
+                .build();
+    }
+
+    private static String emptyToNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    private static Integer toInt(Object v) {
+        if (v == null) return 0;
+        if (v instanceof Integer i) return i;
+        if (v instanceof Long l) return l.intValue();
+        if (v instanceof BigInteger bi) return bi.intValue();
+        if (v instanceof Number n) return n.intValue();
+        return Integer.parseInt(String.valueOf(v));
     }
 }

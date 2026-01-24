@@ -1,12 +1,15 @@
 package com.booktalk_be.domain.gathering.service;
 
+import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.domain.gathering.command.CreateGatheringCommand;
 import com.booktalk_be.domain.gathering.command.EditGatheringRequest;
+import com.booktalk_be.domain.gathering.command.mypage.GatheringSearchCondCommand;
 import com.booktalk_be.domain.gathering.model.entity.*;
 import com.booktalk_be.domain.gathering.model.repository.*;
 import com.booktalk_be.domain.gathering.responseDto.GatheringDetailResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringEditInitResponse;
 import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
+import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageGatheringResponse;
 import com.booktalk_be.domain.hashtag.model.entity.HashTag;
 import com.booktalk_be.domain.hashtag.model.entity.HashTagMap;
 import com.booktalk_be.domain.hashtag.service.HashTagService;
@@ -24,11 +27,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -160,7 +165,7 @@ public class GatheringServiceImpl implements GatheringService {
 
         return GatheringEditInitResponse.builder()
                 .base(base)
-                .imageUrl(gathering.getImageUrl())   // ★ 여기
+                .imageUrl(gathering.getImageUrl())
                 .books(books)
                 .questions(questions)
                 .hashtags(hashtags)
@@ -185,6 +190,30 @@ public class GatheringServiceImpl implements GatheringService {
         }
 
         int updated = gatheringRepository.softDelete(code, reason);
+        if (updated == 0) {
+            // 동시성 등으로 이미 삭제되었을 수 있음
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 삭제된 모임입니다.");
+        }
+    }
+
+    @Transactional
+    @Override
+    public void restoreGathering(String code, String reason, Member member) {
+        // 권한 체크: 방장만 삭제 가능
+        int memberId = Objects.requireNonNull(member, "로그인이 필요합니다.").getMemberId();
+
+        var gathering = gatheringRepository.findByCodeAndDelYnFalse(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "이미 삭제되었거나 존재하지 않는 모임입니다."));
+
+        boolean isMaster = gatheringMemberMapRepository
+                .findMasterYn(code, memberId)
+                .map(Boolean::booleanValue)
+                .orElse(false);
+        if (!isMaster) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
+        }
+
+        int updated = gatheringRepository.restore(code, reason);
         if (updated == 0) {
             // 동시성 등으로 이미 삭제되었을 수 있음
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 삭제된 모임입니다.");
@@ -270,4 +299,88 @@ public class GatheringServiceImpl implements GatheringService {
             throw new RuntimeException("이미지 저장 실패", e);
         }
     }
+
+    @Override
+    public PageResponseDto<MyPageGatheringResponse> getMyGatherings(Integer pageNum, Integer pageSize, int memberId) {
+        List<Object[]> rows = gatheringRepository.callMyGatheringList(memberId, pageNum, pageSize);
+        return buildPage(rows);
+    }
+
+    @Override
+    public PageResponseDto<MyPageGatheringResponse> searchMyGatherings(GatheringSearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
+        List<Object[]> rows = gatheringRepository.callMyGatheringSearch(
+                memberId,
+                emptyToNull(cmd.getKeywordType()),
+                emptyToNull(cmd.getKeyword()),
+                emptyToNull(cmd.getStartDate()),
+                emptyToNull(cmd.getEndDate()),
+                pageNum,
+                pageSize
+        );
+        return buildPage(rows);
+    }
+
+    private PageResponseDto<MyPageGatheringResponse> buildPage(List<Object[]> rows) {
+        int totalPages = 0;
+
+        if (rows != null && !rows.isEmpty()) {
+            Object[] first = rows.get(0);
+            if (first.length >= 1) {
+                totalPages = toInt(first[first.length - 1]); // 마지막 컬럼 = total_pages
+            }
+        }
+
+        List<MyPageGatheringResponse> content = (rows == null ? List.<MyPageGatheringResponse>of() :
+                rows.stream().map(this::mapRow).toList()
+        );
+
+        return PageResponseDto.<MyPageGatheringResponse>builder()
+                .content(content)
+                .totalPages(totalPages)
+                .build();
+    }
+
+    private MyPageGatheringResponse mapRow(Object[] r) {
+        String gatheringCode = r[0] == null ? null : String.valueOf(r[0]);
+        String name = r[1] == null ? null : String.valueOf(r[1]);
+        String leaderName = r[2] == null ? null : String.valueOf(r[2]);
+        Integer masterYn = toInt(r[3]);
+        Boolean delYn = toBool(r[4]);
+        String regDate = r[5] == null ? null : String.valueOf(r[5]);
+
+        return MyPageGatheringResponse.builder()
+                .gatheringCode(gatheringCode)
+                .name(name)
+                .leaderName(leaderName)
+                .masterYn(masterYn)
+                .delYn(delYn)
+                .regDate(regDate)
+                .build();
+    }
+
+    private static String emptyToNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    private static Integer toInt(Object v) {
+        if (v == null) return 0;
+        if (v instanceof Integer i) return i;
+        if (v instanceof Long l) return l.intValue();
+        if (v instanceof BigInteger bi) return bi.intValue();
+        if (v instanceof Number n) return n.intValue();
+        return Integer.parseInt(String.valueOf(v));
+    }
+
+    private static Boolean toBool(Object v) {
+        if (v == null) return false;
+        if (v instanceof Boolean b) return b;
+        if (v instanceof Integer i) return i != 0;
+        if (v instanceof Long l) return l != 0L;
+        if (v instanceof BigInteger bi) return bi.intValue() != 0;
+        String s = String.valueOf(v).trim();
+        return "1".equals(s) || "true".equalsIgnoreCase(s) || "Y".equalsIgnoreCase(s);
+    }
+
 }

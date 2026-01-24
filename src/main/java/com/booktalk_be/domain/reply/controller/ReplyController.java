@@ -3,6 +3,8 @@ package com.booktalk_be.domain.reply.controller;
 import com.booktalk_be.common.command.ReplySearchCondCommand;
 import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.common.utils.ResponseDto;
+import com.booktalk_be.domain.gathering.command.mypage.GatheringReplySearchCondCommand;
+import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageGatheringReplyResponse;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.reply.command.CreateReplyCommand;
 import com.booktalk_be.domain.reply.command.UpdateReplyCommand;
@@ -159,6 +161,42 @@ public class ReplyController {
         replyService.recoverReply(replyCode);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
+                .build());
+    }
+
+
+    @GetMapping("/gathering/myList")
+    @Operation(summary = "마이페이지 모임 댓글 조회", description = "내가 작성한 모임 댓글을 페이징 조회합니다.")
+    public ResponseEntity<ResponseDto> getMyGatheringReplies(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<MyPageGatheringReplyResponse> page =
+                replyService.getMyGatheringReplies(pageNum, pageSize, member.getMemberId());
+
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
+                .build());
+    }
+
+    @PostMapping("/gathering/myList/search")
+    @Operation(summary = "마이페이지 모임 댓글 검색", description = "검색어/작성일(reply.reg_time) 범위로 내 모임 댓글을 검색합니다. 값이 비면 전체조회로 동작해야 합니다.")
+    public ResponseEntity<ResponseDto> searchMyGatheringReplies(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestBody GatheringReplySearchCondCommand cmd,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<MyPageGatheringReplyResponse> page =
+                replyService.searchMyGatheringReplies(cmd, pageNum, pageSize, member.getMemberId());
+
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
                 .build());
     }
 }
