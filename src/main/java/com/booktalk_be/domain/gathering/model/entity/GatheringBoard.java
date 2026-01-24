@@ -1,6 +1,5 @@
 package com.booktalk_be.domain.gathering.model.entity;
 
-
 import com.booktalk_be.common.entity.Post;
 import com.booktalk_be.domain.gathering.command.UpdateGatheringBoardCommand;
 import com.booktalk_be.domain.member.model.entity.Member;

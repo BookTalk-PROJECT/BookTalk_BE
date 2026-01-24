@@ -27,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/gathering")
-@CrossOrigin("http://localhost:5173")
 @Tag(name = "Gathering API", description = "모임 관련 API 입니다.")
 public class GatheringController {
 
