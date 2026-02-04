@@ -1,5 +1,6 @@
 package com.booktalk_be.domain.category.model.entity;
 
+import com.booktalk_be.common.entity.CommonTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import org.hibernate.annotations.DynamicInsert;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 @Table(name = "category")
-public class Category {
+public class Category extends CommonTimeEntity {
 
     @PrePersist
     public void init() {

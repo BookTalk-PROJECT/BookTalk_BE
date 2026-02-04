@@ -14,4 +14,14 @@ public interface ReplyRepositoryCustom {
     Page<ReplySimpleResponse> getAllRepliesForPagingByMe(Pageable pageable, int memberId);
     Page<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Pageable pageable, int memberId);
     Page<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Pageable pageable);
+
+    /**
+     * Get paginated root replies (replies without parent) for a post
+     */
+    Page<Reply> getRootRepliesByPostCode(String postCode, Pageable pageable);
+
+    /**
+     * Get child replies for multiple parent reply codes (batch load)
+     */
+    List<Reply> getChildRepliesByParentCodes(List<String> parentCodes);
 }

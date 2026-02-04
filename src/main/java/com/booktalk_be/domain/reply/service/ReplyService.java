@@ -28,4 +28,10 @@ public interface ReplyService {
     PageResponseDto<MyPageGatheringReplyResponse> getMyGatheringReplies(Integer pageNum, Integer pageSize, int memberId);
     PageResponseDto<MyPageGatheringReplyResponse> searchMyGatheringReplies(GatheringReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId);
 
+    /**
+     * Get paginated replies by post code with nested tree structure
+     * Root replies are paginated, child replies are fetched in batch
+     */
+    PageResponseDto<ReplyResponse> getRepliesByPostCodePaginated(String postCode, Integer pageNum, Integer pageSize);
+
 }

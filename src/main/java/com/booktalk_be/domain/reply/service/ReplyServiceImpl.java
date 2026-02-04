@@ -178,6 +178,103 @@ public class ReplyServiceImpl implements ReplyService {
         return buildPage(rows);
     }
 
+    @Override
+    public PageResponseDto<ReplyResponse> getRepliesByPostCodePaginated(String postCode, Integer pageNum, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
+
+        // 1. Get paginated root replies (no parent)
+        Page<Reply> rootRepliesPage = replyRepository.getRootRepliesByPostCode(postCode, pageable);
+        List<Reply> rootReplies = rootRepliesPage.getContent();
+
+        if (rootReplies.isEmpty()) {
+            return PageResponseDto.<ReplyResponse>builder()
+                    .content(List.of())
+                    .totalPages(0)
+                    .build();
+        }
+
+        // 2. Collect root reply codes for batch loading children
+        List<String> rootReplyCodes = rootReplies.stream()
+                .map(Reply::getReplyCode)
+                .toList();
+
+        // 3. Batch load all child replies (depth limit: fetch all descendants up to 3 levels)
+        List<Reply> allChildReplies = loadChildRepliesWithDepthLimit(rootReplyCodes, 3);
+
+        // 4. Build tree structure
+        Map<String, ReplyResponse> nodeMap = new java.util.HashMap<>();
+
+        // Add root replies to map
+        for (Reply reply : rootReplies) {
+            nodeMap.put(reply.getReplyCode(), mapReplyToResponse(reply));
+        }
+
+        // Add child replies to map
+        for (Reply reply : allChildReplies) {
+            nodeMap.put(reply.getReplyCode(), mapReplyToResponse(reply));
+        }
+
+        // Build parent-child relationships
+        for (Reply reply : allChildReplies) {
+            Reply parent = reply.getParentReplyCode();
+            if (parent != null) {
+                ReplyResponse parentDto = nodeMap.get(parent.getReplyCode());
+                if (parentDto != null) {
+                    ReplyResponse childDto = nodeMap.get(reply.getReplyCode());
+                    parentDto.getReplies().add(childDto);
+                }
+            }
+        }
+
+        // Get only root level responses
+        List<ReplyResponse> content = rootReplies.stream()
+                .map(r -> nodeMap.get(r.getReplyCode()))
+                .toList();
+
+        return PageResponseDto.<ReplyResponse>builder()
+                .content(content)
+                .totalPages(rootRepliesPage.getTotalPages())
+                .build();
+    }
+
+    /**
+     * Load child replies with depth limit to prevent infinite recursion
+     */
+    private List<Reply> loadChildRepliesWithDepthLimit(List<String> parentCodes, int maxDepth) {
+        if (maxDepth <= 0 || parentCodes.isEmpty()) {
+            return List.of();
+        }
+
+        List<Reply> allChildren = new ArrayList<>();
+        List<String> currentLevelCodes = parentCodes;
+
+        for (int depth = 0; depth < maxDepth; depth++) {
+            List<Reply> levelChildren = replyRepository.getChildRepliesByParentCodes(currentLevelCodes);
+            if (levelChildren.isEmpty()) {
+                break;
+            }
+            allChildren.addAll(levelChildren);
+            currentLevelCodes = levelChildren.stream()
+                    .map(Reply::getReplyCode)
+                    .toList();
+        }
+
+        return allChildren;
+    }
+
+    private ReplyResponse mapReplyToResponse(Reply entity) {
+        return ReplyResponse.builder()
+                .replyCode(entity.getReplyCode())
+                .memberName(entity.getMember().getName())
+                .postCode(entity.getPostCode())
+                .content(entity.getContent())
+                .regDate(entity.getRegTime().toLocalDate().toString())
+                .updateDate(entity.getUpdateTime().toLocalDate().toString())
+                .likesCnt(entity.getLikesCnt())
+                .replies(new ArrayList<>())
+                .build();
+    }
+
     private PageResponseDto<MyPageGatheringReplyResponse> buildPage(List<Object[]> rows) {
         int totalPages = 0;
         if (rows != null && !rows.isEmpty()) {

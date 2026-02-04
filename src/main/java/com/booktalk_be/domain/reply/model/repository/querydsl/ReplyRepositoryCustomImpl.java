@@ -30,8 +30,11 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
     @Override
     public List<Reply> getRepliesByPostCode(String postCode) {
         return selectFrom(reply)
+                .leftJoin(reply.member).fetchJoin()
+                .leftJoin(reply.parentReplyCode).fetchJoin()
                 .where(reply.postCode.eq(postCode))
                 .where(reply.delYn.eq(false))
+                .orderBy(reply.regTime.asc())
                 .fetch();
     }
 
@@ -187,5 +190,43 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
             return reply.regTime.loe(endDate.atTime(LocalTime.MAX));
         }
         return null;
+    }
+
+    @Override
+    public Page<Reply> getRootRepliesByPostCode(String postCode, Pageable pageable) {
+        List<Reply> content = selectFrom(reply)
+                .leftJoin(reply.member).fetchJoin()
+                .where(reply.postCode.eq(postCode))
+                .where(reply.parentReplyCode.isNull())
+                .where(reply.delYn.eq(false))
+                .orderBy(reply.regTime.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = Optional.ofNullable(
+                select(Wildcard.count)
+                        .from(reply)
+                        .where(reply.postCode.eq(postCode))
+                        .where(reply.parentReplyCode.isNull())
+                        .where(reply.delYn.eq(false))
+                        .fetchOne())
+                .orElse(0L);
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public List<Reply> getChildRepliesByParentCodes(List<String> parentCodes) {
+        if (parentCodes == null || parentCodes.isEmpty()) {
+            return List.of();
+        }
+        return selectFrom(reply)
+                .leftJoin(reply.member).fetchJoin()
+                .leftJoin(reply.parentReplyCode).fetchJoin()
+                .where(reply.parentReplyCode.replyCode.in(parentCodes))
+                .where(reply.delYn.eq(false))
+                .orderBy(reply.regTime.asc())
+                .fetch();
     }
 }

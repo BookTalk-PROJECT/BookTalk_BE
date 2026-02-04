@@ -2,12 +2,20 @@ buildscript {
     ext {
         queryDslVersion = "5.0.0"
     }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.mysql:mysql-connector-j:8.3.0'
+        classpath 'org.flywaydb:flyway-mysql:10.12.0'
+    }
 }
 
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.4'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.flywaydb.flyway' version '10.12.0'
 }
 
 group = 'com.booktalk'
@@ -80,6 +88,21 @@ dependencies {
     implementation "org.flywaydb:flyway-core"
     implementation "org.flywaydb:flyway-mysql"
 }
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+flyway {
+    url = 'jdbc:mysql://localhost:3306/booktalk?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Seoul'
+    user = 'root'
+    password = '1234'
+    locations = ["filesystem:${project.projectDir}/src/main/resources/db/migration"]
+    baselineOnMigrate = true
+    baselineVersion = '1'
+    cleanDisabled = true
+}
+
 
 def querydslSrcDir = 'src/main/generated'
 

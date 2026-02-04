@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew test:*)",
+      "Bash(dir /b \"C:\\\\BookTalk_BE\\\\src\\\\main\\\\java\\\\com\\\\booktalk_be\")",
+      "Bash(findstr:*)",
+      "Bash(if not exist \"C:\\\\BookTalk_BE\\\\docs\" mkdir \"C:\\\\BookTalk_BE\\\\docs\")"
+    ]
+  }
+}
