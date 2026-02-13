@@ -14,11 +14,15 @@ import com.booktalk_be.domain.reply.responseDto.ReplyResponse;
 import com.booktalk_be.domain.reply.responseDto.ReplySimpleResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -34,6 +38,7 @@ public class ReplyServiceImpl implements ReplyService {
     private final com.booktalk_be.domain.likes.model.repository.LikesRepository likesRepository;
 
     @Override
+    @CacheEvict(value = "replyAdminList", allEntries = true)
     public void createReply(CreateReplyCommand cmd, Member member) {
         Reply reply;
         if (cmd.getParentReplyCode() == null) {
@@ -56,16 +61,23 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public void modifyReply(UpdateReplyCommand cmd) {
+    public void modifyReply(UpdateReplyCommand cmd, int memberId) {
         Reply reply =  replyRepository.findById(cmd.getReplyCode())
                 .orElseThrow(EntityNotFoundException::new);
+        if (reply.getMember().getMemberId() != memberId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+        }
         reply.modify(cmd);
     }
 
     @Override
-    public void deleteReply(String replyCode) {
+    @CacheEvict(value = "replyAdminList", allEntries = true)
+    public void deleteReply(String replyCode, int memberId) {
         Reply reply = replyRepository.findById(replyCode)
                 .orElseThrow(EntityNotFoundException::new);
+        if (reply.getMember().getMemberId() != memberId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
+        }
         reply.delete();
     }
 
@@ -77,6 +89,7 @@ public class ReplyServiceImpl implements ReplyService {
                         Reply::getReplyCode,
                         (entity) -> ReplyResponse.builder()
                                 .replyCode(entity.getReplyCode())
+                                .memberId(entity.getMember().getMemberId())
                                 .memberName(entity.getMember().getName())
                                 .postCode(entity.getPostCode())
                                 .content(entity.getContent())
@@ -106,6 +119,7 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
+    @Cacheable(value = "replyAdminList", key = "'all:' + #pageNum + ':' + #pageSize + ':' + #postCodePrefix")
     public PageResponseDto<ReplySimpleResponse> getAllRepliesForPaging(int pageNum, int pageSize, String postCodePrefix) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
         Page<ReplySimpleResponse> page = replyRepository.getAllRepliesForPaging(pageable, postCodePrefix);
@@ -116,6 +130,7 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
+    @CacheEvict(value = "replyAdminList", allEntries = true)
     public void restrictReply(RestrictCommand cmd) {
         Reply reply = replyRepository.findById(cmd.getTargetCode())
                 .orElseThrow(EntityNotFoundException::new);
@@ -123,6 +138,7 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
+    @CacheEvict(value = "replyAdminList", allEntries = true)
     public void recoverReply(String replyCode) {
         Reply reply = replyRepository.findById(replyCode)
                 .orElseThrow(EntityNotFoundException::new);
@@ -150,6 +166,7 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
+    @Cacheable(value = "replyAdminList", key = "'search:' + #pageNum + ':' + #pageSize + ':' + #postCodePrefix + ':' + #cmd.keyword + ':' + #cmd.type + ':' + #cmd.startDate + ':' + #cmd.endDate")
     public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, String postCodePrefix) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
         Page<ReplySimpleResponse> page = replyRepository.searchAllRepliesForPaging(cmd, pageable, postCodePrefix);
@@ -271,6 +288,7 @@ public class ReplyServiceImpl implements ReplyService {
     private ReplyResponse mapReplyToResponse(Reply entity, Integer memberId) {
         return ReplyResponse.builder()
                 .replyCode(entity.getReplyCode())
+                .memberId(entity.getMember().getMemberId())
                 .memberName(entity.getMember().getName())
                 .postCode(entity.getPostCode())
                 .content(entity.getContent())

@@ -93,8 +93,10 @@ public class ReplyController {
     @PatchMapping("/modify")
     @Tag(name = "Reply API")
     @Operation(summary = "게시판 댓글 수정", description = "댓글 상세 정보를 수정합니다.")
-    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateReplyCommand cmd) {
-        replyService.modifyReply(cmd);
+    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateReplyCommand cmd,
+                                               Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        replyService.modifyReply(cmd, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -113,8 +115,10 @@ public class ReplyController {
     @DeleteMapping("/delete/{replyCode}")
     @Tag(name = "Reply API")
     @Operation(summary = "게시판 댓글 삭제", description = "댓글을 삭제합니다.")
-    public ResponseEntity<ResponseDto> delete(@PathVariable String replyCode) {
-        replyService.deleteReply(replyCode);
+    public ResponseEntity<ResponseDto> delete(@PathVariable String replyCode,
+                                               Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        replyService.deleteReply(replyCode, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());

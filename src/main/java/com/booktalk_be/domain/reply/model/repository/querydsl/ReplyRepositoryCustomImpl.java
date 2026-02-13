@@ -57,7 +57,7 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 .fetch();
         Long total = Optional.ofNullable(
                 select(Wildcard.count)
-                .from(reply).leftJoin(reply.member)
+                .from(reply)
                 .where(postCodePrefixFilter(postCodePrefix))
                 .fetchOne())
                 .orElse(0L);
@@ -146,9 +146,8 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                         .from(reply).leftJoin(reply.member)
                         .where(postCodePrefixFilter(postCodePrefix));
 
-        JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
-                select(Wildcard.count)
-                .from(reply).leftJoin(reply.member)
+        JPAQuery<Long> pageQuery = select(Wildcard.count)
+                .from(reply)
                 .where(postCodePrefixFilter(postCodePrefix));
 
         BooleanBuilder searchCondition = new BooleanBuilder()
@@ -177,9 +176,10 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
             return null;
         }
         return switch (type) {
-            case POST_CODE -> reply.postCode.containsIgnoreCase(keyword);
-            case REPLY_CODE -> reply.replyCode.containsIgnoreCase(keyword);
-            case CONTENT -> reply.content.containsIgnoreCase(keyword);
+            case POST_CODE -> reply.postCode.contains(keyword);
+            case REPLY_CODE -> reply.replyCode.contains(keyword);
+            case CONTENT -> Expressions.numberTemplate(Double.class,
+                    "function('match_against', {0}, {1})", reply.content, keyword).gt(0);
             default -> null;
         };
     }

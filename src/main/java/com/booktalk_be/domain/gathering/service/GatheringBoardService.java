@@ -11,8 +11,8 @@ import com.booktalk_be.domain.member.model.entity.Member;
 
 public interface GatheringBoardService {
     void create(CreateGatheringBoardCommand cmd, Member member);
-    void modify(UpdateGatheringBoardCommand cmd);
-    void delete(String postCode);
+    void modify(UpdateGatheringBoardCommand cmd, int memberId);
+    void delete(String postCode, int memberId);
     PageResponseDto<GatheringBoardResponse> list(String gatheringCode, Integer pageNum, Integer pageSize);
     GatheringBoardDetailResponse detail(String postCode, Integer memberId);
 

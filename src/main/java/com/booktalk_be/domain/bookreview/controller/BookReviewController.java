@@ -79,18 +79,22 @@ public class BookReviewController {
     @Operation(summary = "서평 수정", description = "서평을 수정합니다.")
     public ResponseEntity<ResponseDto> updateBookReview(
             @PathVariable String bookReviewId,
-            @RequestBody @Valid UpdateBookReviewCommand cmd
+            @RequestBody @Valid UpdateBookReviewCommand cmd,
+            Authentication authentication
     ) {
-        bookReviewService.updateBookReview(bookReviewId, cmd);
+        Member member = (Member) authentication.getPrincipal();
+        bookReviewService.updateBookReview(bookReviewId, cmd, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder().code(200).msg("Success").build());
     }
 
     @DeleteMapping("/{bookReviewId}")
     @Operation(summary = "서평 삭제", description = "서평을 삭제합니다.")
     public ResponseEntity<ResponseDto> deleteBookReview(
-            @PathVariable String bookReviewId
+            @PathVariable String bookReviewId,
+            Authentication authentication
     ) {
-        bookReviewService.deleteBookReview(bookReviewId);
+        Member member = (Member) authentication.getPrincipal();
+        bookReviewService.deleteBookReview(bookReviewId, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder().code(200).msg("Success").build());
     }
 

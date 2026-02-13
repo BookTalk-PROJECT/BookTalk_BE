@@ -15,8 +15,8 @@ public interface BookReviewService {
     PageResponseDto<BookReviewListDto> getBookReviewList(Integer categoryId, Pageable pageable);
     PageResponseDto<BookReviewListDto> searchBookReviews(Integer categoryId, BookReviewSearchCondCommand cmd, Pageable pageable);
     BookReviewDetailDto getBookReview(String bookReviewId);
-    void updateBookReview(String bookReviewId, UpdateBookReviewCommand updateBookReviewCommand);
-    void deleteBookReview(String bookReviewId);
+    void updateBookReview(String bookReviewId, UpdateBookReviewCommand updateBookReviewCommand, int memberId);
+    void deleteBookReview(String bookReviewId, int memberId);
     PageResponseDto<BookReviewListDto> getMyBookReviewList(int memberId, Pageable pageable);
     PageResponseDto<BookReviewListDto> searchMyBookReviews(int memberId, BookReviewSearchCondCommand cmd, Pageable pageable);
 

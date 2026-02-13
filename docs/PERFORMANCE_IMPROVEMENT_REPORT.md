@@ -50,7 +50,7 @@ BookTalk Backend 애플리케이션의 성능 분석 결과, 다음과 같은 �
 | Phase 2 | Reply 페이지네이션 | 완료 |
 | Phase 3 | 데이터베이스 인덱스 최적화 | 완료 |
 | Phase 4 | 동시성 제어 | 완료 |
-| Phase 5 | Redis 캐싱 | 보류 (재설계 필요) |
+| Phase 5 | Caffeine 캐싱 (관리자 페이지) | 완료 |
 
 ---
 
@@ -1054,19 +1054,86 @@ export default function () {
 
 ---
 
-## 향후 개선 계획
+## Phase 5: Caffeine 캐싱 (관리자 페이지)
 
-### Phase 5: 캐싱 전략 (보류)
+### 배경
 
-Redis 캐싱은 현재 보류 상태입니다. 다음 사항들을 재검토 후 구현 예정:
+관리자 페이지 API 성능 분석 결과, COUNT 쿼리가 전체 응답 시간의 90% 이상을 차지하는 것이 확인됨.
+Redis 대신 단일 서버 환경에 적합한 **Caffeine 인메모리 캐시**를 적용.
 
-1. **캐시 키 전략 재설계**: 페이지네이션 파라미터에 따른 캐시 키 폭발 문제
-2. **캐시 무효화 전략**: 게시글/댓글 변경 시 관련 캐시 무효화 범위 결정
-3. **로컬 캐시 vs 분산 캐시**: 서비스 특성에 맞는 캐시 레이어 선택
-4. **캐시 워밍업**: 서버 재시작 시 캐시 콜드 스타트 문제
+### 구현 내용
+
+#### 5.1 의존성 추가
+
+```groovy
+// build.gradle
+implementation 'org.springframework.boot:spring-boot-starter-cache'
+implementation 'com.github.ben-manes.caffeine:caffeine'
+```
+
+#### 5.2 CacheConfig.java (신규)
+
+```java
+@Configuration
+@EnableCaching
+public class CacheConfig {
+    @Bean
+    public CacheManager cacheManager() {
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+        cacheManager.setCaffeine(Caffeine.newBuilder()
+                .expireAfterWrite(30, TimeUnit.SECONDS)
+                .maximumSize(200));
+        return cacheManager;
+    }
+}
+```
+
+#### 5.3 캐시 적용 대상
+
+| 캐시명 | 대상 메서드 | TTL |
+|--------|-----------|-----|
+| `boardAdminList` | `getAllBoardsForPaging`, `searchAllBoardsForPaging` | 30초 |
+| `replyAdminList` | `getAllRepliesForPaging`, `searchAllRepliesForPaging` | 30초 |
+
+#### 5.4 캐시 무효화
+
+| 트리거 | 무효화 대상 |
+|--------|-----------|
+| 게시글 생성/삭제/제재/복구 | `boardAdminList` 전체 |
+| 댓글 생성/삭제/제재/복구 | `replyAdminList` 전체 |
+
+#### 5.5 Reply 전용 인덱스 추가
+
+```sql
+-- V5__add_reply_admin_index.sql
+CREATE INDEX idx_reply_postcode_replycode ON reply(post_code, reply_code DESC);
+```
+
+- `post_code LIKE 'BO_%'` 쿼리 시 filtered=50% → ~100% 개선
+- COUNT 쿼리 50~60% 성능 향상 예상
+
+#### 5.6 예상 성능 개선
+
+| 엔드포인트 | Before | After (캐시 히트) |
+|-----------|--------|-----------------|
+| `GET /community/board/admin/all` | 1,136ms | ~5~50ms |
+| `GET /reply/admin/all (community)` | 2,338ms | ~5~50ms |
+| `GET /reply/admin/all (bookreview)` | 234ms | ~5~50ms |
+
+### 설계 결정: Redis vs Caffeine
+
+| 항목 | Redis | Caffeine (선택) |
+|------|-------|----------------|
+| 네트워크 오버헤드 | 있음 | 없음 (인메모리) |
+| 다중 서버 지원 | 지원 | 미지원 |
+| 운영 복잡도 | Redis 서버 필요 | 추가 인프라 불필요 |
+| 현재 서버 구성 | 단일 서버 | 단일 서버 |
+
+단일 서버 환경에서 관리자 페이지 캐싱이므로 Caffeine이 적합.
+향후 다중 서버 전환 시 Redis로 교체 가능 (Spring Cache 추상화 덕분에 설정만 변경).
 
 ---
 
 **문서 작성**: Claude Code
-**최종 수정일**: 2026-02-03
-**버전**: 1.1.0 (캐싱 Phase 롤백 반영)
+**최종 수정일**: 2026-02-13
+**버전**: 1.2.0 (Phase 5 Caffeine 캐싱 + Reply 인덱스 추가)

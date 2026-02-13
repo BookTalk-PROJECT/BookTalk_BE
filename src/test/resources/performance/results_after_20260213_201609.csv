@@ -1,0 +1,13 @@
+endpoint,avg_ms,min_ms,max_ms
+GET /community/board/list,16,16,18
+POST /community/board/list/search,17,15,20
+GET /community/board/detail/{code},31,27,36
+GET /community/board/admin/all,1136,1103,1201
+POST /board/admin/search (TITLE),1142,1131,1155
+POST /board/admin/search (AUTHOR),262,254,271
+POST /board/admin/search (CATEGORY),8,8,9
+GET /community/board/mylist,7,7,9
+POST /community/board/mylist/search,7,7,9
+GET /reply/admin/all (community),2338,2266,2398
+GET /reply/admin/all (bookreview),234,226,257
+POST /reply/admin/search (community),2218,2155,2281

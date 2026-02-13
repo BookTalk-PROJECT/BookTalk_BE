@@ -33,6 +33,29 @@ public class SecurityConfig  {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        // 카테고리 관리 (admin 전용) — community/** 보다 먼저 선언해야 우선 적용
+                        .requestMatchers("/community/category/create").hasAuthority("ADMIN")
+                        .requestMatchers("/community/category/modify").hasAuthority("ADMIN")
+                        .requestMatchers("/community/category/delete/**").hasAuthority("ADMIN")
+                        .requestMatchers("/community/category/reorder").hasAuthority("ADMIN")
+                        .requestMatchers("/community/category/admin/**").hasAuthority("ADMIN")
+                        // 게시글 관리
+                        .requestMatchers("/community/board/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/community/board/restrict").hasAuthority("ADMIN")
+                        .requestMatchers("/community/board/recover/**").hasAuthority("ADMIN")
+                        // 댓글 관리
+                        .requestMatchers("/reply/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/reply/restrict").hasAuthority("ADMIN")
+                        .requestMatchers("/reply/recover/**").hasAuthority("ADMIN")
+                        // 북리뷰 관리
+                        .requestMatchers("/book-reviews/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/book-reviews/restrict").hasAuthority("ADMIN")
+                        .requestMatchers("/book-reviews/recover/**").hasAuthority("ADMIN")
+                        // 회원 목록·권한 관리
+                        .requestMatchers("/member/list").hasAuthority("ADMIN")
+                        .requestMatchers("/member/list/search").hasAuthority("ADMIN")
+                        .requestMatchers("/member/role/**").hasAuthority("ADMIN")
+                        // 기존 public 경로
                         .requestMatchers("/uploads/**","/login","/refresh","/gathering/**", "/community/**", "/reply/**", "/member/**", "/dashboard/**", "/token-refresh", "/error","/nlk/**","/oauth/**","/logout","/book-reviews/**").permitAll()
                         .anyRequest().authenticated()
                 )

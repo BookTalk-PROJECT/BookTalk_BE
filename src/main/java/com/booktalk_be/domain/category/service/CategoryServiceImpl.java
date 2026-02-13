@@ -1,6 +1,7 @@
 package com.booktalk_be.domain.category.service;
 
 import com.booktalk_be.domain.category.command.CreateCategoryCommand;
+import com.booktalk_be.domain.category.command.ReorderCategoryCommand;
 import com.booktalk_be.domain.category.command.UpdateCategoryCommand;
 import com.booktalk_be.domain.category.model.entity.Category;
 import com.booktalk_be.domain.category.model.repository.CategoryRepository;
@@ -25,6 +26,17 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Integer createCategory(CreateCategoryCommand cmd) {
+        // 부모 카테고리 존재 검증
+        if (cmd.getPCategoryId() != null) {
+            categoryRepository.findById(cmd.getPCategoryId())
+                    .orElseThrow(() -> new EntityNotFoundException("부모 카테고리가 존재하지 않습니다."));
+        }
+
+        // 동일 부모 하위 중복 카테고리명 검증
+        if (categoryRepository.existsByValueAndPCategoryIdAndDelYnFalse(cmd.getValue(), cmd.getPCategoryId())) {
+            throw new IllegalArgumentException("동일한 이름의 카테고리가 이미 존재합니다.");
+        }
+
         Category category = new Category(cmd.getValue(), cmd.getIsActive(), cmd.getPCategoryId(), cmd.getDisplayOrder());
         categoryRepository.save(category);
         return category.getCategoryId();
@@ -56,6 +68,14 @@ public class CategoryServiceImpl implements CategoryService {
         category.delete();
     }
 
+    @Override
+    public void reorderCategories(ReorderCategoryCommand cmd) {
+        for (ReorderCategoryCommand.CategoryOrderItem item : cmd.getOrders()) {
+            Category category = categoryRepository.findById(item.getCategoryId())
+                    .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
+            category.edit(category.getValue(), category.getIsActive(), item.getDisplayOrder());
+        }
+    }
 
     private List<CategoryResponse> mappingCategoryTree(List<CategoryInfo> categoryInfos) {
         List<CategoryResponse> categoryResponses = new ArrayList<>();

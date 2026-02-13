@@ -15,8 +15,8 @@ import java.util.List;
 
 public interface ReplyService {
     public void createReply(CreateReplyCommand cmd, Member member);
-    public void modifyReply(UpdateReplyCommand cmd);
-    public void deleteReply(String replyCode);
+    public void modifyReply(UpdateReplyCommand cmd, int memberId);
+    public void deleteReply(String replyCode, int memberId);
     public List<ReplyResponse> getRepliesByPostCode(String postCode, Integer memberId);
     public PageResponseDto<ReplySimpleResponse> getAllRepliesForPaging(int pageNum, int pageSize, String postCodePrefix);
     public void restrictReply(RestrictCommand cmd);

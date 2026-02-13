@@ -122,8 +122,10 @@ public class BoardController {
     @PatchMapping("/modify")
     @Tag(name = "Community Board API")
     @Operation(summary = "커뮤니티 게시글 수정", description = "게시글 상세 정보를 수정합니다.")
-    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateBoardCommand cmd) {
-        boardService.modifyBoard(cmd);
+    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateBoardCommand cmd,
+                                               Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        boardService.modifyBoard(cmd, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -152,8 +154,10 @@ public class BoardController {
     @DeleteMapping("/delete/{boardCode}")
     @Tag(name = "Community Board API")
     @Operation(summary = "커뮤니티 게시글 삭제", description = "게시글을 삭제합니다.")
-    public ResponseEntity<ResponseDto> delete(@PathVariable String boardCode) {
-        boardService.deleteBoard(boardCode);
+    public ResponseEntity<ResponseDto> delete(@PathVariable String boardCode,
+                                               Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        boardService.deleteBoard(boardCode, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());

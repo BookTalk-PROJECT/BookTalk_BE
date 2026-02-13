@@ -1,0 +1,2 @@
+endpoint,avg_ms,min_ms,max_ms
+GET /community/board/admin/all,1164,1148,1175

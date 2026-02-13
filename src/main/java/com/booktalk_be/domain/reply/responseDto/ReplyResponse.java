@@ -14,6 +14,8 @@ import java.util.List;
 public class ReplyResponse {
     @JsonProperty("reply_code")
     private String replyCode;
+    @JsonProperty("member_id")
+    private Integer memberId;
     @JsonProperty("member_name")
     private String memberName;
     private String postCode;

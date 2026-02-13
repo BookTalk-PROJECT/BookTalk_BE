@@ -15,8 +15,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Transactional
@@ -90,16 +92,22 @@ public class BookReviewServiceImpl implements BookReviewService {
     }
 
     @Override
-    public void updateBookReview(String bookReviewId, UpdateBookReviewCommand cmd) {
+    public void updateBookReview(String bookReviewId, UpdateBookReviewCommand cmd, int memberId) {
         BookReview bookReview = bookReviewRepository.findById(bookReviewId)
                 .orElseThrow(() -> new EntityNotFoundException("BookReview not found with id: " + bookReviewId));
+        if (bookReview.getMember().getMemberId() != memberId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+        }
         bookReview.modify(cmd);
     }
 
     @Override
-    public void deleteBookReview(String bookReviewId) {
+    public void deleteBookReview(String bookReviewId, int memberId) {
         BookReview bookReview = bookReviewRepository.findById(bookReviewId)
                 .orElseThrow(() -> new EntityNotFoundException("BookReview not found with id: " + bookReviewId));
+        if (bookReview.getMember().getMemberId() != memberId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
+        }
         bookReview.delete();
     }
 
