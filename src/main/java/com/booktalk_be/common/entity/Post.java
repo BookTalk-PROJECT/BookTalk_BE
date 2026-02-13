@@ -52,4 +52,11 @@ public abstract class Post extends CommonEntity {
             this.likesCnt--;
         }
     }
+
+    public void incrementViews() {
+        if (this.views == null) {
+            this.views = 0;
+        }
+        this.views++;
+    }
 }

@@ -39,7 +39,7 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
     }
 
     @Override
-    public Page<ReplySimpleResponse> getAllRepliesForPaging(Pageable pageable) {
+    public Page<ReplySimpleResponse> getAllRepliesForPaging(Pageable pageable, String postCodePrefix) {
         List<ReplySimpleResponse> content = select(Projections.fields(ReplySimpleResponse.class,
                 reply.replyCode,
                 reply.postCode,
@@ -50,6 +50,7 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 reply.delYn,
                 reply.delReason.as("deleteReason")))
                 .from(reply).leftJoin(reply.member)
+                .where(postCodePrefixFilter(postCodePrefix))
                 .orderBy(reply.replyCode.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -57,13 +58,14 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         Long total = Optional.ofNullable(
                 select(Wildcard.count)
                 .from(reply).leftJoin(reply.member)
+                .where(postCodePrefixFilter(postCodePrefix))
                 .fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);
     }
 
     @Override
-    public Page<ReplySimpleResponse> getAllRepliesForPagingByMe(Pageable pageable, int memberId) {
+    public Page<ReplySimpleResponse> getAllRepliesForPagingByMe(Pageable pageable, int memberId, String postCodePrefix) {
         List<ReplySimpleResponse> content =
                 select(Projections.fields(ReplySimpleResponse.class,
                 reply.replyCode,
@@ -74,6 +76,7 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 reply.delYn,
                 reply.delReason.as("deleteReason")))
                 .from(reply).innerJoin(reply.member).on(reply.member.memberId.eq(memberId))
+                .where(postCodePrefixFilter(postCodePrefix))
                 .orderBy(reply.replyCode.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -81,13 +84,14 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         Long total = Optional.ofNullable(
                 select(Wildcard.count)
                 .from(reply).innerJoin(reply.member).on(reply.member.memberId.eq(memberId))
+                .where(postCodePrefixFilter(postCodePrefix))
                 .fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);
     }
 
     @Override
-    public Page<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Pageable pageable, int memberId) {
+    public Page<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Pageable pageable, int memberId, String postCodePrefix) {
         JPAQueryBase<ReplySimpleResponse, JPAQuery<ReplySimpleResponse>> baseQuery =
                 select(Projections.fields(ReplySimpleResponse.class,
                 reply.replyCode,
@@ -98,12 +102,14 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 reply.delYn,
                 reply.delReason.as("deleteReason")))
                 .from(reply).innerJoin(reply.member).on(reply.member.memberId.eq(memberId))
-                .where(reply.delYn.eq(false));
+                .where(reply.delYn.eq(false))
+                .where(postCodePrefixFilter(postCodePrefix));
 
         JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
                 select(Wildcard.count)
                 .from(reply).innerJoin(reply.member).on(reply.member.memberId.eq(memberId))
-                .where(reply.delYn.eq(false));
+                .where(reply.delYn.eq(false))
+                .where(postCodePrefixFilter(postCodePrefix));
 
         BooleanBuilder searchCondition = new BooleanBuilder()
                 .and(keywordFilter(cmd.getType(), cmd.getKeyword()))
@@ -127,7 +133,7 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
     }
 
     @Override
-    public Page<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Pageable pageable) {
+    public Page<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Pageable pageable, String postCodePrefix) {
         JPAQueryBase<ReplySimpleResponse, JPAQuery<ReplySimpleResponse>> baseQuery =
                 select(Projections.fields(ReplySimpleResponse.class,
                         reply.replyCode,
@@ -137,11 +143,13 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                         reply.content,
                         reply.delYn,
                         reply.delReason.as("deleteReason")))
-                        .from(reply).leftJoin(reply.member);
+                        .from(reply).leftJoin(reply.member)
+                        .where(postCodePrefixFilter(postCodePrefix));
 
         JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
                 select(Wildcard.count)
-                .from(reply).leftJoin(reply.member);
+                .from(reply).leftJoin(reply.member)
+                .where(postCodePrefixFilter(postCodePrefix));
 
         BooleanBuilder searchCondition = new BooleanBuilder()
                 .and(keywordFilter(cmd.getType(), cmd.getKeyword()))
@@ -190,6 +198,13 @@ public class ReplyRepositoryCustomImpl extends Querydsl4RepositorySupport implem
             return reply.regTime.loe(endDate.atTime(LocalTime.MAX));
         }
         return null;
+    }
+
+    private BooleanExpression postCodePrefixFilter(String postCodePrefix) {
+        if (postCodePrefix == null || postCodePrefix.isEmpty()) {
+            return null;
+        }
+        return reply.postCode.startsWith(postCodePrefix);
     }
 
     @Override

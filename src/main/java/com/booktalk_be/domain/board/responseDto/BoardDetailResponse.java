@@ -13,4 +13,5 @@ import java.util.List;
 public class BoardDetailResponse {
     private final CommuDetailResponse post;
     private final List<ReplyResponse> replies;
+    private final Boolean isLiked;
 }

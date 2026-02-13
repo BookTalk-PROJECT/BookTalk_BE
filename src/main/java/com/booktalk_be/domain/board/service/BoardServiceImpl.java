@@ -97,14 +97,25 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public BoardDetailResponse getBoardDetail(String boardCode) {
+    public BoardDetailResponse getBoardDetail(String boardCode, Integer memberId) {
+        // Increment view count
+        Board board = boardRepository.findById(boardCode)
+                .orElseThrow(EntityNotFoundException::new);
+        board.incrementViews();
+
         CommuDetailResponse detail = boardRepository.getBoardDetailBy(boardCode);
-        List<ReplyResponse> replies = replyService.getRepliesByPostCode(detail.getBoardCode());
-        //TODO 좋아요 기능 추가 후 활성화
-//        Boolean isLikedByMe = likesRepository.isLikedAtBoardBy(boardCode, userId);
+        List<ReplyResponse> replies = replyService.getRepliesByPostCode(detail.getBoardCode(), memberId);
+
+        // Check if user liked this post
+        Boolean isLikedByMe = memberId != null && likesRepository.existsByCodeAndMemberId(boardCode, memberId);
+
+        // post 객체에 isLiked 설정
+        detail.setIsLiked(isLikedByMe);
+
         return BoardDetailResponse.builder()
                 .post(detail)
                 .replies(replies)
+                .isLiked(isLikedByMe)
                 .build();
     }
 

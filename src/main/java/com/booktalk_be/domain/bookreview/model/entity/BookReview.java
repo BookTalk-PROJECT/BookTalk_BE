@@ -96,4 +96,14 @@ public class BookReview extends Post {
     public void delete() {
         this.delYn = true;
     }
+
+    public void restrict(String delReason) {
+        this.delYn = true;
+        this.delReason = delReason;
+    }
+
+    public void recover() {
+        this.delYn = false;
+        this.delReason = null;
+    }
 }

@@ -14,5 +14,6 @@ public class CreateCategoryCommand {
     @JsonProperty("pCategoryId")
     private Integer pCategoryId;
     private Boolean isActive;
+    private Integer displayOrder;
 
 }

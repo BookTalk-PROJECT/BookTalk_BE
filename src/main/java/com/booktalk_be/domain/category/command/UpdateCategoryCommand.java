@@ -12,5 +12,6 @@ public class UpdateCategoryCommand {
     private Integer categoryId;
     private String value;
     private Boolean isActive;
+    private Integer displayOrder;
 
 }

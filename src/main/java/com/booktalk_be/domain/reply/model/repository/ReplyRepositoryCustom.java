@@ -10,10 +10,10 @@ import java.util.List;
 
 public interface ReplyRepositoryCustom {
     List<Reply> getRepliesByPostCode(String postCode);
-    Page<ReplySimpleResponse> getAllRepliesForPaging(Pageable pageable);
-    Page<ReplySimpleResponse> getAllRepliesForPagingByMe(Pageable pageable, int memberId);
-    Page<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Pageable pageable, int memberId);
-    Page<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Pageable pageable);
+    Page<ReplySimpleResponse> getAllRepliesForPaging(Pageable pageable, String postCodePrefix);
+    Page<ReplySimpleResponse> getAllRepliesForPagingByMe(Pageable pageable, int memberId, String postCodePrefix);
+    Page<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Pageable pageable, int memberId, String postCodePrefix);
+    Page<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Pageable pageable, String postCodePrefix);
 
     /**
      * Get paginated root replies (replies without parent) for a post

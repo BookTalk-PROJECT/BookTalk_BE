@@ -25,7 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Integer createCategory(CreateCategoryCommand cmd) {
-        Category category = new Category(cmd.getValue(), cmd.getIsActive(), cmd.getPCategoryId());
+        Category category = new Category(cmd.getValue(), cmd.getIsActive(), cmd.getPCategoryId(), cmd.getDisplayOrder());
         categoryRepository.save(category);
         return category.getCategoryId();
     }
@@ -46,7 +46,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void editCategory(UpdateCategoryCommand cmd) {
         Category category = categoryRepository.findById(cmd.getCategoryId())
                 .orElseThrow(EntityNotFoundException::new);
-        category.edit(cmd.getValue(), cmd.getIsActive());
+        category.edit(cmd.getValue(), cmd.getIsActive(), cmd.getDisplayOrder());
     }
 
     @Override
@@ -67,6 +67,7 @@ public class CategoryServiceImpl implements CategoryService {
                     .categoryId(categoryInfo.getCategoryId())
                     .value(categoryInfo.getValue())
                     .isActive(categoryInfo.isActive())
+                    .displayOrder(categoryInfo.getDisplayOrder())
                     .build();
             categoryMap.put(categoryInfo.getCategoryId(), newCategoryResponse);
         }

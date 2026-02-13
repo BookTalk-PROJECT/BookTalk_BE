@@ -15,5 +15,6 @@ public class PageResponseDto<T> {
 
     private List<T> content;
     private int totalPages;
+    private long totalElements;
 
 }

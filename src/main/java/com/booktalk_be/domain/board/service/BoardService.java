@@ -18,7 +18,7 @@ public interface BoardService {
     public void deleteBoard(String boardCode);
     public PageResponseDto<BoardResponse> getBoardsForPaging(Integer categoryId, Integer pageNum, Integer pageSize);
     public PageResponseDto<BoardResponse> searchBoardsForPaging(Integer categoryId, Integer pageNum, Integer pageSize, PostSearchCondCommand cnd);
-    public BoardDetailResponse getBoardDetail(String boardCode);
+    public BoardDetailResponse getBoardDetail(String boardCode, Integer memberId);
     public PageResponseDto<BoardResponse> getAllBoardsForPaging(Integer pageNum, Integer pageSize);
     PageResponseDto<BoardResponse> getAllBoardsForPagingByMe(Integer pageNum, Integer pageSize, int memberId);
     PageResponseDto<BoardResponse> searchAllBoardsForPagingByMe(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId);

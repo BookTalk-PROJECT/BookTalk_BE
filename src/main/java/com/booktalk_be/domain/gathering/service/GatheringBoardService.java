@@ -14,7 +14,7 @@ public interface GatheringBoardService {
     void modify(UpdateGatheringBoardCommand cmd);
     void delete(String postCode);
     PageResponseDto<GatheringBoardResponse> list(String gatheringCode, Integer pageNum, Integer pageSize);
-    GatheringBoardDetailResponse detail(String postCode);
+    GatheringBoardDetailResponse detail(String postCode, Integer memberId);
 
 
     PageResponseDto<MyPageGatheringBoardResponse> getMyGatheringBoards(Integer pageNum, Integer pageSize, int memberId);

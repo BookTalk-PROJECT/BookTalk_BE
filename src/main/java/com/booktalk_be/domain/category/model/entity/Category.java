@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 
 @Entity
@@ -21,6 +22,9 @@ public class Category extends CommonTimeEntity {
         }
         if(this.delYn == null) {
             this.delYn = false;
+        }
+        if(this.displayOrder == null) {
+            this.displayOrder = 0;
         }
     }
 
@@ -41,15 +45,23 @@ public class Category extends CommonTimeEntity {
     @Column(name = "del_yn", nullable = false)
     private Boolean delYn;
 
-    public Category(String value, Boolean isActive, Integer pCategoryId) {
+    @ColumnDefault("0")
+    @Column(name = "display_order", nullable = false)
+    private Integer displayOrder = 0;
+
+    public Category(String value, Boolean isActive, Integer pCategoryId, Integer displayOrder) {
         this.value = value;
         this.isActive = isActive;
         this.pCategoryId = pCategoryId;
+        this.displayOrder = displayOrder != null ? displayOrder : 0;
     }
 
-    public void edit(String value, Boolean isActive) {
+    public void edit(String value, Boolean isActive, Integer displayOrder) {
         this.value = value;
         this.isActive = isActive;
+        if (displayOrder != null) {
+            this.displayOrder = displayOrder;
+        }
     }
 
     public void delete() {

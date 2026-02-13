@@ -21,7 +21,9 @@ public class ReplyResponse {
     @JsonProperty("create_at")
     private String regDate;
     private String updateDate;
+    @JsonProperty("likes")
     private Integer likesCnt;
+    @JsonProperty("is_liked")
     private Boolean isLiked;
 
     private List<ReplyResponse> replies;

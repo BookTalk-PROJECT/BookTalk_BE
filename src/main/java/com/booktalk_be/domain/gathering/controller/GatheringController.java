@@ -265,10 +265,14 @@ public class GatheringController {
 
     @GetMapping("/board/detail/{postCode}")
     @Operation(summary = "모임 게시글 상세", description = "모임 게시글 상세 + 댓글을 조회합니다.")
-    public ResponseEntity<ResponseDto> detail(@PathVariable String postCode) {
-        System.out.println("올까용?");
-
-        GatheringBoardDetailResponse res = gatheringBoardService.detail(postCode);
+    public ResponseEntity<ResponseDto> detail(
+            @PathVariable String postCode,
+            Authentication authentication) {
+        Integer memberId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Member) {
+            memberId = ((Member) authentication.getPrincipal()).getMemberId();
+        }
+        GatheringBoardDetailResponse res = gatheringBoardService.detail(postCode, memberId);
         return ResponseEntity.ok(ResponseDto.builder().code(200).data(res).build());
     }
 

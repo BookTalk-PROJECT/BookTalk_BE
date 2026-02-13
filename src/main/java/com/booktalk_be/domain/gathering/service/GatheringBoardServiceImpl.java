@@ -79,11 +79,11 @@ public class GatheringBoardServiceImpl implements GatheringBoardService {
     }
 
     @Override
-    public GatheringBoardDetailResponse detail(String postCode) {
+    public GatheringBoardDetailResponse detail(String postCode, Integer memberId) {
         GatheringBoardPostDetailResponse detail = gatheringBoardRepository.getBoardDetailBy(postCode);
         if (detail == null) throw new EntityNotFoundException();
 
-        List<ReplyResponse> replies = replyService.getRepliesByPostCode(detail.getBoardCode());
+        List<ReplyResponse> replies = replyService.getRepliesByPostCode(detail.getBoardCode(), memberId);
 
         return GatheringBoardDetailResponse.builder()
                 .post(detail)

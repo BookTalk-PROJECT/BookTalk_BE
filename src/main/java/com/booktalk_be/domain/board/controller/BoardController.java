@@ -57,8 +57,14 @@ public class BoardController {
     @GetMapping("/detail/{boardCode}")
     @Tag(name = "Community Board API")
     @Operation(summary = "커뮤니티 게시글 상세 조회", description = "게시글 상세 정보를 조회합니다.")
-    public ResponseEntity<ResponseDto> getDetail(@PathVariable String boardCode) {
-        BoardDetailResponse res = boardService.getBoardDetail(boardCode);
+    public ResponseEntity<ResponseDto> getDetail(
+            @PathVariable String boardCode,
+            Authentication authentication) {
+        Integer memberId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Member) {
+            memberId = ((Member) authentication.getPrincipal()).getMemberId();
+        }
+        BoardDetailResponse res = boardService.getBoardDetail(boardCode, memberId);
         if(res.getPost().getDelYn()) {
             return new ResponseEntity<>(ResponseDto.builder()
                     .code(HttpStatus.BAD_REQUEST.value())

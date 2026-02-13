@@ -2,6 +2,7 @@ package com.booktalk_be.domain.bookreview.service;
 
 import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.domain.bookreview.command.BookReviewSearchCondCommand;
+import com.booktalk_be.domain.bookreview.responseDto.BookReviewAdminListDto;
 import com.booktalk_be.domain.bookreview.responseDto.BookReviewDetailDto;
 import com.booktalk_be.domain.bookreview.responseDto.BookReviewListDto;
 import com.booktalk_be.domain.bookreview.command.CreateBookReviewCommand;
@@ -48,14 +49,14 @@ public class BookReviewServiceImpl implements BookReviewService {
     @Transactional(readOnly = true)
     public PageResponseDto<BookReviewListDto> getBookReviewList(Integer categoryId, Pageable pageable) {
         Page<BookReviewListDto> page = bookReviewRepository.findForPaging(categoryId, pageable);
-        return new PageResponseDto<>(page.getContent(), page.getTotalPages());
+        return new PageResponseDto<>(page.getContent(), page.getTotalPages(), page.getTotalElements());
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponseDto<BookReviewListDto> searchBookReviews(Integer categoryId, BookReviewSearchCondCommand cmd, Pageable pageable) {
         Page<BookReviewListDto> page = bookReviewRepository.searchByCondition(categoryId, cmd, pageable);
-        return new PageResponseDto<>(page.getContent(), page.getTotalPages());
+        return new PageResponseDto<>(page.getContent(), page.getTotalPages(), page.getTotalElements());
     }
 
     @Override
@@ -100,5 +101,47 @@ public class BookReviewServiceImpl implements BookReviewService {
         BookReview bookReview = bookReviewRepository.findById(bookReviewId)
                 .orElseThrow(() -> new EntityNotFoundException("BookReview not found with id: " + bookReviewId));
         bookReview.delete();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<BookReviewListDto> getMyBookReviewList(int memberId, Pageable pageable) {
+        Page<BookReviewListDto> page = bookReviewRepository.findMyBookReviewsForPaging(memberId, pageable);
+        return new PageResponseDto<>(page.getContent(), page.getTotalPages(), page.getTotalElements());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<BookReviewListDto> searchMyBookReviews(int memberId, BookReviewSearchCondCommand cmd, Pageable pageable) {
+        Page<BookReviewListDto> page = bookReviewRepository.searchMyBookReviews(memberId, cmd, pageable);
+        return new PageResponseDto<>(page.getContent(), page.getTotalPages(), page.getTotalElements());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<BookReviewAdminListDto> getBookReviewListForAdmin(Pageable pageable) {
+        Page<BookReviewAdminListDto> page = bookReviewRepository.findAllForAdminPaging(pageable);
+        return new PageResponseDto<>(page.getContent(), page.getTotalPages(), page.getTotalElements());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<BookReviewAdminListDto> searchBookReviewsForAdmin(BookReviewSearchCondCommand cmd, Pageable pageable) {
+        Page<BookReviewAdminListDto> page = bookReviewRepository.searchAllForAdmin(cmd, pageable);
+        return new PageResponseDto<>(page.getContent(), page.getTotalPages(), page.getTotalElements());
+    }
+
+    @Override
+    public void restrictBookReview(String bookReviewId, String delReason) {
+        BookReview bookReview = bookReviewRepository.findById(bookReviewId)
+                .orElseThrow(() -> new EntityNotFoundException("BookReview not found with id: " + bookReviewId));
+        bookReview.restrict(delReason);
+    }
+
+    @Override
+    public void recoverBookReview(String bookReviewId) {
+        BookReview bookReview = bookReviewRepository.findById(bookReviewId)
+                .orElseThrow(() -> new EntityNotFoundException("BookReview not found with id: " + bookReviewId));
+        bookReview.recover();
     }
 }
