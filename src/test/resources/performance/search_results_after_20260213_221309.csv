@@ -1,0 +1,9 @@
+endpoint,avg_ms,min_ms,max_ms
+POST /board/admin/search (TITLE, keyword=테스트),4,4,5
+POST /board/admin/search (AUTHOR, keyword=test),4,3,8
+POST /board/admin/search (CATEGORY, keyword=자유),2,2,3
+POST /board/admin/search (CODE, keyword=BO_000000999901),3,3,3
+POST /reply/admin/search (CONTENT, community, keyword=테스트),3,3,3
+POST /reply/admin/search (CONTENT, bookreview, keyword=테스트),3,3,4
+POST /reply/admin/search (POST_CODE, community, keyword=BO_),2,2,2
+POST /reply/admin/search (CONTENT+DATE, community, keyword=테스트),2,2,3

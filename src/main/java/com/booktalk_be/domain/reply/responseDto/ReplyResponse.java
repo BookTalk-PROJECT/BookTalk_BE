@@ -14,6 +14,8 @@ import java.util.List;
 public class ReplyResponse {
     @JsonProperty("reply_code")
     private String replyCode;
+    @JsonProperty("member_id")
+    private Integer memberId;
     @JsonProperty("member_name")
     private String memberName;
     private String postCode;
@@ -21,7 +23,9 @@ public class ReplyResponse {
     @JsonProperty("create_at")
     private String regDate;
     private String updateDate;
+    @JsonProperty("likes")
     private Integer likesCnt;
+    @JsonProperty("is_liked")
     private Boolean isLiked;
 
     private List<ReplyResponse> replies;

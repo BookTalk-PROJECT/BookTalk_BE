@@ -20,6 +20,10 @@ spring:
       max-file-size: 20MB
       max-request-size: 100MB
 
+# Application Configuration
+app:
+  worker-id: ${WORKER_ID:0}
+
 logging:
   level:
     org:

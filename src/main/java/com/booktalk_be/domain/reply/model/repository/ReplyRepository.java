@@ -11,6 +11,11 @@ import java.util.List;
 public interface ReplyRepository extends JpaRepository<Reply, String>, ReplyRepositoryCustom {
     List<Reply> findAllByPostCode(@NotNull String postCode);
 
+    /**
+     * 해당 게시글의 전체 댓글 수 (대댓글 포함)
+     */
+    long countByPostCodeAndDelYnFalse(String postCode);
+
 
     @Query(value = "CALL sp_mypage_gathering_reply_list(:memberId, :pageNum, :pageSize)", nativeQuery = true)
     List<Object[]> callMyGatheringReplyList(

@@ -2,12 +2,20 @@ buildscript {
     ext {
         queryDslVersion = "5.0.0"
     }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.mysql:mysql-connector-j:8.3.0'
+        classpath 'org.flywaydb:flyway-mysql:10.12.0'
+    }
 }
 
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.4'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.flywaydb.flyway' version '10.12.0'
 }
 
 group = 'com.booktalk'
@@ -33,6 +41,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 
 //    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
@@ -42,6 +52,7 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'com.mysql:mysql-connector-j'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -80,6 +91,22 @@ dependencies {
     implementation "org.flywaydb:flyway-core"
     implementation "org.flywaydb:flyway-mysql"
 }
+
+tasks.named('test') {
+    useJUnitPlatform()
+    systemProperty 'test.phase', System.getProperty('test.phase', 'before')
+}
+
+flyway {
+    url = 'jdbc:mysql://localhost:3306/booktalk?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Seoul'
+    user = 'root'
+    password = '1234'
+    locations = ["filesystem:${project.projectDir}/src/main/resources/db/migration"]
+    baselineOnMigrate = true
+    baselineVersion = '1'
+    cleanDisabled = true
+}
+
 
 def querydslSrcDir = 'src/main/generated'
 

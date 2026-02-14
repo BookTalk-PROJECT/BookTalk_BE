@@ -58,6 +58,7 @@ public class Member extends CommonTimeEntity {
     private LocalDate birth;
 
     @Column(name = "authority")
+    @Convert(converter = AuthorityType.Converter.class)
     private AuthorityType authority;
 
     @Column(name = "del_yn", nullable = false)

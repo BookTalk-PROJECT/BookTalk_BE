@@ -17,6 +17,7 @@ public class CategoryResponse {
      private final String value;
      @JsonProperty("isActive")
      private final boolean isActive;
+     private final Integer displayOrder;
      private final List<CategoryResponse> subCategories =  new ArrayList<>();
 
      public void addSubCategory(CategoryResponse categoryResponse) {

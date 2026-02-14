@@ -8,4 +8,5 @@ public class CategoryInfo {
     private Integer pCategoryId;
     private String value;
     private boolean isActive;
+    private Integer displayOrder;
 }

@@ -25,4 +25,10 @@ public class Likes extends CommonTimeEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    public static Likes create(String code, Member member) {
+        Likes likes = new Likes();
+        likes.code = code;
+        likes.member = member;
+        return likes;
+    }
 }
