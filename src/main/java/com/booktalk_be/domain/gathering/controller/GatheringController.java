@@ -9,7 +9,6 @@ import com.booktalk_be.domain.gathering.command.mypage.GatheringBoardSearchCondC
 import com.booktalk_be.domain.gathering.command.mypage.GatheringSearchCondCommand;
 import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.command.RecruitRequestCommand;
-import com.booktalk_be.domain.gathering.model.entity.GatheringStatus;
 import com.booktalk_be.domain.gathering.model.repository.GatheringMemberMapRepository;
 import com.booktalk_be.domain.gathering.responseDto.*;
 import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageGatheringBoardResponse;
@@ -21,9 +20,6 @@ import com.booktalk_be.domain.member.model.entity.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -59,7 +55,6 @@ public class GatheringController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "9") int size
     ) {
-        System.out.println("상태 : "+ status + " 검색어 : "+search +" 페이지번호 : "+ page + " 사이즈 : "+size);
         Page<GatheringResponse> result = gatheringService.getList(status, search, page, size);
         return ResponseEntity.ok(
                 ResponseDto.builder()
@@ -78,8 +73,6 @@ public class GatheringController {
         Member member = (Member) authentication.getPrincipal();
         var result = gatheringService.getDetailByCode(code, member.getMemberId());
 
-        System.out.println("멤버 아이디는 : "+member.getMemberId());
-
         return ResponseEntity.ok(
                 ResponseDto.builder()
                         .code(200)
@@ -94,25 +87,18 @@ public class GatheringController {
     @Operation(summary = "모임 개설", description = "모임 정보를 포함한 이미지 파일을 업로드하여 모임을 개설합니다.")
     public ResponseEntity<ResponseDto> create(
             @RequestPart("data") @Valid CreateGatheringCommand requestData,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile, Authentication authentication) {
-        try {
-            Member member = (Member) authentication.getPrincipal();
-            JsonPrinter.print(requestData);
-            gatheringService.create(requestData, imageFile, member.getMemberId());
+            @RequestPart(value = "image", required = false) MultipartFile imageFile,
+            Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        JsonPrinter.print(requestData);
+        gatheringService.create(requestData, imageFile, member.getMemberId());
 
-            return ResponseEntity.ok(
-                    ResponseDto.builder()
-                            .code(200)
-                            .build()
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseDto.builder()
-                            .code(500)
-                            .build()
-            );
-        }
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .code(200)
+                        .msg("모임 개설 완료")
+                        .build()
+        );
     }
 
     @GetMapping("/{code}/books")
@@ -392,40 +378,35 @@ public class GatheringController {
     }
 
     @PostMapping("/approve")
+    @Operation(summary = "모임 가입 승인", description = "모임 가입 신청을 승인합니다.")
     public ResponseEntity<ResponseDto> approve(
-            @RequestBody ApproveCmd cmd,
+            @RequestBody @Valid ApproveRecruitCommand cmd,
             Authentication authentication
     ) {
         Member member = (Member) authentication.getPrincipal();
         gatheringRecruitRequestService.approve(member.getMemberId(), cmd.getGathering_code(), cmd.getApplicant_id());
-        return ResponseEntity.ok(ResponseDto.builder().code(200).data(true).build());
+        return ResponseEntity.ok(ResponseDto.builder().code(200).msg("가입 승인 완료").build());
     }
 
     @PostMapping("/reject")
+    @Operation(summary = "모임 가입 거절", description = "모임 가입 신청을 거절합니다.")
     public ResponseEntity<ResponseDto> reject(
-            @RequestBody RejectCmd cmd,
+            @RequestBody @Valid RejectRecruitCommand cmd,
             Authentication authentication
     ) {
         Member member = (Member) authentication.getPrincipal();
         gatheringRecruitRequestService.reject(member.getMemberId(), cmd.getGathering_code(), cmd.getApplicant_id(), cmd.getReject_reason());
-        return ResponseEntity.ok(ResponseDto.builder().code(200).data(true).build());
+        return ResponseEntity.ok(ResponseDto.builder().code(200).msg("가입 거절 완료").build());
     }
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ApproveCmd {
-        private String gathering_code;
-        private int applicant_id;
+    @PostMapping("/withdraw/{gatheringCode}")
+    @Operation(summary = "모임 가입 신청 철회", description = "대기 중인 자신의 가입 신청을 철회합니다.")
+    public ResponseEntity<ResponseDto> withdrawRequest(
+            @PathVariable String gatheringCode,
+            Authentication authentication
+    ) {
+        Member member = (Member) authentication.getPrincipal();
+        gatheringRecruitRequestService.withdraw(gatheringCode, member.getMemberId());
+        return ResponseEntity.ok(ResponseDto.builder().code(200).msg("가입 신청이 철회되었습니다.").build());
     }
-
-    @Getter @NoArgsConstructor @AllArgsConstructor
-    public static class RejectCmd {
-        private String gathering_code;
-        private int applicant_id;
-        private String reject_reason;
-    }
-
-
-
 }

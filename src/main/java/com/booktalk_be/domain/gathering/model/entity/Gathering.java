@@ -110,9 +110,8 @@ public class Gathering extends CommonEntity {
             this.activityPeriod = activityPeriod;
         }
         if (location != null) {
-            // 생성 로직과 포맷 맞추기
             this.sigCd = location;
-            this.emdCd = location + "_읍면동 코드";
+            this.emdCd = location + "_읍면동 코드"; // TODO: 실제 행정구역 코드 변환 로직 필요
         }
         if (summary != null) {
             this.summary = summary;

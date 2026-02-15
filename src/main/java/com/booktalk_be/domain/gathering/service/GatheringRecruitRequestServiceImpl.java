@@ -9,13 +9,15 @@ import com.booktalk_be.domain.gathering.model.repository.GatheringRepository;
 import com.booktalk_be.domain.gathering.model.repository.RecruitRequestRepository;
 import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageRecruitApprovalResponse;
 import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageRecruitRequestResponse;
+import com.booktalk_be.domain.gathering.util.TypeConversionUtils;
 import com.booktalk_be.domain.member.model.entity.Member;
 import com.booktalk_be.domain.member.model.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,7 +70,7 @@ public class GatheringRecruitRequestServiceImpl implements GatheringRecruitReque
         int totalPages = 0;
         if (rows != null && !rows.isEmpty()) {
             Object[] first = rows.get(0);
-            totalPages = toInt(first[first.length - 1]); // 마지막 = total_pages
+            totalPages = TypeConversionUtils.toInt(first[first.length - 1]); // 마지막 = total_pages
         }
 
         List<MyPageRecruitRequestResponse> content =
@@ -99,11 +101,24 @@ public class GatheringRecruitRequestServiceImpl implements GatheringRecruitReque
         recruitRequestRepository.callRecruitReject(masterId, gatheringCode, applicantId, rejectReason);
     }
 
+    @Override
+    @Transactional
+    public void withdraw(String gatheringCode, int memberId) {
+        int deletedCount = recruitRequestRepository.withdrawRequest(gatheringCode, memberId);
+
+        if (deletedCount == 0) {
+            throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "철회할 수 있는 신청이 없습니다. (대기 중인 신청만 철회 가능)"
+            );
+        }
+    }
+
     private PageResponseDto<MyPageRecruitApprovalResponse> buildPages(List<Object[]> rows) {
         int totalPages = 0;
         if (rows != null && !rows.isEmpty()) {
             Object[] first = rows.get(0);
-            totalPages = toInt(first[first.length - 1]); // 마지막 = total_pages
+            totalPages = TypeConversionUtils.toInt(first[first.length - 1]); // 마지막 = total_pages
         }
 
         List<MyPageRecruitApprovalResponse> content =
@@ -138,20 +153,11 @@ public class GatheringRecruitRequestServiceImpl implements GatheringRecruitReque
         return MyPageRecruitApprovalResponse.builder()
                 .gatheringCode(r[0] == null ? null : String.valueOf(r[0]))
                 .gatheringName(r[1] == null ? null : String.valueOf(r[1]))
-                .applicantId(toInt(r[2]))
+                .applicantId(TypeConversionUtils.toInt(r[2]))
                 .applicantName(r[3] == null ? null : String.valueOf(r[3]))
                 .qaJson(r[4] == null ? "[]" : String.valueOf(r[4]))
                 .status(r[5] == null ? null : String.valueOf(r[5]))
                 .rejectReason(r[6] == null ? null : String.valueOf(r[6]))
                 .build();
-    }
-
-    private static Integer toInt(Object v) {
-        if (v == null) return 0;
-        if (v instanceof Integer i) return i;
-        if (v instanceof Long l) return l.intValue();
-        if (v instanceof BigInteger bi) return bi.intValue();
-        if (v instanceof Number n) return n.intValue();
-        return Integer.parseInt(String.valueOf(v));
     }
 }

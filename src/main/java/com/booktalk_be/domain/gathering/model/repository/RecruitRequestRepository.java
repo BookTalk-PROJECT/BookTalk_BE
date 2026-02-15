@@ -41,4 +41,15 @@ public interface RecruitRequestRepository extends JpaRepository<RecruitRequest, 
             @Param("applicantId") int applicantId,
             @Param("rejectReason") String rejectReason
     );
+
+    /**
+     * 신청자가 자신의 가입 신청을 철회
+     * WAITING 상태의 신청만 철회 가능
+     */
+    @Modifying
+    @Query("DELETE FROM RecruitRequest r WHERE r.code.code = :gatheringCode AND r.member.memberId = :memberId AND r.status = 'WAITING'")
+    int withdrawRequest(
+            @Param("gatheringCode") String gatheringCode,
+            @Param("memberId") int memberId
+    );
 }
