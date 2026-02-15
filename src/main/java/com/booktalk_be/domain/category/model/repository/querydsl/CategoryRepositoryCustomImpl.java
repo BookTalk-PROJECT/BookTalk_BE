@@ -24,9 +24,11 @@ public class CategoryRepositoryCustomImpl  extends Querydsl4RepositorySupport im
                         category.categoryId,
                         category.pCategoryId,
                         category.value,
-                        category.isActive))
+                        category.isActive,
+                        category.displayOrder))
                 .from(category)
                 .where(category.isActive.eq(true).and(category.delYn.eq(false)))
+                .orderBy(category.displayOrder.asc())
                 .fetch();
     }
 
@@ -36,9 +38,11 @@ public class CategoryRepositoryCustomImpl  extends Querydsl4RepositorySupport im
                 category.categoryId,
                 category.pCategoryId,
                 category.value,
-                category.isActive))
+                category.isActive,
+                category.displayOrder))
                 .from(category)
                 .where(category.delYn.eq(false))
+                .orderBy(category.displayOrder.asc())
                 .fetch();
     }
 }

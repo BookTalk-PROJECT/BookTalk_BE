@@ -17,10 +17,14 @@ import com.booktalk_be.domain.reply.service.ReplyService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -34,6 +38,7 @@ public class BoardServiceImpl implements BoardService {
     private final LikesRepository likesRepository;
 
     @Override
+    @CacheEvict(value = "boardAdminList", allEntries = true)
     public void createBoard(CreateBoardCommand cmd, Member member) {
         Board board = Board.builder()
                 .categoryId(cmd.getCategoryId())
@@ -47,13 +52,17 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public void modifyBoard(UpdateBoardCommand cmd) {
+    public void modifyBoard(UpdateBoardCommand cmd, int memberId) {
         Board board = boardRepository.findById(cmd.getBoardCode())
                 .orElseThrow(EntityNotFoundException::new);
+        if (board.getMember().getMemberId() != memberId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+        }
         board.modify(cmd);
     }
 
     @Override
+    @CacheEvict(value = "boardAdminList", allEntries = true)
     public void restrictBoard(RestrictCommand cmd) {
         Board board = boardRepository.findById(cmd.getTargetCode())
                 .orElseThrow(EntityNotFoundException::new);
@@ -61,6 +70,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    @CacheEvict(value = "boardAdminList", allEntries = true)
     public void recoverBoard(String boardCode) {
         Board board = boardRepository.findById(boardCode)
                 .orElseThrow(EntityNotFoundException::new);
@@ -68,9 +78,13 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public void deleteBoard(String boardCode) {
+    @CacheEvict(value = "boardAdminList", allEntries = true)
+    public void deleteBoard(String boardCode, int memberId) {
         Board board = boardRepository.findById(boardCode)
                 .orElseThrow(EntityNotFoundException::new);
+        if (board.getMember().getMemberId() != memberId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
+        }
         board.delete();
     }
 
@@ -97,18 +111,30 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public BoardDetailResponse getBoardDetail(String boardCode) {
+    public BoardDetailResponse getBoardDetail(String boardCode, Integer memberId) {
+        // Increment view count
+        Board board = boardRepository.findById(boardCode)
+                .orElseThrow(EntityNotFoundException::new);
+        board.incrementViews();
+
         CommuDetailResponse detail = boardRepository.getBoardDetailBy(boardCode);
-        List<ReplyResponse> replies = replyService.getRepliesByPostCode(detail.getBoardCode());
-        //TODO 좋아요 기능 추가 후 활성화
-//        Boolean isLikedByMe = likesRepository.isLikedAtBoardBy(boardCode, userId);
+        List<ReplyResponse> replies = replyService.getRepliesByPostCode(detail.getBoardCode(), memberId);
+
+        // Check if user liked this post
+        Boolean isLikedByMe = memberId != null && likesRepository.existsByCodeAndMemberId(boardCode, memberId);
+
+        // post 객체에 isLiked 설정
+        detail.setIsLiked(isLikedByMe);
+
         return BoardDetailResponse.builder()
                 .post(detail)
                 .replies(replies)
+                .isLiked(isLikedByMe)
                 .build();
     }
 
     @Override
+    @Cacheable(value = "boardAdminList", key = "'all:' + #pageNum + ':' + #pageSize")
     public PageResponseDto<BoardResponse> getAllBoardsForPaging(Integer pageNum, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
         Page<BoardResponse> page =  boardRepository.getAllBoardsForPaging(pageable);
@@ -139,6 +165,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    @Cacheable(value = "boardAdminList", key = "'search:' + #pageNum + ':' + #pageSize + ':' + #cmd.keyword + ':' + #cmd.type + ':' + #cmd.startDate + ':' + #cmd.endDate")
     public PageResponseDto<BoardResponse> searchAllBoardsForPaging(PostSearchCondCommand cmd, Integer pageNum, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
         Page<BoardResponse> page =  boardRepository.searchAllBoardsForPaging(cmd, pageable);

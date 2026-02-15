@@ -241,15 +241,19 @@ public class GatheringController {
 
     @PatchMapping("/board/modify")
     @Operation(summary = "모임 게시글 수정", description = "모임 게시글을 수정합니다.")
-    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateGatheringBoardCommand cmd) {
-        gatheringBoardService.modify(cmd);
+    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateGatheringBoardCommand cmd,
+                                               Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        gatheringBoardService.modify(cmd, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder().code(200).build());
     }
 
     @DeleteMapping("/board/delete/{postCode}")
     @Operation(summary = "모임 게시글 삭제", description = "모임 게시글을 삭제합니다.")
-    public ResponseEntity<ResponseDto> delete(@PathVariable String postCode) {
-        gatheringBoardService.delete(postCode);
+    public ResponseEntity<ResponseDto> delete(@PathVariable String postCode,
+                                               Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        gatheringBoardService.delete(postCode, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder().code(200).build());
     }
 
@@ -265,10 +269,14 @@ public class GatheringController {
 
     @GetMapping("/board/detail/{postCode}")
     @Operation(summary = "모임 게시글 상세", description = "모임 게시글 상세 + 댓글을 조회합니다.")
-    public ResponseEntity<ResponseDto> detail(@PathVariable String postCode) {
-        System.out.println("올까용?");
-
-        GatheringBoardDetailResponse res = gatheringBoardService.detail(postCode);
+    public ResponseEntity<ResponseDto> detail(
+            @PathVariable String postCode,
+            Authentication authentication) {
+        Integer memberId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Member) {
+            memberId = ((Member) authentication.getPrincipal()).getMemberId();
+        }
+        GatheringBoardDetailResponse res = gatheringBoardService.detail(postCode, memberId);
         return ResponseEntity.ok(ResponseDto.builder().code(200).data(res).build());
     }
 

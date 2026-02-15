@@ -14,11 +14,15 @@ import com.booktalk_be.domain.reply.responseDto.ReplyResponse;
 import com.booktalk_be.domain.reply.responseDto.ReplySimpleResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -31,8 +35,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReplyServiceImpl implements ReplyService {
     private final ReplyRepository replyRepository;
+    private final com.booktalk_be.domain.likes.model.repository.LikesRepository likesRepository;
 
     @Override
+    @CacheEvict(value = "replyAdminList", allEntries = true)
     public void createReply(CreateReplyCommand cmd, Member member) {
         Reply reply;
         if (cmd.getParentReplyCode() == null) {
@@ -55,37 +61,45 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public void modifyReply(UpdateReplyCommand cmd) {
+    public void modifyReply(UpdateReplyCommand cmd, int memberId) {
         Reply reply =  replyRepository.findById(cmd.getReplyCode())
                 .orElseThrow(EntityNotFoundException::new);
+        if (reply.getMember().getMemberId() != memberId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+        }
         reply.modify(cmd);
     }
 
     @Override
-    public void deleteReply(String replyCode) {
+    @CacheEvict(value = "replyAdminList", allEntries = true)
+    public void deleteReply(String replyCode, int memberId) {
         Reply reply = replyRepository.findById(replyCode)
                 .orElseThrow(EntityNotFoundException::new);
+        if (reply.getMember().getMemberId() != memberId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
+        }
         reply.delete();
     }
 
     @Override
-    public List<ReplyResponse> getRepliesByPostCode(String postCode) {
+    public List<ReplyResponse> getRepliesByPostCode(String postCode, Integer memberId) {
         List<Reply> replies = replyRepository.getRepliesByPostCode(postCode);
         Map<String, ReplyResponse> nodeMap = replies.stream()
                 .collect(Collectors.toMap(
                         Reply::getReplyCode,
                         (entity) -> ReplyResponse.builder()
                                 .replyCode(entity.getReplyCode())
+                                .memberId(entity.getMember().getMemberId())
                                 .memberName(entity.getMember().getName())
                                 .postCode(entity.getPostCode())
                                 .content(entity.getContent())
-                                .regDate(entity.getRegTime().toLocalDate().toString()) // 연도-월-일 문자열로
+                                .regDate(entity.getRegTime().toLocalDate().toString())
                                 .updateDate(entity.getUpdateTime().toLocalDate().toString())
-//                                .likesCnt(entity.getLikesCnt())
-//                                .isLiked(false) // 좋아요 여부는 실제 로직 필요
-                                .replies(new ArrayList<>()) // 빈 리스트로 초기화
+                                .likesCnt(entity.getLikesCnt())
+                                .isLiked(memberId != null && likesRepository.existsByCodeAndMemberId(entity.getReplyCode(), memberId))
+                                .replies(new ArrayList<>())
                                 .build(),
-                        (a, b) -> a // 중복 키가 있을 경우 먼저 값 사용
+                        (a, b) -> a
                 ));
         replies.forEach(reply -> {
             Reply parent = reply.getParentReplyCode();
@@ -105,9 +119,10 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public PageResponseDto<ReplySimpleResponse> getAllRepliesForPaging(int pageNum, int pageSize) {
+    @Cacheable(value = "replyAdminList", key = "'all:' + #pageNum + ':' + #pageSize + ':' + #postCodePrefix")
+    public PageResponseDto<ReplySimpleResponse> getAllRepliesForPaging(int pageNum, int pageSize, String postCodePrefix) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
-        Page<ReplySimpleResponse> page =  replyRepository.getAllRepliesForPaging(pageable);
+        Page<ReplySimpleResponse> page = replyRepository.getAllRepliesForPaging(pageable, postCodePrefix);
         return PageResponseDto.<ReplySimpleResponse>builder()
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())
@@ -115,6 +130,7 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
+    @CacheEvict(value = "replyAdminList", allEntries = true)
     public void restrictReply(RestrictCommand cmd) {
         Reply reply = replyRepository.findById(cmd.getTargetCode())
                 .orElseThrow(EntityNotFoundException::new);
@@ -122,6 +138,7 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
+    @CacheEvict(value = "replyAdminList", allEntries = true)
     public void recoverReply(String replyCode) {
         Reply reply = replyRepository.findById(replyCode)
                 .orElseThrow(EntityNotFoundException::new);
@@ -129,9 +146,9 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public PageResponseDto<ReplySimpleResponse> getAllRepliesForPagingByMe(Integer pageNum, Integer pageSize, int memberId) {
+    public PageResponseDto<ReplySimpleResponse> getAllRepliesForPagingByMe(Integer pageNum, Integer pageSize, int memberId, String postCodePrefix) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
-        Page<ReplySimpleResponse> page =  replyRepository.getAllRepliesForPagingByMe(pageable, memberId);
+        Page<ReplySimpleResponse> page =  replyRepository.getAllRepliesForPagingByMe(pageable, memberId, postCodePrefix);
         return PageResponseDto.<ReplySimpleResponse>builder()
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())
@@ -139,9 +156,9 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
+    public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId, String postCodePrefix) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
-        Page<ReplySimpleResponse> page =  replyRepository.searchAllRepliesForPagingByMe(cmd, pageable, memberId);
+        Page<ReplySimpleResponse> page =  replyRepository.searchAllRepliesForPagingByMe(cmd, pageable, memberId, postCodePrefix);
         return PageResponseDto.<ReplySimpleResponse>builder()
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())
@@ -149,9 +166,10 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize) {
+    @Cacheable(value = "replyAdminList", key = "'search:' + #pageNum + ':' + #pageSize + ':' + #postCodePrefix + ':' + #cmd.keyword + ':' + #cmd.type + ':' + #cmd.startDate + ':' + #cmd.endDate")
+    public PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, String postCodePrefix) {
         Pageable pageable = PageRequest.of(pageNum-1, pageSize);
-        Page<ReplySimpleResponse> page =  replyRepository.searchAllRepliesForPaging(cmd, pageable);
+        Page<ReplySimpleResponse> page = replyRepository.searchAllRepliesForPaging(cmd, pageable, postCodePrefix);
         return PageResponseDto.<ReplySimpleResponse>builder()
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())
@@ -176,6 +194,110 @@ public class ReplyServiceImpl implements ReplyService {
                 pageSize
         );
         return buildPage(rows);
+    }
+
+    @Override
+    public PageResponseDto<ReplyResponse> getRepliesByPostCodePaginated(String postCode, Integer pageNum, Integer pageSize, Integer memberId) {
+        Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
+
+        // 전체 댓글 수 (대댓글 포함)
+        long totalReplyCount = replyRepository.countByPostCodeAndDelYnFalse(postCode);
+
+        // 1. Get paginated root replies (no parent)
+        Page<Reply> rootRepliesPage = replyRepository.getRootRepliesByPostCode(postCode, pageable);
+        List<Reply> rootReplies = rootRepliesPage.getContent();
+
+        if (rootReplies.isEmpty()) {
+            return PageResponseDto.<ReplyResponse>builder()
+                    .content(List.of())
+                    .totalPages(0)
+                    .totalElements(totalReplyCount)
+                    .build();
+        }
+
+        // 2. Collect root reply codes for batch loading children
+        List<String> rootReplyCodes = rootReplies.stream()
+                .map(Reply::getReplyCode)
+                .toList();
+
+        // 3. Batch load all child replies (depth limit: fetch all descendants up to 3 levels)
+        List<Reply> allChildReplies = loadChildRepliesWithDepthLimit(rootReplyCodes, 3);
+
+        // 4. Build tree structure
+        Map<String, ReplyResponse> nodeMap = new java.util.HashMap<>();
+
+        // Add root replies to map
+        for (Reply reply : rootReplies) {
+            nodeMap.put(reply.getReplyCode(), mapReplyToResponse(reply, memberId));
+        }
+
+        // Add child replies to map
+        for (Reply reply : allChildReplies) {
+            nodeMap.put(reply.getReplyCode(), mapReplyToResponse(reply, memberId));
+        }
+
+        // Build parent-child relationships
+        for (Reply reply : allChildReplies) {
+            Reply parent = reply.getParentReplyCode();
+            if (parent != null) {
+                ReplyResponse parentDto = nodeMap.get(parent.getReplyCode());
+                if (parentDto != null) {
+                    ReplyResponse childDto = nodeMap.get(reply.getReplyCode());
+                    parentDto.getReplies().add(childDto);
+                }
+            }
+        }
+
+        // Get only root level responses
+        List<ReplyResponse> content = rootReplies.stream()
+                .map(r -> nodeMap.get(r.getReplyCode()))
+                .toList();
+
+        return PageResponseDto.<ReplyResponse>builder()
+                .content(content)
+                .totalPages(rootRepliesPage.getTotalPages())
+                .totalElements(totalReplyCount)
+                .build();
+    }
+
+    /**
+     * Load child replies with depth limit to prevent infinite recursion
+     */
+    private List<Reply> loadChildRepliesWithDepthLimit(List<String> parentCodes, int maxDepth) {
+        if (maxDepth <= 0 || parentCodes.isEmpty()) {
+            return List.of();
+        }
+
+        List<Reply> allChildren = new ArrayList<>();
+        List<String> currentLevelCodes = parentCodes;
+
+        for (int depth = 0; depth < maxDepth; depth++) {
+            List<Reply> levelChildren = replyRepository.getChildRepliesByParentCodes(currentLevelCodes);
+            if (levelChildren.isEmpty()) {
+                break;
+            }
+            allChildren.addAll(levelChildren);
+            currentLevelCodes = levelChildren.stream()
+                    .map(Reply::getReplyCode)
+                    .toList();
+        }
+
+        return allChildren;
+    }
+
+    private ReplyResponse mapReplyToResponse(Reply entity, Integer memberId) {
+        return ReplyResponse.builder()
+                .replyCode(entity.getReplyCode())
+                .memberId(entity.getMember().getMemberId())
+                .memberName(entity.getMember().getName())
+                .postCode(entity.getPostCode())
+                .content(entity.getContent())
+                .regDate(entity.getRegTime().toLocalDate().toString())
+                .updateDate(entity.getUpdateTime().toLocalDate().toString())
+                .likesCnt(entity.getLikesCnt())
+                .isLiked(memberId != null && likesRepository.existsByCodeAndMemberId(entity.getReplyCode(), memberId))
+                .replies(new ArrayList<>())
+                .build();
     }
 
     private PageResponseDto<MyPageGatheringReplyResponse> buildPage(List<Object[]> rows) {

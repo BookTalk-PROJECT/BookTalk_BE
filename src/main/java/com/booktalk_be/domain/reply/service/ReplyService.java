@@ -15,17 +15,23 @@ import java.util.List;
 
 public interface ReplyService {
     public void createReply(CreateReplyCommand cmd, Member member);
-    public void modifyReply(UpdateReplyCommand cmd);
-    public void deleteReply(String replyCode);
-    public List<ReplyResponse> getRepliesByPostCode(String postCode);
-    public PageResponseDto<ReplySimpleResponse> getAllRepliesForPaging(int pageNum, int pageSize);
+    public void modifyReply(UpdateReplyCommand cmd, int memberId);
+    public void deleteReply(String replyCode, int memberId);
+    public List<ReplyResponse> getRepliesByPostCode(String postCode, Integer memberId);
+    public PageResponseDto<ReplySimpleResponse> getAllRepliesForPaging(int pageNum, int pageSize, String postCodePrefix);
     public void restrictReply(RestrictCommand cmd);
     public void recoverReply(String replyCode);
-    public PageResponseDto<ReplySimpleResponse> getAllRepliesForPagingByMe(Integer pageNum, Integer pageSize, int memberId);
-    PageResponseDto<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId);
-    PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize);
+    public PageResponseDto<ReplySimpleResponse> getAllRepliesForPagingByMe(Integer pageNum, Integer pageSize, int memberId, String postCodePrefix);
+    PageResponseDto<ReplySimpleResponse> searchAllRepliesForPagingByMe(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId, String postCodePrefix);
+    PageResponseDto<ReplySimpleResponse> searchAllRepliesForPaging(ReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, String postCodePrefix);
 
     PageResponseDto<MyPageGatheringReplyResponse> getMyGatheringReplies(Integer pageNum, Integer pageSize, int memberId);
     PageResponseDto<MyPageGatheringReplyResponse> searchMyGatheringReplies(GatheringReplySearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId);
+
+    /**
+     * Get paginated replies by post code with nested tree structure
+     * Root replies are paginated, child replies are fetched in batch
+     */
+    PageResponseDto<ReplyResponse> getRepliesByPostCodePaginated(String postCode, Integer pageNum, Integer pageSize, Integer memberId);
 
 }

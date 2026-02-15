@@ -15,6 +15,9 @@ public class GatheringBoardPostDetailResponse {
     @JsonProperty("board_code")
     private String boardCode;
 
+    @JsonProperty("member_id")
+    private Integer memberId;
+
     private String gatheringCode;
     private String title;
     private String content;

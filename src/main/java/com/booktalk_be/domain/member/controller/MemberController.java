@@ -1,6 +1,8 @@
 package com.booktalk_be.domain.member.controller;
 
+import com.booktalk_be.common.command.MemberSearchCondCommand;
 import com.booktalk_be.common.command.PostSearchCondCommand;
+import com.booktalk_be.common.responseDto.PageResponseDto;
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.member.command.CreateMemberCommand;
 import com.booktalk_be.domain.member.command.ModifyMemberCommand;
@@ -99,11 +101,33 @@ public class MemberController {
     @GetMapping("/list")
     @Tag(name = "Member List API")
     @Operation(summary = "회원 전체 목록 조회", description = "회원 전체 목록을 조회합니다..")
-    public ResponseEntity<ResponseDto> getMemberList() {
-        List<MemberInformationResponse> memberListDto = memberService.getMemberAllList();
+    public ResponseEntity<ResponseDto> getMemberList(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
+
+        // Service에서 PageResponseDto<MemberInformationResponse>를 반환하도록 가정
+        PageResponseDto<MemberInformationResponse> page = memberService.getMembersForPaging(pageNum, pageSize);
+
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
-                .data(memberListDto)
+                .data(page)
+                .build());
+    }
+
+    @PostMapping("/list/search")
+    @Tag(name = "Member List API")
+    @Operation(summary = "회원 목록 검색", description = "검색 조건에 맞는 회원 목록을 페이징하여 조회합니다.")
+    public ResponseEntity<ResponseDto> getMemberList(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestBody @Valid MemberSearchCondCommand cmd) {
+
+        // BoardService.searchBoardsForPaging과 동일한 구조
+        PageResponseDto<MemberInformationResponse> page = memberService.searchMembersForPaging(pageNum, pageSize, cmd);
+
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
                 .build());
     }
 

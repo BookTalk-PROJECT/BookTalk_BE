@@ -14,14 +14,29 @@ import org.hibernate.annotations.*;
 @DynamicInsert
 @Table(name = "board")
 public class Board extends Post {
+
+    @Transient
+    private static com.booktalk_be.common.utils.DistributedIdGenerator idGenerator;
+
+    public static void setIdGenerator(com.booktalk_be.common.utils.DistributedIdGenerator generator) {
+        idGenerator = generator;
+    }
+
     //PK: BO_(prefix) + number
     @PrePersist
     public void generateId() {
         if(this.code == null) {
-            this.code = "BO_" + System.currentTimeMillis();
+            if (idGenerator != null) {
+                this.code = idGenerator.generateBoardId();
+            } else {
+                this.code = "BO_" + System.currentTimeMillis();
+            }
         }
         if(this.delYn == null) {
             this.delYn = false;
+        }
+        if(this.likesCnt == null) {
+            this.likesCnt = 0;
         }
     }
 

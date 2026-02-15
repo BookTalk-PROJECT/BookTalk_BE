@@ -14,7 +14,12 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
-@Table(name = "member")
+@Table(name = "member", uniqueConstraints = {
+        @UniqueConstraint(
+                name = "uk_member_email_auth_type",
+                columnNames = {"email", "auth_type"}
+        )
+})
 public class Member extends CommonTimeEntity {
     @PrePersist
     public void generateId() {
@@ -27,7 +32,7 @@ public class Member extends CommonTimeEntity {
     @Column(name = "member_id", nullable = false)
     private int memberId;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "name", nullable = false)
@@ -53,6 +58,7 @@ public class Member extends CommonTimeEntity {
     private LocalDate birth;
 
     @Column(name = "authority")
+    @Convert(converter = AuthorityType.Converter.class)
     private AuthorityType authority;
 
     @Column(name = "del_yn", nullable = false)

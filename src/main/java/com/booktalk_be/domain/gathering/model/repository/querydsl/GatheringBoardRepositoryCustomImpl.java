@@ -60,6 +60,7 @@ public class GatheringBoardRepositoryCustomImpl extends Querydsl4RepositorySuppo
     public GatheringBoardPostDetailResponse getBoardDetailBy(String postCode) {
         return select(Projections.fields(GatheringBoardPostDetailResponse.class,
                 gatheringBoard.code.as("boardCode"),
+                gatheringBoard.member.memberId.as("memberId"),
                 gatheringBoard.gathering.code.as("gatheringCode"),
                 gatheringBoard.title,
                 gatheringBoard.content,

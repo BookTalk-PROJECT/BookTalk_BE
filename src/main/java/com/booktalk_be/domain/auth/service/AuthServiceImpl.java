@@ -10,12 +10,12 @@ import com.booktalk_be.springconfig.auth.jwt.JwtProvider;
 import com.booktalk_be.springconfig.auth.user.CustomUserDetails;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,13 +44,12 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtProvider.generateAccessToken(userId, userKey, userRole);
         String refreshToken;
 
-        if(!refreshTokenService.validateExistMember(userKey)) {
-            Refresh_Token newRefreshToken = refreshTokenService.saveRefreshToken(userKey);
-            refreshToken = newRefreshToken.getToken();
-        }else{
-            Refresh_Token existingToken = refreshTokenService.getRefreshTokenByMember(userKey);
-            refreshToken = existingToken.getToken();
+        if(refreshTokenService.validateExistMember(userKey)) {
+            refreshTokenService.deleteRefreshToken(userKey);
+            refreshTokenRepository.flush();
         }
+        Refresh_Token newRefreshToken = refreshTokenService.saveRefreshToken(userKey);
+        refreshToken = newRefreshToken.getToken();
 
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("accessToken", accessToken);

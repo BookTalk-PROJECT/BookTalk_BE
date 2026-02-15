@@ -2,6 +2,7 @@ package com.booktalk_be.domain.category.controller;
 
 import com.booktalk_be.common.utils.ResponseDto;
 import com.booktalk_be.domain.category.command.CreateCategoryCommand;
+import com.booktalk_be.domain.category.command.ReorderCategoryCommand;
 import com.booktalk_be.domain.category.command.UpdateCategoryCommand;
 import com.booktalk_be.domain.category.responseDto.CategoryResponse;
 import com.booktalk_be.domain.category.service.CategoryService;
@@ -71,6 +72,16 @@ public class CategoryController {
     @Operation(summary = "커뮤니티 카테고리 삭제", description = "카테고리를 삭제합니다.")
     public ResponseEntity<ResponseDto> delete(@PathVariable Integer categoryId) {
         categoryService.deleteCategory(categoryId);
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .build());
+    }
+
+    @PatchMapping("/reorder")
+    @Tag(name = "Community Category API")
+    @Operation(summary = "커뮤니티 카테고리 순서 변경", description = "카테고리 표시 순서를 일괄 변경합니다.")
+    public ResponseEntity<ResponseDto> reorder(@RequestBody @Valid ReorderCategoryCommand cmd) {
+        categoryService.reorderCategories(cmd);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());

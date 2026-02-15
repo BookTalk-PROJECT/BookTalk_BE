@@ -35,6 +35,7 @@ public class Gathering extends CommonEntity {
     }
 
     @Column(name = "status") //모임 상태
+    @Convert(converter = GatheringStatus.Converter.class)
     private GatheringStatus status;
 
     @Column(name = "name") //모임 이름

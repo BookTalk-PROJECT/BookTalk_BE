@@ -4,7 +4,6 @@ import com.booktalk_be.domain.member.model.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Formula;
 
 
 @Getter
@@ -14,7 +13,7 @@ public abstract class Post extends CommonEntity {
     @Column(name = "code", nullable = false)
     protected String code;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     protected Member member;
 
@@ -30,8 +29,7 @@ public abstract class Post extends CommonEntity {
 
     @ColumnDefault("0")
     @Column(name = "like_cnt", nullable = false)
-    @Formula("(SELECT count(1) FROM likes l WHERE l.code = code)")
-    protected Integer likesCnt;
+    protected Integer likesCnt = 0;
 
     @Column(name = "del_yn", nullable = false)
     protected Boolean delYn;
@@ -41,4 +39,24 @@ public abstract class Post extends CommonEntity {
 
     @Column(name = "del_reason", nullable = true)
     protected String delReason;
+
+    public void incrementLikes() {
+        if (this.likesCnt == null) {
+            this.likesCnt = 0;
+        }
+        this.likesCnt++;
+    }
+
+    public void decrementLikes() {
+        if (this.likesCnt != null && this.likesCnt > 0) {
+            this.likesCnt--;
+        }
+    }
+
+    public void incrementViews() {
+        if (this.views == null) {
+            this.views = 0;
+        }
+        this.views++;
+    }
 }
