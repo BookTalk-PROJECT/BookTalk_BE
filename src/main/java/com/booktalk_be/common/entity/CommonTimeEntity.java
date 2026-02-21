@@ -3,6 +3,7 @@ package com.booktalk_be.common.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -23,4 +24,8 @@ public class CommonTimeEntity {
 
     @LastModifiedDate
     private LocalDateTime updateTime;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 }

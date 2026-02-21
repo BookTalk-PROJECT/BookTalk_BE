@@ -1,6 +1,7 @@
 package com.booktalk_be.domain.category.service;
 
 import com.booktalk_be.domain.category.command.CreateCategoryCommand;
+import com.booktalk_be.domain.category.command.ReorderCategoryCommand;
 import com.booktalk_be.domain.category.command.UpdateCategoryCommand;
 import com.booktalk_be.domain.category.responseDto.CategoryResponse;
 
@@ -13,4 +14,5 @@ public interface CategoryService {
     public List<CategoryResponse> getAllList();
     public void editCategory(UpdateCategoryCommand cmd);
     public void deleteCategory(Integer categoryId);
+    public void reorderCategories(ReorderCategoryCommand cmd);
 }

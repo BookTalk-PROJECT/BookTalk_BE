@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,13 +21,27 @@ import org.hibernate.annotations.DynamicInsert;
 @Table(name = "book_review")
 public class BookReview extends Post {
 
+    @Transient
+    private static com.booktalk_be.common.utils.DistributedIdGenerator idGenerator;
+
+    public static void setIdGenerator(com.booktalk_be.common.utils.DistributedIdGenerator generator) {
+        idGenerator = generator;
+    }
+
     @PrePersist
     public void generateId() {
         if (this.code == null) {
-            this.code = "BR_" + System.currentTimeMillis();
+            if (idGenerator != null) {
+                this.code = idGenerator.generateBookReviewId();
+            } else {
+                this.code = "BR_" + System.currentTimeMillis();
+            }
         }
         if (this.delYn == null) {
             this.delYn = false;
+        }
+        if (this.likesCnt == null) {
+            this.likesCnt = 0;
         }
     }
 
@@ -80,5 +95,15 @@ public class BookReview extends Post {
 
     public void delete() {
         this.delYn = true;
+    }
+
+    public void restrict(String delReason) {
+        this.delYn = true;
+        this.delReason = delReason;
+    }
+
+    public void recover() {
+        this.delYn = false;
+        this.delReason = null;
     }
 }

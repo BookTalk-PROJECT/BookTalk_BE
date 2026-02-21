@@ -21,7 +21,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -52,18 +54,22 @@ public class GatheringBoardServiceImpl implements GatheringBoardService {
     }
 
     @Override
-    public void modify(UpdateGatheringBoardCommand cmd) {
+    public void modify(UpdateGatheringBoardCommand cmd, int memberId) {
         GatheringBoard board = gatheringBoardRepository.findById(cmd.getPostCode())
                 .orElseThrow(EntityNotFoundException::new);
-
-        // 네 Board.modify(cmd)처럼 엔티티 메서드로 처리 추천
+        if (board.getMember().getMemberId() != memberId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+        }
         board.modify(cmd);
     }
 
     @Override
-    public void delete(String postCode) {
+    public void delete(String postCode, int memberId) {
         GatheringBoard board = gatheringBoardRepository.findById(postCode)
                 .orElseThrow(EntityNotFoundException::new);
+        if (board.getMember().getMemberId() != memberId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
+        }
         board.delete();
     }
 
@@ -79,11 +85,11 @@ public class GatheringBoardServiceImpl implements GatheringBoardService {
     }
 
     @Override
-    public GatheringBoardDetailResponse detail(String postCode) {
+    public GatheringBoardDetailResponse detail(String postCode, Integer memberId) {
         GatheringBoardPostDetailResponse detail = gatheringBoardRepository.getBoardDetailBy(postCode);
         if (detail == null) throw new EntityNotFoundException();
 
-        List<ReplyResponse> replies = replyService.getRepliesByPostCode(detail.getBoardCode());
+        List<ReplyResponse> replies = replyService.getRepliesByPostCode(detail.getBoardCode(), memberId);
 
         return GatheringBoardDetailResponse.builder()
                 .post(detail)

@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.Formula;
 
 @Entity
 @Getter
@@ -18,14 +17,29 @@ import org.hibernate.annotations.Formula;
 @DynamicInsert
 @Table(name = "reply")
 public class Reply extends CommonEntity {
+
+    @Transient
+    private static com.booktalk_be.common.utils.DistributedIdGenerator idGenerator;
+
+    public static void setIdGenerator(com.booktalk_be.common.utils.DistributedIdGenerator generator) {
+        idGenerator = generator;
+    }
+
     //PK: REP_(prefix) + number
     @PrePersist
     public void generateId() {
         if(this.replyCode == null) {
-            this.replyCode = "REP_" + System.currentTimeMillis();
+            if (idGenerator != null) {
+                this.replyCode = idGenerator.generateReplyId();
+            } else {
+                this.replyCode = "REP_" + System.currentTimeMillis();
+            }
         }
         if(this.delYn == null) {
             this.delYn = false;
+        }
+        if(this.likesCnt == null) {
+            this.likesCnt = 0;
         }
     }
 
@@ -33,14 +47,14 @@ public class Reply extends CommonEntity {
     @Column(name = "reply_code", nullable = false)
     private String replyCode;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
     @Column(name = "post_code", nullable = false)
     private String postCode;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_reply_code", nullable = true)
     private Reply parentReplyCode;
 
@@ -49,8 +63,7 @@ public class Reply extends CommonEntity {
 
     @ColumnDefault("0")
     @Column(name = "like_cnt", nullable = false)
-    @Formula("(SELECT count(1) FROM likes l WHERE l.code = reply_code)")
-    protected Integer likesCnt;
+    protected Integer likesCnt = 0;
 
     @Column(name = "del_yn", nullable = false)
     private Boolean delYn;
@@ -82,5 +95,18 @@ public class Reply extends CommonEntity {
     public void recover() {
         this.delYn = false;
         this.delReason = null;
+    }
+
+    public void incrementLikes() {
+        if (this.likesCnt == null) {
+            this.likesCnt = 0;
+        }
+        this.likesCnt++;
+    }
+
+    public void decrementLikes() {
+        if (this.likesCnt != null && this.likesCnt > 0) {
+            this.likesCnt--;
+        }
     }
 }

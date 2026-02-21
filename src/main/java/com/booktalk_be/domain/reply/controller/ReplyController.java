@@ -35,11 +35,36 @@ public class ReplyController {
     @GetMapping("/list/{postCode}")
     @Tag(name = "Reply API")
     @Operation(summary = "게시판 댓글 목록 조회", description = "특정 게시글의 댓글 목록 정보를 조회합니다.")
-    public ResponseEntity<ResponseDto> getList(@PathVariable String postCode) {
-        List<ReplyResponse> res = replyService.getRepliesByPostCode(postCode);
+    public ResponseEntity<ResponseDto> getList(
+            @PathVariable String postCode,
+            Authentication authentication) {
+        Integer memberId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Member) {
+            memberId = ((Member) authentication.getPrincipal()).getMemberId();
+        }
+        List<ReplyResponse> res = replyService.getRepliesByPostCode(postCode, memberId);
         return ResponseEntity.ok(ResponseDto.builder()
                 .data(res)
                 .code(200)
+                .build());
+    }
+
+    @GetMapping("/list/{postCode}/paged")
+    @Tag(name = "Reply API")
+    @Operation(summary = "게시판 댓글 목록 페이징 조회", description = "특정 게시글의 댓글 목록을 페이징하여 조회합니다.")
+    public ResponseEntity<ResponseDto> getListPaged(
+            @PathVariable String postCode,
+            @RequestParam Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            Authentication authentication) {
+        Integer memberId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Member) {
+            memberId = ((Member) authentication.getPrincipal()).getMemberId();
+        }
+        PageResponseDto<ReplyResponse> page = replyService.getRepliesByPostCodePaginated(postCode, pageNum, pageSize, memberId);
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
                 .build());
     }
 
@@ -68,8 +93,10 @@ public class ReplyController {
     @PatchMapping("/modify")
     @Tag(name = "Reply API")
     @Operation(summary = "게시판 댓글 수정", description = "댓글 상세 정보를 수정합니다.")
-    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateReplyCommand cmd) {
-        replyService.modifyReply(cmd);
+    public ResponseEntity<ResponseDto> modify(@RequestBody @Valid UpdateReplyCommand cmd,
+                                               Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        replyService.modifyReply(cmd, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -88,8 +115,10 @@ public class ReplyController {
     @DeleteMapping("/delete/{replyCode}")
     @Tag(name = "Reply API")
     @Operation(summary = "게시판 댓글 삭제", description = "댓글을 삭제합니다.")
-    public ResponseEntity<ResponseDto> delete(@PathVariable String replyCode) {
-        replyService.deleteReply(replyCode);
+    public ResponseEntity<ResponseDto> delete(@PathVariable String replyCode,
+                                               Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        replyService.deleteReply(replyCode, member.getMemberId());
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .build());
@@ -97,13 +126,13 @@ public class ReplyController {
 
     @GetMapping("/mylist")
     @Tag(name = "Reply API")
-    @Operation(summary = "내 댓글 조회", description = "내 댓글 목록을 조회합니다.")
+    @Operation(summary = "내 커뮤니티 댓글 조회", description = "내 커뮤니티 댓글 목록을 조회합니다.")
     public ResponseEntity<ResponseDto> getCommunityCommentList(
             @RequestParam(value = "pageNum", required = true) Integer pageNum,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
             Authentication authentication) {
         Member member = (Member) authentication.getPrincipal();
-        PageResponseDto<ReplySimpleResponse> page =  replyService.getAllRepliesForPagingByMe(pageNum, pageSize, member.getMemberId());
+        PageResponseDto<ReplySimpleResponse> page =  replyService.getAllRepliesForPagingByMe(pageNum, pageSize, member.getMemberId(), "BO_");
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)
@@ -112,14 +141,45 @@ public class ReplyController {
 
     @PostMapping("/mylist/search")
     @Tag(name = "Reply API")
-    @Operation(summary = "내가 쓴 댓글 검색", description = "내가 쓴 댓글 목록을 검색합니다.")
+    @Operation(summary = "내가 쓴 커뮤니티 댓글 검색", description = "내가 쓴 커뮤니티 댓글 목록을 검색합니다.")
     public ResponseEntity<ResponseDto> searchCommunityCommentList(
             @RequestParam(value = "pageNum", required = true) Integer pageNum,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
             @RequestBody @Valid ReplySearchCondCommand cmd,
             Authentication authentication) {
         Member member = (Member) authentication.getPrincipal();
-        PageResponseDto<ReplySimpleResponse> page =  replyService.searchAllRepliesForPagingByMe(cmd, pageNum, pageSize, member.getMemberId());
+        PageResponseDto<ReplySimpleResponse> page =  replyService.searchAllRepliesForPagingByMe(cmd, pageNum, pageSize, member.getMemberId(), "BO_");
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
+                .build());
+    }
+
+    @GetMapping("/bookreview/mylist")
+    @Tag(name = "Reply API")
+    @Operation(summary = "내 북리뷰 댓글 조회", description = "내 북리뷰 댓글 목록을 조회합니다.")
+    public ResponseEntity<ResponseDto> getBookReviewCommentList(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<ReplySimpleResponse> page =  replyService.getAllRepliesForPagingByMe(pageNum, pageSize, member.getMemberId(), "BR_");
+        return ResponseEntity.ok(ResponseDto.builder()
+                .code(200)
+                .data(page)
+                .build());
+    }
+
+    @PostMapping("/bookreview/mylist/search")
+    @Tag(name = "Reply API")
+    @Operation(summary = "내가 쓴 북리뷰 댓글 검색", description = "내가 쓴 북리뷰 댓글 목록을 검색합니다.")
+    public ResponseEntity<ResponseDto> searchBookReviewCommentList(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestBody @Valid ReplySearchCondCommand cmd,
+            Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        PageResponseDto<ReplySimpleResponse> page =  replyService.searchAllRepliesForPagingByMe(cmd, pageNum, pageSize, member.getMemberId(), "BR_");
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)
@@ -130,9 +190,12 @@ public class ReplyController {
     @GetMapping("/admin/all")
     @Tag(name = "AdminPage API")
     @Operation(summary = "관리자 댓글 조회", description = "관리자 권한으로 모든 댓글을 조회합니다.")
-    public ResponseEntity<ResponseDto> getCommentList(@RequestParam(value = "pageNum", required = true) Integer pageNum,
-                                                      @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
-        PageResponseDto<ReplySimpleResponse> page =  replyService.getAllRepliesForPaging(pageNum, pageSize);
+    public ResponseEntity<ResponseDto> getCommentList(
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestParam(value = "postType", required = false) String postType) {
+        String postCodePrefix = getPostCodePrefix(postType);
+        PageResponseDto<ReplySimpleResponse> page = replyService.getAllRepliesForPaging(pageNum, pageSize, postCodePrefix);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)
@@ -145,12 +208,23 @@ public class ReplyController {
     public ResponseEntity<ResponseDto> searchCommentList(
             @RequestParam(value = "pageNum", required = true) Integer pageNum,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestParam(value = "postType", required = false) String postType,
             @RequestBody @Valid ReplySearchCondCommand cmd) {
-        PageResponseDto<ReplySimpleResponse> page =  replyService.searchAllRepliesForPaging(cmd, pageNum, pageSize);
+        String postCodePrefix = getPostCodePrefix(postType);
+        PageResponseDto<ReplySimpleResponse> page = replyService.searchAllRepliesForPaging(cmd, pageNum, pageSize, postCodePrefix);
         return ResponseEntity.ok(ResponseDto.builder()
                 .code(200)
                 .data(page)
                 .build());
+    }
+
+    private String getPostCodePrefix(String postType) {
+        if (postType == null) return null;
+        return switch (postType) {
+            case "community" -> "BO_";
+            case "bookreview" -> "BR_";
+            default -> null;
+        };
     }
 
     //관리자 페이지 댓글 복구 API

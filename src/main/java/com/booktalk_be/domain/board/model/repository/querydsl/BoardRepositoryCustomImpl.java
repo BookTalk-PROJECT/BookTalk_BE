@@ -40,7 +40,6 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", board.regTime).as("date"),
                 board.views))
                 .from(board).leftJoin(board.member)
-                .from(board)
                 .where(board.categoryId.eq(categoryId).and(board.delYn.eq(false)))
                 .orderBy(board.code.desc())
                 .offset(pageable.getOffset())
@@ -69,11 +68,12 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 .where(board.categoryId.eq(categoryId))
                 .where(board.delYn.eq(false));
 
-        JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
-                select(Wildcard.count)
-                .from(board).leftJoin(board.member)
+        JPAQuery<Long> pageQuery = select(Wildcard.count).from(board)
                 .where(board.categoryId.eq(categoryId))
                 .where(board.delYn.eq(false));
+        if (cmd.getType() == PostSearchCondCommand.KeywordType.AUTHOR) {
+            pageQuery.leftJoin(board.member);
+        }
 
         BooleanBuilder searchCondition = new BooleanBuilder()
                 .and(keywordFilter(cmd.getType(), cmd.getKeyword()))
@@ -112,7 +112,6 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 board.delYn.as("delYn"),
                 board.delReason.as("delReason")))
                 .from(board).leftJoin(board.member)
-                .from(board)
                 .where(board.code.eq(boardCode))
                 .fetchOne();
     }
@@ -128,8 +127,9 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 board.views,
                 board.delYn,
                 board.delReason.as("deleteReason")))
-                .from(board).leftJoin(board.member)
-                .from(board).leftJoin(category).on(board.categoryId.eq(category.categoryId))
+                .from(board)
+                .leftJoin(board.member)
+                .leftJoin(category).on(board.categoryId.eq(category.categoryId))
                 .orderBy(board.code.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -137,7 +137,6 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         Long total = Optional.ofNullable(
                         select(Wildcard.count)
                                 .from(board)
-                                .leftJoin(board.member)
                                 .fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);
@@ -155,12 +154,14 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 board.views,
                 board.delYn,
                 board.delReason.as("deleteReason")))
-                .from(board).leftJoin(board.member)
-                .from(board).leftJoin(category).on(board.categoryId.eq(category.categoryId));
+                .from(board)
+                .leftJoin(board.member)
+                .leftJoin(category).on(board.categoryId.eq(category.categoryId));
 
-        JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
-                select(Wildcard.count)
-                .from(board);
+        JPAQuery<Long> pageQuery = select(Wildcard.count).from(board);
+        if (cmd.getType() == PostSearchCondCommand.KeywordType.AUTHOR) {
+            pageQuery.leftJoin(board.member);
+        }
 
         BooleanBuilder searchCondition = new BooleanBuilder()
                 .and(keywordFilter(cmd.getType(), cmd.getKeyword()))
@@ -218,9 +219,10 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 board.views,
                 board.delYn,
                 board.delReason.as("deleteReason")))
-                .from(board).leftJoin(board.member)
-                .where(board.member.memberId.eq(memberId))
-                .from(board).leftJoin(category).on(board.categoryId.eq(category.categoryId))
+                .from(board)
+                .leftJoin(board.member)
+                .leftJoin(category).on(board.categoryId.eq(category.categoryId))
+                .where(board.member.memberId.eq(memberId).and(board.delYn.eq(false)))
                 .orderBy(board.code.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -229,7 +231,7 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         Long total = Optional.ofNullable(
                         select(Wildcard.count)
                                 .from(board).leftJoin(board.member)
-                                .where(board.member.memberId.eq(memberId))
+                                .where(board.member.memberId.eq(memberId).and(board.delYn.eq(false)))
                                 .fetchOne())
                 .orElse(0L);
         return new PageImpl<>(content, pageable, total);
@@ -247,15 +249,18 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
                 board.views,
                 board.delYn,
                 board.delReason.as("deleteReason")))
-                .from(board).leftJoin(board.member)
-                .from(board).leftJoin(category).on(board.categoryId.eq(category.categoryId))
-                .where(board.member.memberId.eq(memberId));
+                .from(board)
+                .leftJoin(board.member)
+                .leftJoin(category).on(board.categoryId.eq(category.categoryId))
+                .where(board.member.memberId.eq(memberId))
+                .where(board.delYn.eq(false));
 
         JPAQueryBase<Long, JPAQuery<Long>> pageQuery =
                 select(Wildcard.count)
                 .from(board)
                 .leftJoin(board.member)
-                .where(board.member.memberId.eq(memberId));
+                .where(board.member.memberId.eq(memberId))
+                .where(board.delYn.eq(false));
 
         BooleanBuilder searchCondition = new BooleanBuilder()
                 .and(keywordFilter(cmd.getType(), cmd.getKeyword()))
@@ -292,8 +297,9 @@ public class BoardRepositoryCustomImpl extends Querydsl4RepositorySupport implem
         }
         return switch (type) {
             case CODE -> board.code.eq(keyword);
-            case TITLE -> board.title.containsIgnoreCase(keyword);
-            case AUTHOR -> board.member.name.containsIgnoreCase(keyword);
+            case TITLE -> Expressions.numberTemplate(Double.class,
+                    "function('match_against', {0}, {1})", board.title, keyword).gt(0);
+            case AUTHOR -> board.member.name.contains(keyword);
             default -> null;
         };
     }
