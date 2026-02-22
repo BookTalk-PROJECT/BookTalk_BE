@@ -15,159 +15,24 @@
 
 ## Architecture
 ![아키텍처](./docs/architecture.PNG)
-```mermaid
-flowchart TB
-
-    client["Client\n(React 19 · JWT)"]
-
-    subgraph Security["Spring Security"]
-        direction LR
-        jwtFilter["JwtAuthFilter\n토큰 검증"]
-        oauth2["OAuth2UserService\n카카오 · 네이버"]
-    end
-
-    subgraph API["REST Controllers"]
-        direction LR
-        ctrl["Board · BookReview · Reply\nGathering · Admin"]
-    end
-
-    subgraph Service["Service Layer"]
-        direction LR
-        boardSvc["BoardServiceImpl\n@Cacheable · @CacheEvict"]
-        replySvc["ReplyServiceImpl\nMap 2-Pass 트리 변환 O(n)"]
-    end
-
-    cache["Caffeine Cache\nboardAdminList · replyAdminList\nTTL 30s · max 200"]
-
-    subgraph Repository["Repository Layer"]
-        direction LR
-        jpa["Spring Data JPA\n@Version 낙관적 락"]
-        qdsl["QueryDSL Custom Impl\nBooleanBuilder 동적 검색\nProjections.fields() DTO 매핑\nCOUNT 쿼리 분리"]
-    end
-
-    mysql["MySQL 8\nFlyway 복합 인덱스 13개\nFULLTEXT (title · content)"]
-
-    nlk["국립중앙도서관 API\n도서 검색"]
-
-    client -- "HTTP + JWT" --> Security
-    Security --> API
-    API --> Service
-    boardSvc -- "캐시 미스 → DB\n캐시 히트 → 즉시 반환" --> cache
-    replySvc -- "캐시 미스 → DB\n캐시 히트 → 즉시 반환" --> cache
-    Service --> Repository
-    Repository --> mysql
-    API -- "도서 검색" --> nlk
-    jwtFilter -. "소셜 로그인 위임" .-> oauth2
-```
 
 ---
 
 ## 주요 기능 및 기술 결정
 
-### QueryDSL 기반 동적 검색 · 페이지네이션
-
-키워드 타입(제목/작성자/카테고리/코드), 날짜 범위, 삭제 여부 등 조건이 요청마다 달라지는 관리자 검색 API에 정적 JPQL로 대응하면 메서드 조합이 기하급수적으로 늘어납니다. `BooleanBuilder`로 null-safe 조건을 조합하고, 페이지네이션 시 데이터 쿼리와 COUNT 쿼리를 분리해 COUNT에서 불필요한 JOIN을 제거했습니다. `Projections.fields()`로 DTO에 직접 매핑해 엔티티 전체 로딩 없이 필요한 컬럼만 SELECT합니다.
-
-### 계층형 댓글 트리 (Map 2-Pass, O(n))
-
-MySQL의 CTE 재귀 쿼리는 인덱스를 활용하지 못하는 경우가 많고, depth가 3으로 고정된 상황에서 depth별 단순 IN 쿼리가 더 예측 가능합니다. DB에서 플랫하게 조회한 뒤, `Map<replyCode, ReplyResponse>`로 전체 노드를 인덱싱(1-Pass)하고 parentCode로 O(1) 탐색해 자식 리스트에 연결(2-Pass)합니다. 이중 반복문 O(n²)을 O(n)으로 개선하면서 N+1도 배치 IN 쿼리로 제거했습니다.
-
-### Caffeine 로컬 캐시 (관리자 쿼리 전용)
-
-관리자 목록 API는 WHERE 없이 100만~250만 행을 집계하는 COUNT 쿼리가 병목이었습니다. 단일 서버 운영 환경에서 Redis의 네트워크 오버헤드가 불필요하다고 판단해 Caffeine을 선택했습니다. TTL 30초, 최대 200 엔트리로 캐시를 구성하고, 게시글·댓글 CUD 및 제재·복구 이벤트 시 `@CacheEvict(allEntries=true)`로 즉시 무효화합니다.
-
-### 인덱스 설계 및 Flyway 버전 관리
-
-`EXPLAIN ANALYZE`로 쿼리 패턴을 분석한 뒤, WHERE 조건 컬럼과 ORDER BY 컬럼을 묶어 복합 인덱스 13개를 설계했습니다. 인덱스를 Flyway 마이그레이션 스크립트로 관리해 개발·운영 환경 간 스키마 일관성을 보장합니다. 한국어 키워드 검색에는 ngram 파서 기반 FULLTEXT 인덱스를 적용했습니다.
-
-### Soft Delete + 관리자 제재/복구
-
-게시글·댓글을 물리 삭제하면 이력이 사라지고 복구가 불가능합니다. `del_yn` 컬럼으로 논리 삭제를 처리하고, 모든 조회 인덱스에 `del_yn`을 포함해 삭제된 행이 스캔에서 제외되도록 했습니다. 관리자는 제재 사유 기록 후 복구까지 가능하며, `@CacheEvict`가 제재·복구 시에도 적용돼 캐시와 실제 상태가 항상 일치합니다.
-
-### @Version 낙관적 락
-
-좋아요, 조회수처럼 동시 요청이 몰리는 필드는 비관적 락을 걸면 대기가 쌓입니다. `CommonTimeEntity`에 `@Version`을 선언해 Board, BookReview, Gathering 등 모든 하위 엔티티에 낙관적 락이 자동 적용됩니다.
+| 기능 | 요약 |
+| --- | --- |
+| QueryDSL 동적 검색 | `BooleanBuilder`로 null-safe 조건 조합, `Projections.fields()`로 필요한 컬럼만 SELECT, COUNT 쿼리 분리로 불필요한 JOIN 제거 |
+| 계층형 댓글 트리 | DB 플랫 조회 후 `Map<replyCode, ReplyResponse>` 기반 2-Pass로 트리 조립, O(n²) → O(n) 개선 및 N+1 제거 |
+| Caffeine 로컬 캐시 | 관리자 목록 COUNT 쿼리 병목을 TTL 30초 캐시로 해소, CUD·제재·복구 시 `@CacheEvict(allEntries=true)` 자동 무효화 |
+| 복합 인덱스 설계 | `EXPLAIN ANALYZE` 기반 WHERE + ORDER BY 컬럼 조합 인덱스 13개, 한국어 키워드 검색은 ngram FULLTEXT 인덱스 적용 |
+| Soft Delete + 관리자 제재 | `del_yn` 논리 삭제로 이력 보존, 모든 조회 인덱스에 포함해 삭제 행 스캔 제외, 관리자 복구까지 지원 |
+| 낙관적 락 | `CommonTimeEntity`에 `@Version` 선언으로 Board·BookReview·Gathering 등 전 엔티티에 자동 적용 |
 
 ---
 
 ## 데이터 모델
-
-```mermaid
-erDiagram
-    MEMBER {
-        int member_id PK
-        varchar email
-        varchar auth_type "LOCAL·KAKAO·NAVER"
-        varchar authority "USER·ADMIN"
-        boolean del_yn
-        bigint version
-    }
-    CATEGORY {
-        int category_id PK
-        varchar value
-        int p_category_id FK "부모 카테고리 (self-join)"
-        boolean is_active
-    }
-    BOARD {
-        varchar code PK "BO_xxxxx (Snowflake)"
-        int member_id FK
-        int category_id FK
-        varchar title
-        text content
-        int like_cnt
-        boolean del_yn
-        bigint version
-    }
-    BOOK_REVIEW {
-        varchar code PK "BR_xxxxx (Snowflake)"
-        int member_id FK
-        int category_id FK
-        varchar isbn
-        int rating "1~5"
-        varchar title
-        text content
-        int like_cnt
-        boolean del_yn
-        bigint version
-    }
-    REPLY {
-        varchar reply_code PK "REP_xxxxx (Snowflake)"
-        int member_id FK
-        varchar post_code "board 또는 book_review code"
-        varchar parent_reply_code FK "대댓글 self-join"
-        text content
-        int like_cnt
-        boolean del_yn
-        bigint version
-    }
-    GATHERING {
-        varchar gathering_code PK "GT_xxxxx"
-        varchar status "INTENDED·PROGRESS·END"
-        varchar name
-        bigint recruitment_personnel
-        varchar emd_cd "읍면동 코드"
-        boolean del_yn
-        bigint version
-    }
-    LIKES {
-        varchar code FK "board·book_review·reply code"
-        int member_id FK
-    }
-
-    MEMBER ||--o{ BOARD : "작성"
-    MEMBER ||--o{ BOOK_REVIEW : "작성"
-    MEMBER ||--o{ REPLY : "작성"
-    MEMBER ||--o{ LIKES : ""
-    CATEGORY ||--o{ BOARD : "분류"
-    CATEGORY ||--o{ BOOK_REVIEW : "분류"
-    CATEGORY ||--o{ CATEGORY : "부모-자식"
-    BOARD ||--o{ REPLY : "댓글"
-    BOOK_REVIEW ||--o{ REPLY : "댓글"
-    REPLY ||--o{ REPLY : "대댓글"
-    BOARD ||--o{ LIKES : ""
-    BOOK_REVIEW ||--o{ LIKES : ""
-    GATHERING ||--o{ MEMBER : "모임 멤버"
-```
+![ERD](./docs/ERD.png)
 
 ---
 
