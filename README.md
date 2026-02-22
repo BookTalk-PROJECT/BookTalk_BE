@@ -14,7 +14,7 @@
 ---
 
 ## Architecture
-
+![아키텍처](./docs/architecture.PNG)
 ```mermaid
 flowchart TB
 
