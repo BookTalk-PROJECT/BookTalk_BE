@@ -7,7 +7,6 @@ build/
 
 nul
 .claude/
-docs/
 
 ### STS ###
 .apt_generated
