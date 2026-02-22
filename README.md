@@ -22,12 +22,12 @@
 
 | 기능 | 요약 |
 | --- | --- |
-| QueryDSL 동적 검색 | `BooleanBuilder`로 null-safe 조건 조합, `Projections.fields()`로 필요한 컬럼만 SELECT, COUNT 쿼리 분리로 불필요한 JOIN 제거 |
-| 계층형 댓글 트리 | DB 플랫 조회 후 `Map<replyCode, ReplyResponse>` 기반 2-Pass로 트리 조립, O(n²) → O(n) 개선 및 N+1 제거 |
-| Caffeine 로컬 캐시 | 관리자 목록 COUNT 쿼리 병목을 TTL 30초 캐시로 해소, CUD·제재·복구 시 `@CacheEvict(allEntries=true)` 자동 무효화 |
-| 복합 인덱스 설계 | `EXPLAIN ANALYZE` 기반 WHERE + ORDER BY 컬럼 조합 인덱스 13개, 한국어 키워드 검색은 ngram FULLTEXT 인덱스 적용 |
-| Soft Delete + 관리자 제재 | `del_yn` 논리 삭제로 이력 보존, 모든 조회 인덱스에 포함해 삭제 행 스캔 제외, 관리자 복구까지 지원 |
-| 낙관적 락 | `CommonTimeEntity`에 `@Version` 선언으로 Board·BookReview·Gathering 등 전 엔티티에 자동 적용 |
+| 커뮤니티 게시판 | 게시글 CRUD, 카테고리 분류, 좋아요, 키워드·카테고리·작성자 검색 |
+| 도서 서평 | ISBN·평점 포함 서평 CRUD, 국립중앙도서관 API로 도서 제목·ISBN 검색 연동 |
+| 댓글·대댓글 | 3depth 계층형 댓글 CRUD, 좋아요, Map 2-Pass O(n) 트리 변환 |
+| 독서 모임 | 모임 생성·수정·모집, 가입 신청·승인·거절, 모임 전용 게시판, 내 모임·신청 내역 조회 |
+| 회원 인증 | JWT(액세스·리프레시 토큰) + 카카오·네이버 OAuth2 소셜 로그인 |
+| 관리자 | 게시글·댓글 전체 조회·검색·제재·복구, 대시보드 통계 |
 
 ---
 
