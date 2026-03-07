@@ -12,9 +12,12 @@ import com.booktalk_be.domain.gathering.responseDto.GatheringResponse;
 import com.booktalk_be.domain.gathering.responseDto.mypage.MyPageGatheringResponse;
 import com.booktalk_be.domain.hashtag.model.entity.HashTag;
 import com.booktalk_be.domain.hashtag.model.entity.HashTagMap;
+import com.booktalk_be.domain.gathering.util.TypeConversionUtils;
 import com.booktalk_be.domain.hashtag.service.HashTagService;
 import com.booktalk_be.domain.member.model.entity.Member;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,6 +42,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class GatheringServiceImpl implements GatheringService {
+
+    private static final Logger log = LoggerFactory.getLogger(GatheringServiceImpl.class);
+    private static final String TEMP_EMD_SUFFIX = "_읍면동 코드";
+    private static final String TEMP_SIG_CODE = "행정구역코드";
 
     @Value("${app.upload.image-dir}")
     private String imageUploadDir;
@@ -89,8 +95,8 @@ public class GatheringServiceImpl implements GatheringService {
                 .recruitmentPeriod(command.getRecruitmentPeriod())
                 .activityPeriod(command.getActivityPeriod())
                 .summary(command.getMeetingDetails())
-                .emdCd(command.getLocation() + "_읍면동 코드") // 임시
-                .sigCd("행정구역코드")                         // 임시
+                .emdCd(command.getLocation() + TEMP_EMD_SUFFIX)
+                .sigCd(TEMP_SIG_CODE)
                 .imageData(imageUrl)
                 .status(GatheringStatus.INTENDED)
                 .build();
@@ -310,10 +316,10 @@ public class GatheringServiceImpl implements GatheringService {
     public PageResponseDto<MyPageGatheringResponse> searchMyGatherings(GatheringSearchCondCommand cmd, Integer pageNum, Integer pageSize, int memberId) {
         List<Object[]> rows = gatheringRepository.callMyGatheringSearch(
                 memberId,
-                emptyToNull(cmd.getKeywordType()),
-                emptyToNull(cmd.getKeyword()),
-                emptyToNull(cmd.getStartDate()),
-                emptyToNull(cmd.getEndDate()),
+                TypeConversionUtils.emptyToNull(cmd.getKeywordType()),
+                TypeConversionUtils.emptyToNull(cmd.getKeyword()),
+                TypeConversionUtils.emptyToNull(cmd.getStartDate()),
+                TypeConversionUtils.emptyToNull(cmd.getEndDate()),
                 pageNum,
                 pageSize
         );
@@ -326,7 +332,7 @@ public class GatheringServiceImpl implements GatheringService {
         if (rows != null && !rows.isEmpty()) {
             Object[] first = rows.get(0);
             if (first.length >= 1) {
-                totalPages = toInt(first[first.length - 1]); // 마지막 컬럼 = total_pages
+                totalPages = TypeConversionUtils.toInt(first[first.length - 1]); // 마지막 컬럼 = total_pages
             }
         }
 
@@ -344,8 +350,8 @@ public class GatheringServiceImpl implements GatheringService {
         String gatheringCode = r[0] == null ? null : String.valueOf(r[0]);
         String name = r[1] == null ? null : String.valueOf(r[1]);
         String leaderName = r[2] == null ? null : String.valueOf(r[2]);
-        Integer masterYn = toInt(r[3]);
-        Boolean delYn = toBool(r[4]);
+        Integer masterYn = TypeConversionUtils.toInt(r[3]);
+        Boolean delYn = TypeConversionUtils.toBool(r[4]);
         String regDate = r[5] == null ? null : String.valueOf(r[5]);
 
         return MyPageGatheringResponse.builder()
@@ -356,31 +362,6 @@ public class GatheringServiceImpl implements GatheringService {
                 .delYn(delYn)
                 .regDate(regDate)
                 .build();
-    }
-
-    private static String emptyToNull(String s) {
-        if (s == null) return null;
-        String t = s.trim();
-        return t.isEmpty() ? null : t;
-    }
-
-    private static Integer toInt(Object v) {
-        if (v == null) return 0;
-        if (v instanceof Integer i) return i;
-        if (v instanceof Long l) return l.intValue();
-        if (v instanceof BigInteger bi) return bi.intValue();
-        if (v instanceof Number n) return n.intValue();
-        return Integer.parseInt(String.valueOf(v));
-    }
-
-    private static Boolean toBool(Object v) {
-        if (v == null) return false;
-        if (v instanceof Boolean b) return b;
-        if (v instanceof Integer i) return i != 0;
-        if (v instanceof Long l) return l != 0L;
-        if (v instanceof BigInteger bi) return bi.intValue() != 0;
-        String s = String.valueOf(v).trim();
-        return "1".equals(s) || "true".equalsIgnoreCase(s) || "Y".equalsIgnoreCase(s);
     }
 
 }

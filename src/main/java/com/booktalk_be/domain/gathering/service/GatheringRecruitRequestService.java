@@ -21,4 +21,11 @@ public interface GatheringRecruitRequestService {
     void approve(int masterId, String gatheringCode, int applicantId);
 
     void reject(int masterId, String gatheringCode, int applicantId, String rejectReason);
+
+    /**
+     * 신청자가 자신의 가입 신청을 철회
+     * @param gatheringCode 모임 코드
+     * @param memberId 신청자 ID
+     */
+    void withdraw(String gatheringCode, int memberId);
 }
